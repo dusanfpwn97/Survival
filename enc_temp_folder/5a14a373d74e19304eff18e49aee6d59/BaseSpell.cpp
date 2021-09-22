@@ -38,7 +38,7 @@ void ABaseSpell::Start()
 
 void ABaseSpell::Reset()
 {
-	SetActorTickEnabled(false);
+	SetActorTickEnabled(true);
 	TargetActor = nullptr;
 }
 
@@ -64,7 +64,6 @@ void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 {
 	if (OtherActor->Implements<UCombatInterface>())
 	{
-
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
 	}
 }
