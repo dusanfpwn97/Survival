@@ -4,33 +4,36 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "BaseSpell.h"
-#include "GameDatatypes.h"
-#include "BaseSpellManager.generated.h"
+#include "EnemySpawner.generated.h"
 
+class ABaseEnemy;
+class APawn;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
-class UBaseSpellManager : public UActorComponent
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
+class UEnemySpawner : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UBaseSpellManager();
+	UEnemySpawner();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FSpellInfo SpellInfo;
-
-
-
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		TSubclassOf<ABaseEnemy> Level1EnemyClass;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		APawn* PlayerPawn;
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
+	UFUNCTION()
+	void SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass);
+
 
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-		
+private:
+	void UpdatePlayerPawn();
 };

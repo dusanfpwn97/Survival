@@ -8,6 +8,7 @@
 #include "CombatInterface.generated.h"
 
 class ABaseSpell;
+class ABaseEnemy;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
@@ -30,5 +31,10 @@ public:
 		void OnCollidedWithSpell(ABaseSpell* Spell);
 	UFUNCTION()
 		virtual void OnCollidedWithSpell_Implementation(ABaseSpell* Spell);
+	UFUNCTION(BlueprintNativeEvent)
+		void OnCollidedWithEnemy(ABaseEnemy* Spell);
+	UFUNCTION()
+		virtual void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy);
+
 
 };

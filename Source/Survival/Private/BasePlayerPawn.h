@@ -3,23 +3,23 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "GameFramework/Actor.h"
+#include "GameFramework/Pawn.h"
 #include "CombatInterface.h"
 
-#include "BaseEnemy.generated.h"
+#include "BasePlayerPawn.generated.h"
 
-class ABasePlayerPawn;
 class UCapsuleComponent;
-class ABaseSpell;
+class ABaseEnemy;
+class USkeletalMeshComponent;
 
 UCLASS(Blueprintable)
-class ABaseEnemy : public AActor, public ICombatInterface
+class ABasePlayerPawn : public APawn, public ICombatInterface
 {
 	GENERATED_BODY()
-	
-public:	
-	// Sets default values for this actor's properties
-	ABaseEnemy();
+
+public:
+	// Sets default values for this pawn's properties
+	ABasePlayerPawn();
 
 protected:
 	// Called when the game starts or when spawned
@@ -28,7 +28,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UStaticMeshComponent* Mesh;
+		USkeletalMeshComponent* SkeletalMesh;
 	UFUNCTION()
 		void SetupComponents();
 
@@ -36,14 +36,15 @@ public:
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-	void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
+	// Called to bind functionality to input
+	virtual void SetupPlayerInputComponent(class UInputComponent* PlayerInputComponent) override;
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-
+	UFUNCTION()
+		void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy) override;
 
 };

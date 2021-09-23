@@ -3,6 +3,8 @@
 
 #include "BaseSpell.h"
 #include "CombatInterface.h"
+#include "Components/SphereComponent.h"
+#include "NiagaraComponent.h"
 
 // Sets default values
 ABaseSpell::ABaseSpell()
@@ -62,7 +64,7 @@ void ABaseSpell::SetTarget(AActor* NewTarget)
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OtherActor->Implements<UCombatInterface>())
+	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>())
 	{
 
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
@@ -81,17 +83,15 @@ void ABaseSpell::SetupComponents()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
 	NGParticle = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
 
-	BaseCollider->SetCollisionEnabled(ECollisionEnabled::QueryOnly);
 	BaseCollider->SetGenerateOverlapEvents(true);
 	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
 	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	Mesh->SetGenerateOverlapEvents(false);
 	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
-	Mesh->SetCollisionResponseToAllChannels(ECollisionResponse::ECR_Ignore);
+
 
 	NGParticle->SetupAttachment(RootComponent);
 }

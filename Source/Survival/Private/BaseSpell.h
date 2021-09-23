@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-#include "NiagaraComponent.h"
-#include "Components/SphereComponent.h"
 
+
+class UNiagaraComponent;
+class USphereComponent;
 
 #include "BaseSpell.generated.h"
 
-UCLASS()
+UCLASS(Blueprintable)
 class ABaseSpell : public AActor
 {
 	GENERATED_BODY()

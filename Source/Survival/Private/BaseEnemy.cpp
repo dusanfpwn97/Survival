@@ -11,17 +11,7 @@ ABaseEnemy::ABaseEnemy()
  	// Set this actor to call Tick() every frame.  You can turn this off to improve performance if you don't need it.
 	PrimaryActorTick.bCanEverTick = true;
 
-	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
-	RootComponent = MainCollider;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
-	Mesh->SetupAttachment(RootComponent);
-
-	MainCollider->SetGenerateOverlapEvents(false);
-	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
-
-	Mesh->SetGenerateOverlapEvents(false);
-	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
-
+	SetupComponents();
 }
 
 // Called when the game starts or when spawned
@@ -42,4 +32,35 @@ void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
 {
 	if (GEngine)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("ssdsdasdw"));
+}
+
+
+void ABaseEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
+{
+		if (OverlappedComp == MainCollider && OtherActor->Implements<UCombatInterface>())
+		{
+
+			ICombatInterface::Execute_OnCollidedWithEnemy(OtherActor, this);
+		}
+}
+
+void ABaseEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
+{
+
+}
+
+void ABaseEnemy::SetupComponents()
+{
+	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
+	RootComponent = MainCollider;
+	MainCollider->SetGenerateOverlapEvents(true);
+	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
+
+	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
+	Mesh->SetupAttachment(RootComponent);
+	Mesh->SetGenerateOverlapEvents(false);
+	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+
+	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
+	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
 }
