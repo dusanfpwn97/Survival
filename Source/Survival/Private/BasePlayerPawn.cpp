@@ -62,6 +62,7 @@ void ABasePlayerPawn::SetupComponents()
 	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
 	RootComponent = MainCollider;
 	MainCollider->SetGenerateOverlapEvents(true);
+	MainCollider->SetCollisionProfileName(FName(TEXT("Player")));
 	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABasePlayerPawn::OnOverlapBegin);
 	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABasePlayerPawn::OnOverlapEnd);
 

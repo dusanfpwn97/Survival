@@ -2,6 +2,7 @@
 
 
 #include "BaseSpellManager.h"
+#include "BaseSpell.h"
 
 // Sets default values for this component's properties
 UBaseSpellManager::UBaseSpellManager()

@@ -4,10 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "BaseSpell.h"
 #include "GameDatatypes.h"
 #include "BaseSpellManager.generated.h"
 
+class GameDatatypes;
+class ABaseSpell;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent

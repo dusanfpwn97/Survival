@@ -19,7 +19,7 @@ UEnemySpawner::UEnemySpawner()
 void UEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
-	//UpdatePlayerPawn();
+	UpdatePlayerPawn();
 }
 
 // Called every frame
@@ -27,7 +27,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//SpawnEnemy(Level1EnemyClass);
+	SpawnEnemy(Level1EnemyClass);
 }
 
 void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
