@@ -14,7 +14,7 @@ UEnemySpawner::UEnemySpawner()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	// ...
+	PoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("PoolManager")));
 }
 
 void UEnemySpawner::BeginPlay()
@@ -28,7 +28,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	//SpawnEnemy(Level1EnemyClass);
+	SpawnEnemy(Level1EnemyClass);
 }
 
 void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
@@ -43,21 +43,23 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 			FTransform Transform;
 			Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(50.f, 0.f, 40.f));
 
-			ABaseEnemy* TempEnemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
-			SpawnedEnemies.Add(TempEnemy);
-			TempEnemy->Start();
-
+			AActor* Enemy = PoolManager->GetAvailableActor(EnemyClass);
+			if (Enemy)
+			{
+				Enemy->SetActorLocation(Transform.GetLocation());
+				IPoolInterface::Execute_Start(Enemy);
+				PoolManager->RegisterActor(Enemy);
+			}
+			else
+			{
+				Enemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
+				IPoolInterface::Execute_Start(Enemy);
+				PoolManager->RegisterNewActor(Enemy);
+			}
 		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()"));
-		}
+		else { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); }
 	}
-	else
-	{
-		UpdatePlayerPawn();
-	}
-
+	else { UpdatePlayerPawn(); }
 }
 
 void UEnemySpawner::UpdatePlayerPawn()
@@ -66,13 +68,7 @@ void UEnemySpawner::UpdatePlayerPawn()
 	if (World)
 	{
 		PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
-		if (GEngine)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from EnemySpawner.cpp -> UpdatePlayerPawn()"));
-		}
+		if (!PlayerPawn) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()"));
-	}
+	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 }

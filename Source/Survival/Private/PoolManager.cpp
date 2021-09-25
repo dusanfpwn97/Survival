@@ -34,44 +34,67 @@ void UPoolManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
-int32 UPoolManager::RemoveFromPool(TSubclassOf<AActor> ActorClass)
+AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 {
 	if (ActorClass)
 	{
-		FPooledActors* Actors;
-		Actors = PooledActors.Find(ActorClass);
-
-		if (Actors->AvailableIndices.Num() == 0) { return -1; }
-		else
+		FPooledActors* PooledActorsTemp = PooledActorsMap.Find(ActorClass);
+		if (PooledActorsTemp)
 		{
-			int32 TempIndex = Actors->AvailableIndices.Last();
-			Actors->AvailableIndices.RemoveAt(TempIndex);
-			return TempIndex;
-		};
+			if (PooledActorsTemp->AvailableIndices.Num() == 0)
+			{
+				return nullptr;
+			}
+			else
+			{
+				int32 TempIndex = PooledActorsTemp->AvailableIndices.Last();
+				AActor* TempActor = PooledActorsTemp->Actors[TempIndex];
+				PooledActorsTemp->AvailableIndices.Remove(TempIndex);
+				return TempActor;
+			}
+		}
+		else return nullptr;
 	}
-	else return -1;
-
+	else return nullptr;
 }
 
 void UPoolManager::ReleaseActorToPool(AActor* Actor)
 {
-	FPooledActors* Actors;
-	Actors = PooledActors.Find(Actor->GetClass());
+	if (Actor)
+	{
+		FPooledActors PooledActorsTemp;
+		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
-	Actors->AvailableIndices.Add(IPoolInterface::Execute_GetPoolIndex(Actor));
+		PooledActorsTemp.AvailableIndices.Add(IPoolInterface::Execute_GetPoolIndex(Actor));
+
+		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
+
+		IPoolInterface::Execute_Reset(Actor);
+	}
 }
 
 void UPoolManager::RegisterNewActor(AActor* Actor)
 {
 	if (Actor)
 	{
-		FPooledActors* Actors;
-		Actors = PooledActors.Find(Actor->GetClass());
+		FPooledActors PooledActorsTemp;
+		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
-		Actors->Actors.Add(Actor);
-
-		//int32 Index = IPoolInterface::Execute_GetPoolIndex(Actor);
-		//Actors->AvailableIndices
+		PooledActorsTemp.Actors.Add(Actor);
+		IPoolInterface::Execute_SetPoolIndex(Actor, PooledActorsTemp.Actors.Num() - 1);
+		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
 	}
 }
 
+void UPoolManager::RegisterActor(AActor* Actor)
+{
+	if (Actor)
+	{
+		FPooledActors PooledActorsTemp;
+		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
+
+		PooledActorsTemp.AvailableIndices.Remove(IPoolInterface::Execute_GetPoolIndex(Actor));
+		
+		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
+	}
+}

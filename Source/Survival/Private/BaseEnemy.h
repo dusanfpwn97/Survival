@@ -47,14 +47,16 @@ public:
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
-		void Start();
+		void Start_Implementation() override;
 	UFUNCTION()
-		void Reset();
+		void Reset_Implementation() override;
 
 	int32 PoolIndex = -1;
 
 	UFUNCTION()
 		int32 GetPoolIndex_Implementation() override;
+	UFUNCTION()
+		void SetPoolIndex_Implementation(int32 Index) override;
 
 
 };

@@ -28,7 +28,7 @@ public:
 
 
 	UFUNCTION()
-		int32 RemoveFromPool(TSubclassOf<AActor> ActorClass);
+		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass);
 
 	UFUNCTION()
 		void ReleaseActorToPool(AActor* Actor);
@@ -36,8 +36,10 @@ public:
 	UFUNCTION()
 		void RegisterNewActor(AActor* Actor);
 
+	UFUNCTION()
+		void RegisterActor(AActor* Actor);
+
 private:
 	UPROPERTY()
-		TMap<TSubclassOf<AActor>, FPooledActors> PooledActors;
-
+		TMap<TSubclassOf<AActor>, FPooledActors> PooledActorsMap;
 };

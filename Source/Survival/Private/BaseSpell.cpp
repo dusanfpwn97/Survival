@@ -19,7 +19,6 @@ ABaseSpell::ABaseSpell()
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
-	Start();
 
 }
 
@@ -33,12 +32,12 @@ void ABaseSpell::Tick(float DeltaTime)
 
 }
 
-void ABaseSpell::Start()
+void ABaseSpell::Start_Implementation()
 {
 	SetActorTickEnabled(true);
 }
 
-void ABaseSpell::Reset()
+void ABaseSpell::Reset_Implementation()
 {
 	SetActorTickEnabled(false);
 	TargetActor = nullptr;
@@ -94,4 +93,9 @@ void ABaseSpell::SetupComponents()
 int32 ABaseSpell::GetPoolIndex_Implementation()
 {
 	return PoolIndex;
+}
+
+void ABaseSpell::SetPoolIndex_Implementation(int32 Index)
+{
+	PoolIndex = Index;
 }

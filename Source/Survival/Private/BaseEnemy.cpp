@@ -65,20 +65,27 @@ void ABaseEnemy::SetupComponents()
 	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
 }
 
-void ABaseEnemy::Start()
+void ABaseEnemy::Start_Implementation()
 {
 	bIsActive = true;
 	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
 }
 
-void ABaseEnemy::Reset()
+void ABaseEnemy::Reset_Implementation()
 {
 	bIsActive = false;
 	SetActorTickEnabled(false);
-		
+	SetActorHiddenInGame(true);
 }
 
 int32 ABaseEnemy::GetPoolIndex_Implementation()
 {
 	return PoolIndex;
 }
+
+void ABaseEnemy::SetPoolIndex_Implementation(int32 Index)
+{
+	PoolIndex = Index;
+}
+

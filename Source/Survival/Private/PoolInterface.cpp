@@ -9,3 +9,15 @@ int32 IPoolInterface::GetPoolIndex_Implementation()
 {
 	return int32();
 }
+
+void IPoolInterface::Start_Implementation()
+{
+}
+
+void IPoolInterface::Reset_Implementation()
+{
+}
+
+void IPoolInterface::SetPoolIndex_Implementation(int32 Index)
+{
+}

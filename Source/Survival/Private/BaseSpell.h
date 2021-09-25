@@ -49,9 +49,9 @@ protected:
 
 public:	
 	UFUNCTION()
-		void Start();
+		void Start_Implementation() override;
 	UFUNCTION()
-		void Reset();
+		void Reset_Implementation() override;
 
 	UFUNCTION()
 		void SetTarget(AActor* NewTarget);
@@ -63,5 +63,7 @@ public:
 
 	UFUNCTION()
 		int32 GetPoolIndex_Implementation() override;
+	UFUNCTION()
+		void SetPoolIndex_Implementation(int32 Index) override;
 
 };

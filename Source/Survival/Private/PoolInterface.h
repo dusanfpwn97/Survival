@@ -27,4 +27,21 @@ public:
 		int32 GetPoolIndex();
 	UFUNCTION()
 		virtual int32 GetPoolIndex_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		void Start();
+	UFUNCTION()
+		virtual void Start_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		void Reset();
+	UFUNCTION()
+		virtual void Reset_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		void SetPoolIndex(int32 Index);
+	UFUNCTION()
+		virtual void SetPoolIndex_Implementation(int32 Index);
+
+
 };

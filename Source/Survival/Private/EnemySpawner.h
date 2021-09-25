@@ -23,15 +23,15 @@ public:
 		TSubclassOf<ABaseEnemy> Level1EnemyClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		APawn* PlayerPawn;
+	UPROPERTY()
+		UPoolManager* PoolManager;
 
+	int32 spawncount = 0;
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 	UFUNCTION()
 	void SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass);
-
-	UPROPERTY(BlueprintReadonly)
-		TArray<ABaseEnemy*> SpawnedEnemies;
 
 	//UPROPERTY()
 		//TMap<TSubclassOf<ABaseEnemy>, TArray<ABaseEnemy*>> Map; // Future use
