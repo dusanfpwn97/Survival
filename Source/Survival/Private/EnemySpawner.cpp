@@ -5,6 +5,7 @@
 #include "BaseEnemy.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "PoolManager.h"
 
 // Sets default values for this component's properties
 UEnemySpawner::UEnemySpawner()
@@ -27,7 +28,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SpawnEnemy(Level1EnemyClass);
+	//SpawnEnemy(Level1EnemyClass);
 }
 
 void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
@@ -40,9 +41,12 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 		{
 			FActorSpawnParameters Params;
 			FTransform Transform;
-
 			Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(50.f, 0.f, 40.f));
-			World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
+
+			ABaseEnemy* TempEnemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
+			SpawnedEnemies.Add(TempEnemy);
+			TempEnemy->Start();
+
 		}
 		else
 		{

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
 #include "CombatInterface.h"
-
+#include "PoolInterface.h"
 #include "BaseEnemy.generated.h"
 
 class ABasePlayerPawn;
@@ -13,7 +13,7 @@ class UCapsuleComponent;
 class ABaseSpell;
 
 UCLASS(Blueprintable)
-class ABaseEnemy : public AActor, public ICombatInterface
+class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
 {
 	GENERATED_BODY()
 	
@@ -32,6 +32,8 @@ protected:
 	UFUNCTION()
 		void SetupComponents();
 
+	UPROPERTY()
+		bool bIsActive = false;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -44,6 +46,15 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
+	UFUNCTION()
+		void Start();
+	UFUNCTION()
+		void Reset();
+
+	int32 PoolIndex = -1;
+
+	UFUNCTION()
+		int32 GetPoolIndex_Implementation() override;
 
 
 };

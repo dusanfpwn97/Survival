@@ -66,6 +66,17 @@ struct FSpellInfo
 
 };
 
+USTRUCT()
+struct FPooledActors
+{
+	GENERATED_BODY()
+
+	UPROPERTY()
+		TArray<AActor*> Actors;
+	UPROPERTY()
+		TArray<int32> AvailableIndices;
+};
+
 class SURVIVAL_API GameDatatypes
 {
 public:

@@ -5,7 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CombatInterface.h"
-
+#include "PoolInterface.h"
 #include "BasePlayerPawn.generated.h"
 
 class UCapsuleComponent;

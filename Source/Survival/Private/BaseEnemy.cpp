@@ -64,3 +64,21 @@ void ABaseEnemy::SetupComponents()
 	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
 	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
 }
+
+void ABaseEnemy::Start()
+{
+	bIsActive = true;
+	SetActorTickEnabled(true);
+}
+
+void ABaseEnemy::Reset()
+{
+	bIsActive = false;
+	SetActorTickEnabled(false);
+		
+}
+
+int32 ABaseEnemy::GetPoolIndex_Implementation()
+{
+	return PoolIndex;
+}

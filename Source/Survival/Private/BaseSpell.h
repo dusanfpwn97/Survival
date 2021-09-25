@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/Actor.h"
-
+#include "PoolInterface.h"
 
 class UNiagaraComponent;
 class USphereComponent;
@@ -12,7 +12,7 @@ class USphereComponent;
 #include "BaseSpell.generated.h"
 
 UCLASS(Blueprintable)
-class ABaseSpell : public AActor
+class ABaseSpell : public AActor, public IPoolInterface
 {
 	GENERATED_BODY()
 	
@@ -52,11 +52,16 @@ public:
 		void Start();
 	UFUNCTION()
 		void Reset();
-	UFUNCTION()
-		bool Init();
+
 	UFUNCTION()
 		void SetTarget(AActor* NewTarget);
 
 	virtual void Tick(float DeltaTime) override;
+
+
+	int32 PoolIndex = -1;
+
+	UFUNCTION()
+		int32 GetPoolIndex_Implementation() override;
 
 };

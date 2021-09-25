@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "EnemySpawner.generated.h"
 
+class UPoolManager;
 class ABaseEnemy;
 class APawn;
 
@@ -29,7 +30,11 @@ protected:
 	UFUNCTION()
 	void SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass);
 
+	UPROPERTY(BlueprintReadonly)
+		TArray<ABaseEnemy*> SpawnedEnemies;
 
+	//UPROPERTY()
+		//TMap<TSubclassOf<ABaseEnemy>, TArray<ABaseEnemy*>> Map; // Future use
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
