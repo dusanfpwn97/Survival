@@ -65,8 +65,6 @@ void UPoolManager::ReleaseActorToPool(AActor* Actor)
 		FPooledActors PooledActorsTemp;
 		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
-		PooledActorsTemp.AvailableIndices.Add(IPoolInterface::Execute_GetPoolIndex(Actor));
-
 		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
 
 		IPoolInterface::Execute_Reset(Actor);
@@ -81,7 +79,6 @@ void UPoolManager::RegisterNewActor(AActor* Actor)
 		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
 		PooledActorsTemp.Actors.Add(Actor);
-		IPoolInterface::Execute_SetPoolIndex(Actor, PooledActorsTemp.Actors.Num() - 1);
 		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
 	}
 }
@@ -93,8 +90,6 @@ void UPoolManager::RegisterActor(AActor* Actor)
 		FPooledActors PooledActorsTemp;
 		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
-		PooledActorsTemp.AvailableIndices.Remove(IPoolInterface::Execute_GetPoolIndex(Actor));
-		
 		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
 	}
 }

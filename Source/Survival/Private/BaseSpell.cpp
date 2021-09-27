@@ -89,13 +89,3 @@ void ABaseSpell::SetupComponents()
 
 	NGParticle->SetupAttachment(RootComponent);
 }
-
-int32 ABaseSpell::GetPoolIndex_Implementation()
-{
-	return PoolIndex;
-}
-
-void ABaseSpell::SetPoolIndex_Implementation(int32 Index)
-{
-	PoolIndex = Index;
-}

@@ -11,6 +11,7 @@
 class ABasePlayerPawn;
 class UCapsuleComponent;
 class ABaseSpell;
+class UEnemySpawner;
 
 UCLASS(Blueprintable)
 class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
@@ -29,14 +30,19 @@ protected:
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* Mesh;
+
 	UFUNCTION()
 		void SetupComponents();
+
+	UPROPERTY()
+	FTimerHandle DestroyTimerHandle;
 
 	UPROPERTY()
 		bool bIsActive = false;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
+	float temp;
 
 	UFUNCTION()
 	void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
@@ -50,13 +56,10 @@ public:
 		void Start_Implementation() override;
 	UFUNCTION()
 		void Reset_Implementation() override;
-
-	int32 PoolIndex = -1;
-
 	UFUNCTION()
-		int32 GetPoolIndex_Implementation() override;
-	UFUNCTION()
-		void SetPoolIndex_Implementation(int32 Index) override;
-
+		void SetSpawner_Implementation(UObject* Object) override;
+	
+	UPROPERTY()
+		UObject* Spawner;
 
 };

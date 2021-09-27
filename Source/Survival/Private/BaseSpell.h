@@ -59,11 +59,4 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 
-	int32 PoolIndex = -1;
-
-	UFUNCTION()
-		int32 GetPoolIndex_Implementation() override;
-	UFUNCTION()
-		void SetPoolIndex_Implementation(int32 Index) override;
-
 };

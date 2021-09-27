@@ -14,7 +14,7 @@ UEnemySpawner::UEnemySpawner()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	PoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("PoolManager")));
+	//PoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("PoolManager")));
 }
 
 void UEnemySpawner::BeginPlay()
@@ -29,37 +29,52 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 	SpawnEnemy(Level1EnemyClass);
+	SpawnEnemy(Level1EnemyClass);
+	SpawnEnemy(Level1EnemyClass);
+	SpawnEnemy(Level1EnemyClass);
+
 }
 
 void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 {
 	UWorld* World = GetWorld();
+	if (!World) return;
 
-	if (PlayerPawn && World)
+	if (!PlayerPawn) UpdatePlayerPawn();
+	if (!PlayerPawn) return;
+
+	if (!EnemyClass) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()")); }
+	
+	else
 	{
-		if (EnemyClass)
-		{
-			FActorSpawnParameters Params;
-			FTransform Transform;
-			Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(50.f, 0.f, 40.f));
+		FActorSpawnParameters Params;
+		FTransform Transform;
+		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(30.f, 200.f), FMath::RandRange(30.f, 200.f), 20.f));
+		AActor* Enemy;
 
-			AActor* Enemy = PoolManager->GetAvailableActor(EnemyClass);
-			if (Enemy)
-			{
-				Enemy->SetActorLocation(Transform.GetLocation());
-				IPoolInterface::Execute_Start(Enemy);
-				PoolManager->RegisterActor(Enemy);
-			}
-			else
-			{
-				Enemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
-				IPoolInterface::Execute_Start(Enemy);
-				PoolManager->RegisterNewActor(Enemy);
-			}
+		if (EnemyPool.Num() == 0)
+		{
+			Enemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
+			IPoolInterface::Execute_SetSpawner(Enemy, this);
+			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawned"));
 		}
-		else { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); }
+		else
+		{
+			Enemy = EnemyPool.Last();
+			EnemyPool.RemoveAt(EnemyPool.Num() - 1);
+		}
+		
+		if (Enemy)
+		{
+			Enemy->SetActorLocation(Transform.GetLocation());
+			
+			IPoolInterface::Execute_Start(Enemy);
+		}
+		else
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Could not spawn enemy! Should not happen!!! EnemySpawner.cpp -> SpawnEnemy()"));
+		}
 	}
-	else { UpdatePlayerPawn(); }
 }
 
 void UEnemySpawner::UpdatePlayerPawn()
@@ -71,4 +86,9 @@ void UEnemySpawner::UpdatePlayerPawn()
 		if (!PlayerPawn) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 	}
 	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
+}
+
+void UEnemySpawner::ReleaseToPool_Implementation(AActor* Actor)
+{
+	EnemyPool.Add(Actor);
 }

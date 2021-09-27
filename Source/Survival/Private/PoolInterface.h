@@ -24,11 +24,6 @@ class IPoolInterface
 public:
 
 	UFUNCTION(BlueprintNativeEvent)
-		int32 GetPoolIndex();
-	UFUNCTION()
-		virtual int32 GetPoolIndex_Implementation();
-
-	UFUNCTION(BlueprintNativeEvent)
 		void Start();
 	UFUNCTION()
 		virtual void Start_Implementation();
@@ -39,9 +34,13 @@ public:
 		virtual void Reset_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent)
-		void SetPoolIndex(int32 Index);
+		void ReleaseToPool(AActor* Actor);
 	UFUNCTION()
-		virtual void SetPoolIndex_Implementation(int32 Index);
+		virtual void ReleaseToPool_Implementation(AActor* Actor);
 
+	UFUNCTION(BlueprintNativeEvent)
+		void SetSpawner(UObject* Object);
+	UFUNCTION()
+		virtual void SetSpawner_Implementation(UObject* Object);
 
 };
