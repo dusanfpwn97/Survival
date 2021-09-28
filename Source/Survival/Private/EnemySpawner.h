@@ -29,6 +29,8 @@ public:
 
 	UPROPERTY()
 		TArray<AActor*> EnemyPool;
+	UPROPERTY()
+		TArray<AActor*> ActiveEnemies;
 
 protected:
 	// Called when the game starts
@@ -36,7 +38,7 @@ protected:
 	UFUNCTION()
 	void SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass);
 
-
+	uint32 spawnnum = 0;
 	//UPROPERTY()
 		//TMap<TSubclassOf<ABaseEnemy>, TArray<ABaseEnemy*>> Map; // Future use
 public:	
@@ -46,7 +48,9 @@ public:
 
 	UFUNCTION()
 		void ReleaseToPool_Implementation(AActor* Actor) override;
-
+	//UFUNCTION()
+		//TArray<AActor*> GetSpawnedEnemies_Implementation() override;
 private:
 	void UpdatePlayerPawn();
+
 };

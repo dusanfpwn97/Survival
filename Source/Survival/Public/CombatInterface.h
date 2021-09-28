@@ -35,6 +35,17 @@ public:
 		void OnCollidedWithEnemy(ABaseEnemy* Spell);
 	UFUNCTION()
 		virtual void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy);
+	UFUNCTION(BlueprintNativeEvent)
+		void SetTarget(AActor* TargetActor);
+	UFUNCTION()
+		virtual void SetTarget_Implementation(AActor* TargetActor);
+	/*UFUNCTION(BlueprintNativeEvent)
+		TArray<AActor*> GetSpawnedEnemies();
+	UFUNCTION()
+		virtual TArray<AActor*> GetSpawnedEnemies_Implementation();
+	*/
+
+
 
 
 };

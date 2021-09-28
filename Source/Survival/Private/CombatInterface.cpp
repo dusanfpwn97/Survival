@@ -17,3 +17,11 @@ void ICombatInterface::OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy)
 
 }
 
+void ICombatInterface::SetTarget_Implementation(AActor* TargetActor)
+{
+}
+/*
+TArray<AActor*> ICombatInterface::GetSpawnedEnemies_Implementation()
+{
+
+}*/

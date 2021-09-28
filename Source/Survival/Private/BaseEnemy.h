@@ -39,6 +39,13 @@ protected:
 
 	UPROPERTY()
 		bool bIsActive = false;
+
+	UPROPERTY()
+		AActor* Target;
+
+	UFUNCTION()
+		void MoveTowardsTarget();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -62,4 +69,6 @@ public:
 	UPROPERTY()
 		UObject* Spawner;
 
+	UFUNCTION()
+		void SetTarget_Implementation(AActor* TargetActor) override;
 };

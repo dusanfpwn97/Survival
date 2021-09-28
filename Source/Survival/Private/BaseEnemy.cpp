@@ -25,8 +25,8 @@ void ABaseEnemy::BeginPlay()
 void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FHitResult Hit;
-	AddActorWorldOffset(FVector(130.f* DeltaTime, temp* DeltaTime, 0), false, &Hit, ETeleportType::None);
+	MoveTowardsTarget();
+	
 }
 
 void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
@@ -70,7 +70,7 @@ void ABaseEnemy::Start_Implementation()
 	bIsActive = true;
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 2.f/*FMath::RandRange(2.2f, 5.3f)*/, false);
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 20.f/*FMath::RandRange(2.2f, 5.3f)*/, false);
 }
 
 void ABaseEnemy::Reset_Implementation()
@@ -89,4 +89,30 @@ void ABaseEnemy::Reset_Implementation()
 void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
 {
 	Spawner = Object;
+}
+
+void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
+{
+	if (TargetActor)
+	{
+		Target = TargetActor;
+	}
+}
+
+void ABaseEnemy::MoveTowardsTarget()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+	if (!Target) return;
+
+	FHitResult Hit;
+	FVector Direction;
+	Direction = Target->GetActorLocation() - GetActorLocation();
+	Direction.Normalize();
+	Direction.Z = 0.f;
+	
+
+
+	AddActorWorldOffset(Direction * 200 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
+
 }

@@ -5,6 +5,7 @@
 #include "BaseEnemy.h"
 #include "GameFramework/Pawn.h"
 #include "Kismet/GameplayStatics.h"
+#include "CombatInterface.h"
 #include "PoolManager.h"
 
 // Sets default values for this component's properties
@@ -44,12 +45,12 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 	if (!PlayerPawn) return;
 
 	if (!EnemyClass) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()")); }
-	
+	if (spawnnum > 100) return;
 	else
 	{
 		FActorSpawnParameters Params;
 		FTransform Transform;
-		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(30.f, 200.f), FMath::RandRange(30.f, 200.f), 20.f));
+		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(-500.f, 500.f), FMath::RandRange(-500.f, 500.f), 20.f));
 		AActor* Enemy;
 
 		if (EnemyPool.Num() == 0)
@@ -67,8 +68,10 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 		if (Enemy)
 		{
 			Enemy->SetActorLocation(Transform.GetLocation());
-			
+			ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
 			IPoolInterface::Execute_Start(Enemy);
+			spawnnum++;
+			//ActiveEnemies.Add(Enemy);
 		}
 		else
 		{
@@ -91,4 +94,12 @@ void UEnemySpawner::UpdatePlayerPawn()
 void UEnemySpawner::ReleaseToPool_Implementation(AActor* Actor)
 {
 	EnemyPool.Add(Actor);
+	spawnnum--;
+	//ActiveEnemies.Remove(Actor); // TODO BAD PERFORMANCE
+
 }
+/*
+TArray<AActor*> UEnemySpawner::GetSpawnedEnemies_Implementation()
+{
+	return ActiveEnemies;
+}*/
