@@ -12,6 +12,7 @@ class ABasePlayerPawn;
 class UCapsuleComponent;
 class ABaseSpell;
 class UEnemySpawner;
+class USkeletalMeshComponent;
 
 UCLASS(Blueprintable)
 class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
@@ -30,6 +31,8 @@ protected:
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* Mesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USkeletalMeshComponent* SkeletalMesh;
 
 	UFUNCTION()
 		void SetupComponents();
@@ -45,6 +48,9 @@ protected:
 
 	UFUNCTION()
 		void MoveTowardsTarget();
+
+	FVector Velocity = FVector::ZeroVector;
+	FRotator LastRotation = FRotator::ZeroRotator;
 
 public:	
 	// Called every frame

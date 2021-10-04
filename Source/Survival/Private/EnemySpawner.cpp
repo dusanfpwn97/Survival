@@ -29,10 +29,11 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	SpawnEnemy(Level1EnemyClass);
-	SpawnEnemy(Level1EnemyClass);
-	SpawnEnemy(Level1EnemyClass);
-	SpawnEnemy(Level1EnemyClass);
+	if (FMath::RandBool())
+	{
+		SpawnEnemy(Level1EnemyClass);
+	}
+
 
 }
 

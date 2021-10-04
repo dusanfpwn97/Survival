@@ -4,6 +4,9 @@
 #include "BaseEnemy.h"
 #include "BaseSpell.h"
 #include "Components/CapsuleComponent.h"
+#include "Components/SkeletalMeshComponent.h"
+#include "Engine/World.h"
+#include "DrawDebugHelpers.h"
 
 // Sets default values
 ABaseEnemy::ABaseEnemy()
@@ -56,13 +59,19 @@ void ABaseEnemy::SetupComponents()
 	RootComponent = MainCollider;
 	MainCollider->SetGenerateOverlapEvents(true);
 	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
+	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
+	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
+
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetGenerateOverlapEvents(false);
 	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
-	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
-	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
+	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("SkeletalMesh")));
+	SkeletalMesh->SetupAttachment(RootComponent);
+	SkeletalMesh->SetGenerateOverlapEvents(false);
+	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+
 }
 
 void ABaseEnemy::Start_Implementation()
@@ -102,17 +111,70 @@ void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
 void ABaseEnemy::MoveTowardsTarget()
 {
 	UWorld* World = GetWorld();
-	if (!World) return;
-	if (!Target) return;
+	if (!World || !Target) return;
 
 	FHitResult Hit;
 	FVector Direction;
 	Direction = Target->GetActorLocation() - GetActorLocation();
 	Direction.Normalize();
 	Direction.Z = 0.f;
+
+
+	FHitResult Hits;
+	FVector Start = GetActorLocation() - GetActorRightVector()*30;
+	
+	FCollisionObjectQueryParams ObjectQueryParams;
+	ObjectQueryParams.AddObjectTypesToQuery(ECollisionChannel::ECC_GameTraceChannel1);
+	FCollisionQueryParams Params;
+	Params.AddIgnoredActor(this);
+	
+	TArray<AActor*> HitActors;
 	
 
 
-	AddActorWorldOffset(Direction * 200 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
+	
+	LastRotation = FMath::RInterpTo(LastRotation, (Direction.Rotation() + FRotator(0.f, -90.f, 0.f)), World->GetDeltaSeconds(), 6.f);
+	SetActorRotation(LastRotation, ETeleportType::None);
+
+
+	for (int i = -2; i < 3; i++)
+	{
+		FRotator TempRot = (Direction.Rotation() + FRotator(0.f, i * -45.f, 0.f));
+		FVector End = Start + TempRot.Vector() * MainCollider->GetUnscaledCapsuleRadius()*2.5;
+
+		World->LineTraceSingleByObjectType(Hits, Start, End, ObjectQueryParams, Params);
+		//DrawDebugLine(World, Start, End, FColor::Green, false, 0.f);
+		if (Hits.IsValidBlockingHit())
+		{
+			HitActors.Add(Hits.GetActor());
+
+			
+		}
+	}
+	if (HitActors.Num() > 0)
+	{
+		for (AActor* TempActor : HitActors)
+		{
+			FVector Temp = TempActor->GetActorLocation() - GetActorLocation();
+			Temp.Normalize();
+			//Temp.
+			Direction += -Temp * 1;
+		}
+		Direction.Normalize();
+		Direction.Z = 0;
+	}
+
+	Velocity = FMath::VInterpTo(Velocity, Direction * 200 * World->GetDeltaSeconds(), World->GetDeltaSeconds(), 6);
+	//Velocity = Direction * 200 * World->GetDeltaSeconds();
+
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("%f"), Velocity.X));
+	//Velocity += -Velocity * 0.4;
+
+	AddActorWorldOffset(Velocity, false, &Hit, ETeleportType::None);
+
+
+
+
 
 }
+
