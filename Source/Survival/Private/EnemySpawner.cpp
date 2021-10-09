@@ -28,8 +28,8 @@ void UEnemySpawner::BeginPlay()
 void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-
-	if (FMath::RandBool())
+	float s = FMath::FRand();
+	if (s < 0.05)
 	{
 		SpawnEnemy(Level1EnemyClass);
 	}
@@ -46,19 +46,19 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 	if (!PlayerPawn) return;
 
 	if (!EnemyClass) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()")); }
-	if (spawnnum > 100) return;
+	if (spawnnum > 50) return;
 	else
 	{
 		FActorSpawnParameters Params;
 		FTransform Transform;
-		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(-500.f, 500.f), FMath::RandRange(-500.f, 500.f), 20.f));
+		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(-500.f, 500.f)+ 200.f, FMath::RandRange(-500.f, 500.f) + 200.f, 20.f));
 		AActor* Enemy;
 
 		if (EnemyPool.Num() == 0)
 		{
 			Enemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
 			IPoolInterface::Execute_SetSpawner(Enemy, this);
-			GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawned"));
+			GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spawned"));
 		}
 		else
 		{

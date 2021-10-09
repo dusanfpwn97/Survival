@@ -164,7 +164,7 @@ void ABaseEnemy::MoveTowardsTarget()
 		Direction.Z = 0;
 	}
 
-	Velocity = FMath::VInterpTo(Velocity, Direction * 200 * World->GetDeltaSeconds(), World->GetDeltaSeconds(), 6);
+	Velocity = FMath::VInterpTo(Velocity, Direction * 300 * World->GetDeltaSeconds(), World->GetDeltaSeconds(), 6);
 	//Velocity = Direction * 200 * World->GetDeltaSeconds();
 
 	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("%f"), Velocity.X));
