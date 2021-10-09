@@ -29,7 +29,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	float s = FMath::FRand();
-	if (s < 0.05)
+	if (s < 0.5)
 	{
 		SpawnEnemy(Level1EnemyClass);
 	}
@@ -46,7 +46,7 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 	if (!PlayerPawn) return;
 
 	if (!EnemyClass) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()")); }
-	if (spawnnum > 50) return;
+	if (spawnnum > 100) return;
 	else
 	{
 		FActorSpawnParameters Params;
