@@ -79,7 +79,7 @@ void ABaseEnemy::Start_Implementation()
 	bIsActive = true;
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 20.f/*FMath::RandRange(2.2f, 5.3f)*/, false);
+	//GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 20.f/*FMath::RandRange(2.2f, 5.3f)*/, false);
 }
 
 void ABaseEnemy::Reset_Implementation()
@@ -97,6 +97,11 @@ void ABaseEnemy::Reset_Implementation()
 
 void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
 {
+	if (!Object)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
+		return;
+	}
 	Spawner = Object;
 }
 
@@ -158,13 +163,13 @@ void ABaseEnemy::MoveTowardsTarget()
 			FVector Temp = TempActor->GetActorLocation() - GetActorLocation();
 			Temp.Normalize();
 			//Temp.
-			Direction += -Temp * 1;
+			Direction += -Temp * 0.85;
 		}
 		Direction.Normalize();
 		Direction.Z = 0;
 	}
 
-	Velocity = FMath::VInterpTo(Velocity, Direction * 300 * World->GetDeltaSeconds(), World->GetDeltaSeconds(), 6);
+	Velocity = FMath::VInterpTo(Velocity, Direction * 2.5, World->GetDeltaSeconds(), 6);
 	//Velocity = Direction * 200 * World->GetDeltaSeconds();
 
 	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("%f"), Velocity.X));

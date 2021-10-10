@@ -4,6 +4,7 @@
 #include "PoolManager.h"
 #include "PoolInterface.h"
 #include "PoolInterface.h"
+#include "Kismet/GameplayStatics.h"
 
 // Sets default values for this component's properties
 UPoolManager::UPoolManager()
@@ -38,22 +39,33 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 {
 	if (ActorClass)
 	{
-		FPooledActors* PooledActorsTemp = PooledActorsMap.Find(ActorClass);
-		if (PooledActorsTemp)
+		AActor* ActorToGet;
+		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(ActorClass);
+		if (PooledActorsTemp.Actors.Num() > 0)
 		{
-			if (PooledActorsTemp->AvailableIndices.Num() == 0)
-			{
-				return nullptr;
-			}
-			else
-			{
-				int32 TempIndex = PooledActorsTemp->AvailableIndices.Last();
-				AActor* TempActor = PooledActorsTemp->Actors[TempIndex];
-				PooledActorsTemp->AvailableIndices.Remove(TempIndex);
-				return TempActor;
-			}
+			ActorToGet = PooledActorsTemp.Actors.Last();
+
+			PooledActorsTemp.Actors.Pop();
+			IPoolInterface::Execute_Start(ActorToGet);
+
+			return ActorToGet;
 		}
-		else return nullptr;
+		else
+		{
+			UWorld* World = GetWorld();
+			if (!World) return nullptr;
+			//APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+			FTransform Transform;
+			FActorSpawnParameters Params;
+			
+			Transform.SetLocation(FVector(0.f, 0.f, 500.f));
+
+			ActorToGet = World->SpawnActor<AActor>(ActorClass, Transform, Params);
+			IPoolInterface::Execute_Start(ActorToGet);
+			IPoolInterface::Execute_SetSpawner(ActorToGet, this);
+
+			return ActorToGet;
+		}
 	}
 	else return nullptr;
 }
@@ -62,34 +74,10 @@ void UPoolManager::ReleaseActorToPool(AActor* Actor)
 {
 	if (Actor)
 	{
-		FPooledActors PooledActorsTemp;
-		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
+		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
-		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
-
+		PooledActorsTemp.Actors.Push(Actor);
+		PooledActorsMap.Emplace(Actor->GetClass(), PooledActorsTemp);
 		IPoolInterface::Execute_Reset(Actor);
-	}
-}
-
-void UPoolManager::RegisterNewActor(AActor* Actor)
-{
-	if (Actor)
-	{
-		FPooledActors PooledActorsTemp;
-		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
-
-		PooledActorsTemp.Actors.Add(Actor);
-		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
-	}
-}
-
-void UPoolManager::RegisterActor(AActor* Actor)
-{
-	if (Actor)
-	{
-		FPooledActors PooledActorsTemp;
-		PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
-
-		PooledActorsMap.Add(Actor->GetClass(), PooledActorsTemp);
 	}
 }

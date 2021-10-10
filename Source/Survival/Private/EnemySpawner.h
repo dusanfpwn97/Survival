@@ -4,7 +4,6 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "PoolInterface.h"
 #include "EnemySpawner.generated.h"
 
 class UPoolManager;
@@ -12,7 +11,7 @@ class ABaseEnemy;
 class APawn;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
-class UEnemySpawner : public UActorComponent, public IPoolInterface
+class UEnemySpawner : public UActorComponent
 {
 	GENERATED_BODY()
 
@@ -21,16 +20,14 @@ public:
 	UEnemySpawner();
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-		TSubclassOf<ABaseEnemy> Level1EnemyClass;
+	TSoftClassPtr<ABaseEnemy> SoftLevel1EnemyClass;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		APawn* PlayerPawn;
 	UPROPERTY()
-		UPoolManager* PoolManager;
-
-	UPROPERTY()
-		TArray<AActor*> EnemyPool;
-	UPROPERTY()
-		TArray<AActor*> ActiveEnemies;
+		UPoolManager* EnemySpawnPoolManager;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		bool IsSpawnEnabled = true;
 
 protected:
 	// Called when the game starts
@@ -46,8 +43,8 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
-	UFUNCTION()
-		void ReleaseToPool_Implementation(AActor* Actor) override;
+	//UFUNCTION()
+		//void ReleaseToPool_Implementation(AActor* Actor) override;
 	//UFUNCTION()
 		//TArray<AActor*> GetSpawnedEnemies_Implementation() override;
 private:

@@ -7,6 +7,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "CombatInterface.h"
 #include "PoolManager.h"
+#include "HelperFunctions.h"
 
 // Sets default values for this component's properties
 UEnemySpawner::UEnemySpawner()
@@ -15,7 +16,7 @@ UEnemySpawner::UEnemySpawner()
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
 
-	//PoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("PoolManager")));
+	EnemySpawnPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("EnemySpawnPoolManager")));
 }
 
 void UEnemySpawner::BeginPlay()
@@ -29,9 +30,9 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	float s = FMath::FRand();
-	if (s < 0.5)
+	if (s < 0.01)
 	{
-		SpawnEnemy(Level1EnemyClass);
+		SpawnEnemy(SoftLevel1EnemyClass.LoadSynchronous());
 	}
 
 
@@ -39,45 +40,34 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 {
+	if (spawnnum > 50 || !IsSpawnEnabled) return;
+
 	UWorld* World = GetWorld();
 	if (!World) return;
+	if (!EnemyClass)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()"));
+		return;
+	}
 
 	if (!PlayerPawn) UpdatePlayerPawn();
-	if (!PlayerPawn) return;
+	if (!PlayerPawn)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cant get player so enemy cant be spawned"));
+		return;
+	}
 
-	if (!EnemyClass) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Enemy class is null! EnemySpawner.cpp -> SpawnEnemy()")); }
-	if (spawnnum > 100) return;
 	else
 	{
-		FActorSpawnParameters Params;
-		FTransform Transform;
-		Transform.SetLocation(PlayerPawn->GetActorLocation() + FVector(FMath::RandRange(-500.f, 500.f)+ 200.f, FMath::RandRange(-500.f, 500.f) + 200.f, 20.f));
-		AActor* Enemy;
+		AActor* Enemy = EnemySpawnPoolManager->GetAvailableActor(EnemyClass);
 
-		if (EnemyPool.Num() == 0)
-		{
-			Enemy = World->SpawnActor<ABaseEnemy>(EnemyClass.Get(), Transform, Params);
-			IPoolInterface::Execute_SetSpawner(Enemy, this);
-			GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spawned"));
-		}
-		else
-		{
-			Enemy = EnemyPool.Last();
-			EnemyPool.RemoveAt(EnemyPool.Num() - 1);
-		}
+		if (!Enemy) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Enemy couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+
+
+		Enemy->SetActorLocation(UHelperFunctions::GetRandomPointInCircle(PlayerPawn->GetActorLocation() + FVector(0.f, 0.f, 45.f), 1500.f));
 		
-		if (Enemy)
-		{
-			Enemy->SetActorLocation(Transform.GetLocation());
-			ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
-			IPoolInterface::Execute_Start(Enemy);
-			spawnnum++;
-			//ActiveEnemies.Add(Enemy);
-		}
-		else
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Could not spawn enemy! Should not happen!!! EnemySpawner.cpp -> SpawnEnemy()"));
-		}
+		ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
+		spawnnum++;
 	}
 }
 
@@ -91,16 +81,11 @@ void UEnemySpawner::UpdatePlayerPawn()
 	}
 	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 }
-
+/*
 void UEnemySpawner::ReleaseToPool_Implementation(AActor* Actor)
 {
-	EnemyPool.Add(Actor);
-	spawnnum--;
+	//EnemyPool.Add(Actor);
+	//spawnnum--;
 	//ActiveEnemies.Remove(Actor); // TODO BAD PERFORMANCE
 
-}
-/*
-TArray<AActor*> UEnemySpawner::GetSpawnedEnemies_Implementation()
-{
-	return ActiveEnemies;
 }*/
