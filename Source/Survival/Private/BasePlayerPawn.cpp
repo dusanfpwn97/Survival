@@ -5,6 +5,8 @@
 #include "BaseEnemy.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "BaseSpell.h"
+#include "BaseSpellManager.h"
 
 // Sets default values
 ABasePlayerPawn::ABasePlayerPawn()
@@ -19,7 +21,8 @@ ABasePlayerPawn::ABasePlayerPawn()
 void ABasePlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
-	
+
+	AddNewSpell(UBaseSpellManager::StaticClass());
 }
 
 // Called every frame
@@ -71,3 +74,23 @@ void ABasePlayerPawn::SetupComponents()
 	SkeletalMesh->SetGenerateOverlapEvents(false);
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 }
+
+FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
+{
+	return MainCollider->GetComponentLocation();
+}
+
+void ABasePlayerPawn::AddNewSpell(TSubclassOf<UBaseSpellManager> SpellManager)
+{
+	if (!SpellManager)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
+		return;
+	}
+	//UClass* SpellClass = SpellManager->GetClass();
+	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManager); //*
+	NewSpell->RegisterComponent();
+
+	SpellManagers.Add(NewSpell);
+}
+

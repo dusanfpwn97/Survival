@@ -19,6 +19,12 @@ void ICombatInterface::OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy)
 
 void ICombatInterface::SetTarget_Implementation(AActor* TargetActor)
 {
+
+}
+
+FVector ICombatInterface::GetSpellCastLocation_Implementation()
+{
+	return FVector();
 }
 /*
 TArray<AActor*> ICombatInterface::GetSpawnedEnemies_Implementation()

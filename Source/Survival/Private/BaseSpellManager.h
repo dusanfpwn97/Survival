@@ -5,12 +5,13 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "GameDatatypes.h"
+
 #include "BaseSpellManager.generated.h"
 
-class GameDatatypes;
 class ABaseSpell;
+class UPoolManager;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable)
+UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent
 {
 	GENERATED_BODY()
@@ -22,16 +23,26 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 	FSpellInfo SpellInfo;
 
+	FTimerHandle MainSpellCastTimerHandle;
 
+	UPROPERTY()
+	UPoolManager* SpellPoolManager;
 
+	UPROPERTY()
+	APawn* PlayerPawn;
 
 protected:
-	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	void CastSpell();
+
 public:	
-	// Called every frame
+
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+
+private:
+	UFUNCTION()
+	void UpdatePlayerPawn();
 		
 };

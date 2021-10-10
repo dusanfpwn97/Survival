@@ -5,6 +5,8 @@
 #include "CoreMinimal.h"
 #include "GameDatatypes.generated.h"
 
+class ABaseSpell;
+
 UENUM(BlueprintType)
 enum class SpellModifier : uint8
 {
@@ -63,7 +65,8 @@ struct FSpellInfo
 		TArray<CastType> CastTypes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<SpellModifier> SpellModifiers;
-
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSoftClassPtr<ABaseSpell> SpellClass;
 };
 
 USTRUCT()

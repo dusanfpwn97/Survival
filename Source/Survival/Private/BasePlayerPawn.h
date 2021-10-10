@@ -5,12 +5,12 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CombatInterface.h"
-#include "PoolInterface.h"
 #include "BasePlayerPawn.generated.h"
 
 class UCapsuleComponent;
 class ABaseEnemy;
 class USkeletalMeshComponent;
+class UBaseSpellManager;
 
 UCLASS(Blueprintable)
 class ABasePlayerPawn : public APawn, public ICombatInterface
@@ -32,6 +32,10 @@ protected:
 	UFUNCTION()
 		void SetupComponents();
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USkeletalMeshComponent* SkeletalMesh;
+
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -47,4 +51,9 @@ public:
 	UFUNCTION()
 		void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy) override;
 
+	UFUNCTION()
+		virtual FVector GetSpellCastLocation_Implementation() override;
+
+	UFUNCTION()
+		void AddNewSpell(TSubclassOf<UBaseSpellManager> SpellManager);
 };

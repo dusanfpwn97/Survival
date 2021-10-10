@@ -32,7 +32,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	float s = FMath::FRand();
 	if (s < 0.01)
 	{
-		SpawnEnemy(SoftLevel1EnemyClass.LoadSynchronous());
+		SpawnEnemy(SoftLevel1EnemyClass.Get());
 	}
 
 
@@ -57,18 +57,14 @@ void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
 		return;
 	}
 
-	else
-	{
-		AActor* Enemy = EnemySpawnPoolManager->GetAvailableActor(EnemyClass);
+	AActor* Enemy = EnemySpawnPoolManager->GetAvailableActor(EnemyClass);
 
-		if (!Enemy) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Enemy couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+	if (!Enemy) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Enemy couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 
-
-		Enemy->SetActorLocation(UHelperFunctions::GetRandomPointInCircle(PlayerPawn->GetActorLocation() + FVector(0.f, 0.f, 45.f), 1500.f));
-		
-		ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
-		spawnnum++;
-	}
+	Enemy->SetActorLocation(UHelperFunctions::GetRandomPointInCircle(PlayerPawn->GetActorLocation() + FVector(0.f, 0.f, 45.f), 1500.f));
+	
+	ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
+	spawnnum++;
 }
 
 void UEnemySpawner::UpdatePlayerPawn()

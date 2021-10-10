@@ -28,7 +28,7 @@ void ABaseSpell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	FHitResult Hit;
-	AddActorWorldOffset(FVector(10.f, 0, 0), false, &Hit, ETeleportType::None);
+	AddActorWorldOffset(FVector(100.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
 
 }
 
@@ -85,7 +85,6 @@ void ABaseSpell::SetupComponents()
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetGenerateOverlapEvents(false);
 	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
-
 
 	NGParticle->SetupAttachment(RootComponent);
 }
