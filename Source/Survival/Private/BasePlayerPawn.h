@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "GameFramework/Pawn.h"
 #include "CombatInterface.h"
+
 #include "BasePlayerPawn.generated.h"
 
 class UCapsuleComponent;
@@ -32,10 +33,11 @@ protected:
 	UFUNCTION()
 		void SetupComponents();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		USkeletalMeshComponent* SkeletalMesh;
+	UFUNCTION(BlueprintCallable)
+		void AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass);
 
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<UBaseSpellManager*> SpellManagers;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -54,6 +56,4 @@ public:
 	UFUNCTION()
 		virtual FVector GetSpellCastLocation_Implementation() override;
 
-	UFUNCTION()
-		void AddNewSpell(TSubclassOf<UBaseSpellManager> SpellManager);
 };

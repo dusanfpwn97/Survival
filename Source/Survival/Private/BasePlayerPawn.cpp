@@ -22,7 +22,7 @@ void ABasePlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
-	AddNewSpell(UBaseSpellManager::StaticClass());
+
 }
 
 // Called every frame
@@ -80,15 +80,16 @@ FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
 	return MainCollider->GetComponentLocation();
 }
 
-void ABasePlayerPawn::AddNewSpell(TSubclassOf<UBaseSpellManager> SpellManager)
+void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)
 {
-	if (!SpellManager)
+	SpellManagerClass.LoadSynchronous();
+	if (!SpellManagerClass)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
 		return;
 	}
 	//UClass* SpellClass = SpellManager->GetClass();
-	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManager); //*
+	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClass.Get()); //*
 	NewSpell->RegisterComponent();
 
 	SpellManagers.Add(NewSpell);

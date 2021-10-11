@@ -23,6 +23,7 @@ void UEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
 	UpdatePlayerPawn();
+	SoftLevel1EnemyClass.LoadSynchronous();
 }
 
 // Called every frame
@@ -30,15 +31,14 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	float s = FMath::FRand();
-	if (s < 0.01)
+
+	if (s < 0.015)
 	{
 		SpawnEnemy(SoftLevel1EnemyClass.Get());
 	}
-
-
 }
 
-void UEnemySpawner::SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass)
+void UEnemySpawner::SpawnEnemy(UClass* EnemyClass)
 {
 	if (spawnnum > 50 || !IsSpawnEnabled) return;
 

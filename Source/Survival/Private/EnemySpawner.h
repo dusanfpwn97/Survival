@@ -29,11 +29,14 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		bool IsSpawnEnabled = true;
 
+	UFUNCTION()
+		void SpawnEnemy(UClass* EnemyClass);
+
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
-	UFUNCTION()
-	void SpawnEnemy(TSubclassOf<ABaseEnemy> EnemyClass);
+
 
 	uint32 spawnnum = 0;
 	//UPROPERTY()

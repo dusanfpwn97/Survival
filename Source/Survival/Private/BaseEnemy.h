@@ -6,6 +6,7 @@
 #include "GameFramework/Actor.h"
 #include "CombatInterface.h"
 #include "PoolInterface.h"
+#include "Engine/DataTable.h"
 #include "BaseEnemy.generated.h"
 
 class ABasePlayerPawn;
@@ -13,6 +14,31 @@ class UCapsuleComponent;
 class ABaseSpell;
 class UEnemySpawner;
 class USkeletalMeshComponent;
+
+
+USTRUCT(BlueprintType)
+struct FEnemyStats : public FTableRowBase
+{
+	GENERATED_BODY()
+
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSoftClassPtr<ABaseEnemy> Class;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FText Name;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float DifficultyThresholdForSpawning;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Damage;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Speed;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Health;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float ExpReward;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float AttackInterval;
+
+};
 
 UCLASS(Blueprintable)
 class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
@@ -36,26 +62,32 @@ protected:
 
 	UFUNCTION()
 		void SetupComponents();
-
-	UPROPERTY()
-	FTimerHandle DestroyTimerHandle;
-
-	UPROPERTY()
-		bool bIsActive = false;
-
-	UPROPERTY()
-		AActor* Target;
-
 	UFUNCTION()
 		void MoveTowardsTarget();
+	UFUNCTION()
+		void Die();
 
+	UPROPERTY()
+		FTimerHandle DestroyTimerHandle;
+	UPROPERTY()
+		bool bIsActive = false;
+	UPROPERTY()
+		AActor* Target;
+	UPROPERTY()
 	FVector Velocity = FVector::ZeroVector;
+	UPROPERTY()
 	FRotator LastRotation = FRotator::ZeroRotator;
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FEnemyStats InitialStats;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UDataTable* DataTableToUse;
+
 
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
-	float temp;
 
 	UFUNCTION()
 	void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
@@ -77,4 +109,8 @@ public:
 
 	UFUNCTION()
 		void SetTarget_Implementation(AActor* TargetActor) override;
+
+private:
+	UFUNCTION()
+	void UpdateStats();
 };

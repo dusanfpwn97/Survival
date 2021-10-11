@@ -37,9 +37,8 @@ void ABaseEnemy::Tick(float DeltaTime)
 
 void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
 {
-	if (!Spell) return;
-	
-
+	//if (GEngine)
+		//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("ssdsdasdw"));
 }
 
 
@@ -47,6 +46,7 @@ void ABaseEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 {
 		if (OverlappedComp == MainCollider && OtherActor->Implements<UCombatInterface>())
 		{
+
 			ICombatInterface::Execute_OnCollidedWithEnemy(OtherActor, this);
 		}
 }
