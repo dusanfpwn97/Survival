@@ -28,19 +28,24 @@ void ABaseSpell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	FHitResult Hit;
-	AddActorWorldOffset(FVector(100.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
+	AddActorWorldOffset(FVector(400.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
 
 }
 
 void ABaseSpell::Start_Implementation()
 {
 	SetActorTickEnabled(true);
+	DestroyTimerHandle.Invalidate();
+	SetActorHiddenInGame(false);
+	SetupCollision();
 }
 
 void ABaseSpell::Reset_Implementation()
 {
 	SetActorTickEnabled(false);
 	TargetActor = nullptr;
+	SetActorHiddenInGame(true);
+	RemoveCollision();
 }
 
 void ABaseSpell::MoveTowardsTarget()
@@ -51,9 +56,26 @@ void ABaseSpell::MoveTowardsTarget()
 	}
 }
 
-void ABaseSpell::SetTarget(AActor* NewTarget)
+void ABaseSpell::Finish()
+{
+	SetActorTickEnabled(false);
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseSpell::Reset_Implementation, 2.f, false);
+	SetActorHiddenInGame(true);
+}
+
+void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
 {
 	TargetActor = NewTarget;
+}
+
+void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
+{
+	SpellManager = NewSpellManager;
+}
+
+UBaseSpellManager* ABaseSpell::GetSpellManager() const
+{
+	return SpellManager;
 }
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -62,6 +84,7 @@ void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
+		Finish();
 	}
 }
 
@@ -77,14 +100,27 @@ void ABaseSpell::SetupComponents()
 	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
 	NGParticle = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
 
-	BaseCollider->SetGenerateOverlapEvents(true);
-	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
+	
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
 	Mesh->SetupAttachment(RootComponent);
 	Mesh->SetGenerateOverlapEvents(false);
 	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
-
+	
 	NGParticle->SetupAttachment(RootComponent);
+
+	SetupCollision();
+}
+
+void ABaseSpell::RemoveCollision()
+{
+	BaseCollider->SetGenerateOverlapEvents(false);
+	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
+}
+
+void ABaseSpell::SetupCollision()
+{
+	BaseCollider->SetGenerateOverlapEvents(true);
+	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
 }

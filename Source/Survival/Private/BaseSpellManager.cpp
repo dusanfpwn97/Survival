@@ -35,17 +35,14 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
-	//SpellInfo.SpellClass.Get();
 	UClass* ClassToSpawn = SpellInfo.SpellClass.Get();
 	if (!ClassToSpawn)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
 		return;
 	}
-
 	UWorld* World = GetWorld();
 	if (!World) return;
-
 	if (!PlayerPawn) UpdatePlayerPawn();
 	if (!PlayerPawn)
 	{
@@ -59,6 +56,7 @@ void UBaseSpellManager::CastSpell()
 
 	//ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn); */
 	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(PlayerPawn);
+	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
 	SpellToCast->SetActorLocation(Location);
 }
 

@@ -8,6 +8,8 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "UObject/ConstructorHelpers.h"
+#include "Animation/AnimationAsset.h"
+#include "BaseSpellManager.h"
 
 // Sets default values
 ABaseEnemy::ABaseEnemy()
@@ -27,6 +29,36 @@ void ABaseEnemy::BeginPlay()
 
 }
 
+void ABaseEnemy::ReceiveDamage(UBaseSpellManager* SpellManager)
+{
+
+	if (!IsAlive) return;
+
+	if (!SpellManager)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpellManager not valid! Should not happen. BaseEnemy.cpp -> ReceiveDamage"));
+		return;
+	}
+
+	CurrentStats.Health -= 50.f;//SpellManager->SpellInfo.Damage;
+	if (CurrentStats.Health <= 0)
+	{
+		Die();
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpelsdfsdfsefesfeDamage"));
+	}
+	
+	if (HitAnimation && SkeletalMesh && IsAlive)
+	{
+		if (SkeletalMesh->IsPlaying())
+		{
+			SkeletalMesh->Stop();
+		}
+		SkeletalMesh->SetAnimation(HitAnimation);
+		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
+		SkeletalMesh->Play(false);
+	}
+}
+
 // Called every frame
 void ABaseEnemy::Tick(float DeltaTime)
 {
@@ -37,9 +69,19 @@ void ABaseEnemy::Tick(float DeltaTime)
 
 void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
 {
-	if (!Spell) return;
-	
+	if (!Spell)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spell not valid! Should not happen. BaseEnemy.cpp -> OnCollidedWithSpell_Implementation"));
+		return;
+	}
+	UBaseSpellManager* SpellManager = Spell->GetSpellManager();
+	if (!SpellManager)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpellManager not valid! Should not happen. BaseEnemy.cpp -> OnCollidedWithSpell_Implementation"));
+		return;
+	}
 
+	ReceiveDamage(SpellManager);
 }
 
 
@@ -60,15 +102,9 @@ void ABaseEnemy::SetupComponents()
 {
 	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
 	RootComponent = MainCollider;
-	MainCollider->SetGenerateOverlapEvents(true);
-	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
+	
 	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
 	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
-
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
-	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetGenerateOverlapEvents(false);
-	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("SkeletalMesh")));
 	SkeletalMesh->SetupAttachment(RootComponent);
@@ -79,14 +115,18 @@ void ABaseEnemy::SetupComponents()
 
 void ABaseEnemy::Start_Implementation()
 {
+	IsAlive = true;
 	bIsActive = true;
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	DestroyTimerHandle.Invalidate();
+	
+	SetupCollision();
 }
 
 void ABaseEnemy::Reset_Implementation()
 {
+	IsAlive = false;
 	bIsActive = false;
 	SetActorTickEnabled(false);
 	SetActorHiddenInGame(true);
@@ -96,6 +136,7 @@ void ABaseEnemy::Reset_Implementation()
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> Reset implementation"));
 	
+	RemoveCollision();
 }
 
 void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
@@ -184,9 +225,26 @@ void ABaseEnemy::MoveTowardsTarget()
 
 void ABaseEnemy::Die()
 {
+	UWorld* World = GetWorld();
+	if (!World || !IsAlive) return;
+
+	IsAlive = false;
 	bIsActive = false;
 	SetActorTickEnabled(false);
+
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
+	if (DeathAnimation && SkeletalMesh)
+	{
+		
+		if (SkeletalMesh->IsPlaying())
+		{
+			SkeletalMesh->Stop();
+		}
+		SkeletalMesh->SetAnimation(DeathAnimation);
+		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
+		SkeletalMesh->Play(false);
+	}
+
 }
 
 
@@ -206,9 +264,22 @@ void ABaseEnemy::UpdateStats()
 			if (Data->Class == GetClass())
 			{
 				InitialStats = *Data;
+				CurrentStats = InitialStats;
 				return;
 			}
 		}
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable Row for Enemy Stats")));
 	}
+}
+
+void ABaseEnemy::RemoveCollision()
+{
+	MainCollider->SetGenerateOverlapEvents(false);
+	MainCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
+}
+
+void ABaseEnemy::SetupCollision()
+{
+	MainCollider->SetGenerateOverlapEvents(true);
+	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
 }

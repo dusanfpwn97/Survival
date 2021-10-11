@@ -9,6 +9,7 @@
 
 class ABaseSpell;
 class ABaseEnemy;
+class USpellManager;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
@@ -46,6 +47,11 @@ public:
 		FVector GetSpellCastLocation();
 	UFUNCTION()
 		virtual FVector GetSpellCastLocation_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		void SetSpellManager(UBaseSpellManager* SpellManager);
+	UFUNCTION()
+		virtual void SetSpellManager_Implementation(UBaseSpellManager* SpellManager);
 
 
 

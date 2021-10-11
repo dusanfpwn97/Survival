@@ -14,6 +14,7 @@ class UCapsuleComponent;
 class ABaseSpell;
 class UEnemySpawner;
 class USkeletalMeshComponent;
+class UAnimationAsset;
 
 
 USTRUCT(BlueprintType)
@@ -56,16 +57,14 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		UAnimationAsset* DeathAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		UAnimationAsset* HitAnimation;
 
-	UFUNCTION()
-		void SetupComponents();
-	UFUNCTION()
-		void MoveTowardsTarget();
-	UFUNCTION()
-		void Die();
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		bool IsAlive = false;
 
 	UPROPERTY()
 		FTimerHandle DestroyTimerHandle;
@@ -74,16 +73,32 @@ protected:
 	UPROPERTY()
 		AActor* Target;
 	UPROPERTY()
-	FVector Velocity = FVector::ZeroVector;
+		FVector Velocity = FVector::ZeroVector;
 	UPROPERTY()
-	FRotator LastRotation = FRotator::ZeroRotator;
+		FRotator LastRotation = FRotator::ZeroRotator;
+
+	UFUNCTION()
+		void SetupComponents();
+	UFUNCTION()
+		void MoveTowardsTarget();
+	UFUNCTION()
+		void Die();
+
+
+
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 	FEnemyStats InitialStats;
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	FEnemyStats CurrentStats;
+
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup")
 	UDataTable* DataTableToUse;
 
+	UFUNCTION()
+		void ReceiveDamage(UBaseSpellManager* SpellManagerThatDamaged);
 
 public:	
 	// Called every frame
@@ -109,8 +124,13 @@ public:
 
 	UFUNCTION()
 		void SetTarget_Implementation(AActor* TargetActor) override;
-
+	
 private:
 	UFUNCTION()
 	void UpdateStats();
+	UFUNCTION()
+		void RemoveCollision();
+	UFUNCTION()
+		void SetupCollision();
+
 };
