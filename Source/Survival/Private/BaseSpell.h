@@ -21,13 +21,20 @@ class ABaseSpell : public AActor, public IPoolInterface, public ICombatInterface
 public:	
 
 	ABaseSpell();
-private:
+
+	virtual void Tick(float DeltaTime) override;
+
 	UFUNCTION()
-		void SetupComponents();
+		void Start_Implementation() override;
 	UFUNCTION()
-		void RemoveCollision();
+		void Reset_Implementation() override;
 	UFUNCTION()
-		void SetupCollision();
+		virtual void SetTarget_Implementation(AActor* NewTarget) override;
+	UFUNCTION()
+		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
+	UFUNCTION()
+		UBaseSpellManager* GetSpellManager() const;
+
 
 protected:
 
@@ -47,36 +54,26 @@ protected:
 	UPROPERTY()
 		FTimerHandle DestroyTimerHandle;
 
+		FVector StartingDirection;
+
 	UFUNCTION()
 		void MoveTowardsTarget();
-
 	UFUNCTION()
 		void Finish();
-
 
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
-	// In the constructor make sure to use AddDynamic to handle this function dynamically
+	UFUNCTION()
+		void RemoveCollision();
+	UFUNCTION()
+		void SetupCollision();
 
-
-public:	
-	virtual void Tick(float DeltaTime) override;
+private:
 
 	UFUNCTION()
-		void Start_Implementation() override;
-	UFUNCTION()
-		void Reset_Implementation() override;
-
-	UFUNCTION()
-		virtual void SetTarget_Implementation(AActor* NewTarget) override;
-
-	UFUNCTION()
-		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
-	UFUNCTION()
-		UBaseSpellManager* GetSpellManager() const;
-
+		void SetupComponents();
 
 };

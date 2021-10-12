@@ -24,3 +24,8 @@ void ABaseGameMode::Tick(float DeltaTime)
 
 
 }
+
+UEnemySpawner* ABaseGameMode::GetEnemySpawner() const
+{
+	return EnemySpawner;
+}

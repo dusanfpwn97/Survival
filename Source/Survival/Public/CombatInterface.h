@@ -53,6 +53,20 @@ public:
 	UFUNCTION()
 		virtual void SetSpellManager_Implementation(UBaseSpellManager* SpellManager);
 
+	UFUNCTION(BlueprintNativeEvent)
+		bool GetIsAlive();
+	UFUNCTION()
+		virtual bool GetIsAlive_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		TArray<AActor*> GetAliveEnemies();
+	UFUNCTION()
+		virtual TArray<AActor*> GetAliveEnemies_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		AActor* GetClosestEnemy();
+	UFUNCTION()
+		virtual AActor* GetClosestEnemy_Implementation();
 
 
 };

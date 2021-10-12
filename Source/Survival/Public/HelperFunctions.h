@@ -14,5 +14,10 @@ class SURVIVAL_API UHelperFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
 public:
-	static FVector GetRandomPointInCircle(FVector Center, float Radius);
+	UFUNCTION()
+		static FVector GetRandomPointInCircle(FVector Center, float Radius);
+	UFUNCTION()
+		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
+	UFUNCTION()
+		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
 };

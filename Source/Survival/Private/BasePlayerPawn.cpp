@@ -7,6 +7,12 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "BaseSpell.h"
 #include "BaseSpellManager.h"
+//#include "CombatComponent.h"
+#include "HelperFunctions.h"
+#include "BaseGameMode.h"
+#include "Kismet/GameplayStatics.h"
+#include "BaseGameMode.h"
+#include "EnemySpawner.h"
 
 // Sets default values
 ABasePlayerPawn::ABasePlayerPawn()
@@ -22,6 +28,13 @@ void ABasePlayerPawn::BeginPlay()
 {
 	Super::BeginPlay();
 
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		CurrentGameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(World));
+		if (!CurrentGameMode) GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Game mode not valid! CombatComponent.cpp -> BeginPlay"));
+	}
+	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! CombatComponent.cpp -> BeginPlay"));
 
 }
 
@@ -73,13 +86,21 @@ void ABasePlayerPawn::SetupComponents()
 	SkeletalMesh->SetupAttachment(RootComponent);
 	SkeletalMesh->SetGenerateOverlapEvents(false);
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+
+	//CombatComponent = CreateDefaultSubobject<UCombatComponent>(FName(TEXT("CombatComponent")));
 }
 
 FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
 {
 	return MainCollider->GetComponentLocation();
 }
-
+/*
+* 
+UCombComponent* ABasePlayerPawn::GetCombatComponent() const
+{
+	return CombatComponent;
+}
+*/
 void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)
 {
 	SpellManagerClass.LoadSynchronous();
@@ -95,3 +116,19 @@ void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerC
 	SpellManagers.Add(NewSpell);
 }
 
+TArray<AActor*> ABasePlayerPawn::GetAliveEnemies_Implementation()
+{
+	
+	if (!CurrentGameMode)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Game mode not valid! CombatComponent.cpp -> GetAllEnemies()"));
+		return TArray<AActor*>();
+	}
+
+	return UHelperFunctions::GetAllAliveActors(CurrentGameMode->GetEnemySpawner()->GetAllSpawns());
+}
+
+AActor* ABasePlayerPawn::GetClosestEnemy_Implementation()
+{
+	return UHelperFunctions::GetClosestActor(GetAliveEnemies_Implementation(), GetActorLocation());
+}

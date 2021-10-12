@@ -6,6 +6,9 @@
 #include "Kismet/GameplayStatics.h"
 #include "CombatInterface.h"
 #include "PoolManager.h"
+#include "BasePlayerPawn.h"
+//#include "CombatComponent.h"
+
 
 // Sets default values for this component's properties
 UBaseSpellManager::UBaseSpellManager()
@@ -21,6 +24,7 @@ void UBaseSpellManager::BeginPlay()
 {
 	Super::BeginPlay();
 
+	SpellInfo.TargetMode = TargetMode::CLOSEST;
 	// ...
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.5f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
@@ -43,21 +47,42 @@ void UBaseSpellManager::CastSpell()
 	}
 	UWorld* World = GetWorld();
 	if (!World) return;
-	if (!PlayerPawn) UpdatePlayerPawn();
-	if (!PlayerPawn)
+	if (!Caster) UpdatePlayerPawn();
+	if (!Caster)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cant get player so cannot cast spell"));
 		return;
 	}
 
+
+	AActor* InitialTarget = GetActorForTarget();
+
+	// Don't cast a spell if there is no target and Target mode is not NONE!
+	if (!InitialTarget && SpellInfo.TargetMode != TargetMode::NONE) return;
+	
 	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ClassToSpawn);
 
 	if (!SpellToCast) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 
-	//ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn); */
-	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(PlayerPawn);
+	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(Caster);
 	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
+
+	ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
 	SpellToCast->SetActorLocation(Location);
+}
+
+AActor* UBaseSpellManager::GetActorForTarget()
+{
+	if (!Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return nullptr;
+
+	if (SpellInfo.TargetMode == TargetMode::CLOSEST)
+	{
+		//AActor* sfd = ICombatInterface::Execute_GetClosestEnemy(Caster);
+		return ICombatInterface::Execute_GetClosestEnemy(Caster);
+
+	}
+
+	return nullptr;
 }
 
 void UBaseSpellManager::UpdatePlayerPawn()
@@ -65,10 +90,11 @@ void UBaseSpellManager::UpdatePlayerPawn()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
-		if (!PlayerPawn) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from BaseSpellManager.cpp -> UpdatePlayerPawn()")); } }
+		Caster = Cast<ABasePlayerPawn>(UGameplayStatics::GetPlayerPawn(World, 0));
+		if (!Caster) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from BaseSpellManager.cpp -> UpdatePlayerPawn()")); } }
 	}
 	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 }
+
 
 

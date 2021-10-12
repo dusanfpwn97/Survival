@@ -10,6 +10,7 @@
 
 class ABaseSpell;
 class UPoolManager;
+class ABasePlayerPawn;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent
@@ -20,29 +21,29 @@ public:
 	// Sets default values for this component's properties
 	UBaseSpellManager();
 
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-	FSpellInfo SpellInfo;
-
-	FTimerHandle MainSpellCastTimerHandle;
-
-	UPROPERTY()
-	UPoolManager* SpellPoolManager;
-
-	UPROPERTY()
-	APawn* PlayerPawn;
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 protected:
 	virtual void BeginPlay() override;
 
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		FSpellInfo SpellInfo;
+	UPROPERTY()
+		FTimerHandle MainSpellCastTimerHandle;
+	UPROPERTY()
+		UPoolManager* SpellPoolManager;
+	UPROPERTY()
+		AActor* Caster;
+
+	UFUNCTION()
 	void CastSpell();
 
-public:	
-
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	UFUNCTION()
+		AActor* GetActorForTarget();
 
 
 private:
 	UFUNCTION()
-	void UpdatePlayerPawn();
+		void UpdatePlayerPawn();
 		
 };

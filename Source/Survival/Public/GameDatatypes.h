@@ -48,12 +48,13 @@ enum class CastType : uint8
 };
 
 UENUM(BlueprintType)
-enum class AttackMode : uint8
+enum class TargetMode : uint8
 {
 	CLOSEST,
 	MIN_HEALTH,
 	MAX_HEALTH,
-	FARTHEST
+	FARTHEST,
+	NONE
 };
 
 USTRUCT(BlueprintType)
@@ -62,7 +63,7 @@ struct FSpellInfo : public FTableRowBase
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSoftObjectPtr<UTexture2D> Texture;
+		TSoftClassPtr<ABaseSpell> SpellClass;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		FText Name;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -75,8 +76,11 @@ struct FSpellInfo : public FTableRowBase
 		TArray<CastType> CastTypes;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TArray<SpellModifier> SpellModifiers;
+	UPROPERTY()
+		TargetMode TargetMode;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TSoftClassPtr<ABaseSpell> SpellClass;
+		TSoftObjectPtr<UTexture2D> Texture;
+
 };
 
 USTRUCT(BlueprintType)

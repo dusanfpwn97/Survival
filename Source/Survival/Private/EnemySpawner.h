@@ -46,11 +46,14 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
+	UFUNCTION()
+		TArray<AActor*> GetAllSpawns();
 	//UFUNCTION()
 		//void ReleaseToPool_Implementation(AActor* Actor) override;
 	//UFUNCTION()
 		//TArray<AActor*> GetSpawnedEnemies_Implementation() override;
 private:
 	void UpdatePlayerPawn();
+
 
 };

@@ -12,6 +12,8 @@ class UCapsuleComponent;
 class ABaseEnemy;
 class USkeletalMeshComponent;
 class UBaseSpellManager;
+//class UCombatComponent;
+class ABaseGameMode;
 
 UCLASS(Blueprintable)
 class ABasePlayerPawn : public APawn, public ICombatInterface
@@ -30,6 +32,8 @@ protected:
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
+	//UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		//UCombatComponent* CombatComponent;
 	UFUNCTION()
 		void SetupComponents();
 
@@ -38,6 +42,10 @@ protected:
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<UBaseSpellManager*> SpellManagers;
+
+
+	UPROPERTY()
+		ABaseGameMode* CurrentGameMode;
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;
@@ -51,9 +59,17 @@ public:
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 
 	UFUNCTION()
-		void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy) override;
+		virtual void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy) override;
 
 	UFUNCTION()
 		virtual FVector GetSpellCastLocation_Implementation() override;
+
+	//UFUNCTION()
+		//UCombatComponent* GetCombatComponent() const; // Maybe needs to be moved to combat interface
+
+	UFUNCTION()
+		virtual TArray<AActor*> GetAliveEnemies_Implementation() override;
+	UFUNCTION()
+		virtual AActor* GetClosestEnemy_Implementation() override;
 
 };

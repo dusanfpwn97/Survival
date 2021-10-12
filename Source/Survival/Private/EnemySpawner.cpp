@@ -32,15 +32,21 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 	float s = FMath::FRand();
 
-	if (s < 0.015)
+	if (s < 0.01)
 	{
 		SpawnEnemy(SoftLevel1EnemyClass.Get());
 	}
 }
 
+TArray<AActor*> UEnemySpawner::GetAllSpawns()
+{
+	return EnemySpawnPoolManager->GetAllSpawnedActors();
+}
+
 void UEnemySpawner::SpawnEnemy(UClass* EnemyClass)
 {
-	if (spawnnum > 50 || !IsSpawnEnabled) return;
+	//if (spawnnum > 50) return;
+	if (!IsSpawnEnabled) return;
 
 	UWorld* World = GetWorld();
 	if (!World) return;

@@ -61,6 +61,7 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 			Transform.SetLocation(FVector(0.f, 0.f, 500.f));
 
 			ActorToGet = World->SpawnActor<AActor>(ActorClass, Transform, Params);
+			AllSpawnedActors.Add(ActorToGet);
 			IPoolInterface::Execute_Start(ActorToGet);
 			IPoolInterface::Execute_SetSpawner(ActorToGet, this);
 
@@ -80,4 +81,9 @@ void UPoolManager::ReleaseActorToPool(AActor* Actor)
 		PooledActorsMap.Emplace(Actor->GetClass(), PooledActorsTemp);
 		IPoolInterface::Execute_Reset(Actor);
 	}
+}
+
+TArray<AActor*> UPoolManager::GetAllSpawnedActors() const
+{
+	return AllSpawnedActors;
 }

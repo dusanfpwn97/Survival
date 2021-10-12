@@ -4,40 +4,31 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "GameDatatypes.h"
-#include "PoolInterface.h"
-#include "PoolManager.generated.h"
+//#include "CombatInterface.h"
 
-class IPoolInterface;
+#include "CombatComponent.generated.h"
+
+class ABaseGameMode;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UPoolManager : public UActorComponent, public IPoolInterface
+class SURVIVAL_API UCombatComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UPoolManager();
+	UCombatComponent();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+		AActor* Owner;
+
 public:	
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
-		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass);
 
-	UFUNCTION()
-		void ReleaseActorToPool(AActor* Actor);
-
-	UFUNCTION()
-		TArray<AActor*> GetAllSpawnedActors() const;
-private:
-	UPROPERTY()
-		TMap<TSubclassOf<AActor>, FPooledActors> PooledActorsMap;
-	UPROPERTY()
-		TArray<AActor*> AllSpawnedActors;
 };

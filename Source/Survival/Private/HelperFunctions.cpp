@@ -2,6 +2,9 @@
 
 
 #include "HelperFunctions.h"
+#include "CombatInterface.h"
+
+
 
 FVector UHelperFunctions::GetRandomPointInCircle(FVector Center, float Radius)
 {
@@ -11,4 +14,46 @@ FVector UHelperFunctions::GetRandomPointInCircle(FVector Center, float Radius)
 	Location.X = Center.X + Radius * FMath::Cos(RandPoint);
 	Location.Y = Center.Y + Radius * FMath::Sin(RandPoint);
 	return Location;
+}
+
+AActor* UHelperFunctions::GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation)
+{
+	if (Actors.Num() == 0) return nullptr;
+	if (Actors.Num() == 1) return Actors[0];
+
+	uint32 ClosestActorIndex = 0;
+	float ClosestDistance = 999999.f;
+
+	for (int i = 0; i < Actors.Num() - 1; i++)
+	{
+		float TempDistance = FVector::Distance(Actors[i]->GetActorLocation(), ReferenceLocation);
+		if(ClosestDistance < TempDistance)
+		{	
+			ClosestDistance = TempDistance;
+			ClosestActorIndex = i;
+		}
+	}
+	
+	return Actors[ClosestActorIndex];
+}
+
+
+TArray<AActor*> UHelperFunctions::GetAllAliveActors(TArray<AActor*> ActorsToCheck)
+{
+	TArray<AActor*> AliveActors;
+
+	for (AActor* Actor : ActorsToCheck)
+	{
+		if (Actor)
+		{
+			if (Actor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
+			{
+				if (ICombatInterface::Execute_GetIsAlive(Actor))
+				{
+					AliveActors.Add(Actor);
+				}
+			}
+		}
+	}
+	return AliveActors;
 }

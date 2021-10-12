@@ -12,7 +12,6 @@ ABaseSpell::ABaseSpell()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
 	SetupComponents();
-
 }
 
 // Called when the game starts or when spawned
@@ -27,32 +26,22 @@ void ABaseSpell::BeginPlay()
 void ABaseSpell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	FHitResult Hit;
-	AddActorWorldOffset(FVector(400.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
+	//FHitResult Hit;
+	//AddActorWorldOffset(FVector(400.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
+	MoveTowardsTarget();
 
 }
 
-void ABaseSpell::Start_Implementation()
-{
-	SetActorTickEnabled(true);
-	DestroyTimerHandle.Invalidate();
-	SetActorHiddenInGame(false);
-	SetupCollision();
-}
-
-void ABaseSpell::Reset_Implementation()
-{
-	SetActorTickEnabled(false);
-	TargetActor = nullptr;
-	SetActorHiddenInGame(true);
-	RemoveCollision();
-}
 
 void ABaseSpell::MoveTowardsTarget()
 {
-	if (TargetActor)
+	UWorld* World = GetWorld();
+	if (TargetActor && World)
 	{
-
+		FVector TempDirection = TargetActor->GetActorLocation() - GetActorLocation();
+		TempDirection.Normalize();
+		FHitResult Hit;
+		AddActorWorldOffset(TempDirection * 800 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 	}
 }
 
@@ -61,16 +50,7 @@ void ABaseSpell::Finish()
 	SetActorTickEnabled(false);
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseSpell::Reset_Implementation, 2.f, false);
 	SetActorHiddenInGame(true);
-}
-
-void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
-{
-	TargetActor = NewTarget;
-}
-
-void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
-{
-	SpellManager = NewSpellManager;
+	RemoveCollision();
 }
 
 UBaseSpellManager* ABaseSpell::GetSpellManager() const
@@ -123,4 +103,30 @@ void ABaseSpell::SetupCollision()
 {
 	BaseCollider->SetGenerateOverlapEvents(true);
 	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
+}
+
+void ABaseSpell::Start_Implementation()
+{
+	SetActorTickEnabled(true);
+	DestroyTimerHandle.Invalidate();
+	SetActorHiddenInGame(false);
+	SetupCollision();
+}
+
+void ABaseSpell::Reset_Implementation()
+{
+	SetActorTickEnabled(false);
+	TargetActor = nullptr;
+	SetActorHiddenInGame(true);
+	RemoveCollision();
+}
+
+void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
+{
+	TargetActor = NewTarget;
+}
+
+void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
+{
+	SpellManager = NewSpellManager;
 }

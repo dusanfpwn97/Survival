@@ -124,6 +124,9 @@ public:
 
 	UFUNCTION()
 		void SetTarget_Implementation(AActor* TargetActor) override;
+
+	UFUNCTION()
+		virtual bool GetIsAlive_Implementation() override;
 	
 private:
 	UFUNCTION()

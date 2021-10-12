@@ -32,8 +32,18 @@ void ICombatInterface::SetSpellManager_Implementation(UBaseSpellManager* SpellMa
 {
 
 }
-/*
-TArray<AActor*> ICombatInterface::GetSpawnedEnemies_Implementation()
-{
 
-}*/
+TArray<AActor*> ICombatInterface::GetAliveEnemies_Implementation()
+{
+	return TArray<AActor*>();
+}
+
+bool ICombatInterface::GetIsAlive_Implementation()
+{
+	return false;
+}
+
+AActor* ICombatInterface::GetClosestEnemy_Implementation()
+{
+	return nullptr;
+}

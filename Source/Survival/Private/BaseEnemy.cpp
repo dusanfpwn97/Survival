@@ -157,6 +157,11 @@ void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
 	}
 }
 
+bool ABaseEnemy::GetIsAlive_Implementation()
+{
+	return IsAlive;
+}
+
 void ABaseEnemy::MoveTowardsTarget()
 {
 	UWorld* World = GetWorld();
@@ -231,7 +236,7 @@ void ABaseEnemy::Die()
 	IsAlive = false;
 	bIsActive = false;
 	SetActorTickEnabled(false);
-
+	RemoveCollision();
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
 	if (DeathAnimation && SkeletalMesh)
 	{
