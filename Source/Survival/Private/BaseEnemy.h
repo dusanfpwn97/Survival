@@ -47,8 +47,28 @@ class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
 	GENERATED_BODY()
 	
 public:	
-	// Sets default values for this actor's properties
+
 	ABaseEnemy();
+
+	virtual void Tick(float DeltaTime) override;
+
+	UFUNCTION()
+		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
+	UFUNCTION()
+		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+	//
+	UFUNCTION()
+		void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
+	UFUNCTION()
+		virtual void Start_Implementation() override;
+	UFUNCTION()
+		virtual void Reset_Implementation() override;
+	UFUNCTION()
+		virtual void SetSpawner_Implementation(UObject* Object) override;
+	UFUNCTION()
+		virtual void SetTarget_Implementation(AActor* TargetActor) override;
+	UFUNCTION()
+		virtual bool GetIsAlive_Implementation() override;
 
 protected:
 	// Called when the game starts or when spawned
@@ -58,82 +78,46 @@ protected:
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
+	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 		UAnimationAsset* DeathAnimation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 		UAnimationAsset* HitAnimation;
-
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool IsAlive = false;
-
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FEnemyStats InitialStats;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FEnemyStats CurrentStats;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup")
+		UDataTable* DataTableToUse;
 	UPROPERTY()
 		FTimerHandle DestroyTimerHandle;
-	UPROPERTY()
-		bool bIsActive = false;
 	UPROPERTY()
 		AActor* Target;
 	UPROPERTY()
 		FVector Velocity = FVector::ZeroVector;
 	UPROPERTY()
 		FRotator LastRotation = FRotator::ZeroRotator;
+	UPROPERTY()
+		UObject* Spawner;
 
+	//
 	UFUNCTION()
 		void SetupComponents();
 	UFUNCTION()
 		void MoveTowardsTarget();
 	UFUNCTION()
 		void Die();
-
-
-
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FEnemyStats InitialStats;
-
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-	FEnemyStats CurrentStats;
-
-
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup")
-	UDataTable* DataTableToUse;
-
-	UFUNCTION()
-		void ReceiveDamage(UBaseSpellManager* SpellManagerThatDamaged);
-
-public:	
-	// Called every frame
-	virtual void Tick(float DeltaTime) override;
-
-	UFUNCTION()
-	void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
-
-	UFUNCTION()
-		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
-	UFUNCTION()
-		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
-
-	UFUNCTION()
-		void Start_Implementation() override;
-	UFUNCTION()
-		void Reset_Implementation() override;
-	UFUNCTION()
-		void SetSpawner_Implementation(UObject* Object) override;
-	
-	UPROPERTY()
-		UObject* Spawner;
-
-	UFUNCTION()
-		void SetTarget_Implementation(AActor* TargetActor) override;
-
-	UFUNCTION()
-		virtual bool GetIsAlive_Implementation() override;
-	
-private:
-	UFUNCTION()
-	void UpdateStats();
 	UFUNCTION()
 		void RemoveCollision();
 	UFUNCTION()
 		void SetupCollision();
+	UFUNCTION()
+		void ReceiveDamage(UBaseSpellManager* SpellManagerThatDamaged);
+	UFUNCTION()
+		void UpdateStats();
+
+private:
 
 };

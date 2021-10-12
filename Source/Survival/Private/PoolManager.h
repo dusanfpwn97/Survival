@@ -29,10 +29,8 @@ public:
 
 	UFUNCTION()
 		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass);
-
 	UFUNCTION()
 		void ReleaseActorToPool(AActor* Actor);
-
 	UFUNCTION()
 		TArray<AActor*> GetAllSpawnedActors() const;
 private:

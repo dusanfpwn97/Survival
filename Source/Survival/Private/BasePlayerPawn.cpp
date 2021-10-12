@@ -112,7 +112,7 @@ void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerC
 	//UClass* SpellClass = SpellManager->GetClass();
 	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClass.Get()); //*
 	NewSpell->RegisterComponent();
-
+	NewSpell->SetCaster(this);
 	SpellManagers.Add(NewSpell);
 }
 

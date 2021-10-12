@@ -19,6 +19,11 @@ UBaseSpellManager::UBaseSpellManager()
 }
 
 
+void UBaseSpellManager::SetCaster(AActor* NewCaster)
+{
+	Caster = NewCaster;
+}
+
 // Called when the game starts
 void UBaseSpellManager::BeginPlay()
 {
@@ -47,10 +52,9 @@ void UBaseSpellManager::CastSpell()
 	}
 	UWorld* World = GetWorld();
 	if (!World) return;
-	if (!Caster) UpdatePlayerPawn();
-	if (!Caster)
+	if (!Caster) return;
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cant get player so cannot cast spell"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Caster is nullptr, so cannot cast spell"));
 		return;
 	}
 
@@ -73,6 +77,7 @@ void UBaseSpellManager::CastSpell()
 
 AActor* UBaseSpellManager::GetActorForTarget()
 {
+	if (!Caster) return nullptr;
 	if (!Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return nullptr;
 
 	if (SpellInfo.TargetMode == TargetMode::CLOSEST)
@@ -83,17 +88,6 @@ AActor* UBaseSpellManager::GetActorForTarget()
 	}
 
 	return nullptr;
-}
-
-void UBaseSpellManager::UpdatePlayerPawn()
-{
-	UWorld* World = GetWorld();
-	if (World)
-	{
-		Caster = Cast<ABasePlayerPawn>(UGameplayStatics::GetPlayerPawn(World, 0));
-		if (!Caster) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from BaseSpellManager.cpp -> UpdatePlayerPawn()")); } }
-	}
-	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 }
 
 

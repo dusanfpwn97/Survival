@@ -116,7 +116,7 @@ void ABaseEnemy::SetupComponents()
 void ABaseEnemy::Start_Implementation()
 {
 	IsAlive = true;
-	bIsActive = true;
+
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	DestroyTimerHandle.Invalidate();
@@ -127,7 +127,7 @@ void ABaseEnemy::Start_Implementation()
 void ABaseEnemy::Reset_Implementation()
 {
 	IsAlive = false;
-	bIsActive = false;
+
 	SetActorTickEnabled(false);
 	SetActorHiddenInGame(true);
 	if (Spawner)
@@ -234,7 +234,6 @@ void ABaseEnemy::Die()
 	if (!World || !IsAlive) return;
 
 	IsAlive = false;
-	bIsActive = false;
 	SetActorTickEnabled(false);
 	RemoveCollision();
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
