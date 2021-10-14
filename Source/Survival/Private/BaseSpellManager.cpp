@@ -40,12 +40,12 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
+
 	if (!SpellClassToSpawn)
 	{
-		SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
+		UpdateSpellClass();
 		if (!SpellClassToSpawn)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
 			return;
 		}
 	}
@@ -91,6 +91,24 @@ AActor* UBaseSpellManager::GetActorForTarget()
 	}
 
 	return nullptr;
+}
+
+void UBaseSpellManager::UpdateSpellClass()
+{
+	if (SpellInfo.SpellClass.IsValid())
+	{
+		SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
+		if (!SpellClassToSpawn)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
+			return;
+		}
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No spell set! BaseSpellManager.Cpp -> CastSpell"));
+		return;
+	}
 }
 
 

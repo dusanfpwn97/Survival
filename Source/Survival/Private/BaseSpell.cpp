@@ -92,17 +92,13 @@ void ABaseSpell::SetupComponents()
 {
 	BaseCollider = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BaseCollider")));
 	RootComponent = BaseCollider;
-	Mesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("Mesh")));
+
 	NGParticle = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
 
 	
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
-	Mesh->SetupAttachment(RootComponent);
-	Mesh->SetGenerateOverlapEvents(false);
-	Mesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
-	
 	NGParticle->SetupAttachment(RootComponent);
 
 	SetupCollision();

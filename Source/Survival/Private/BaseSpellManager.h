@@ -41,6 +41,9 @@ protected:
 		void CastSpell();
 	UFUNCTION()
 		AActor* GetActorForTarget();
+	UFUNCTION()
+		void UpdateSpellClass();
+
 
 private:
 	

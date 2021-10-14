@@ -24,18 +24,18 @@ void UEnemySpawner::BeginPlay()
 	Super::BeginPlay();
 	UpdatePlayerPawn();
 	SoftLevel1EnemyClass.LoadSynchronous();
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.5f, true);
+	}
 }
 
 // Called every frame
 void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
-	float s = FMath::FRand();
 
-	if (s < 0.07)
-	{
-		SpawnEnemy(SoftLevel1EnemyClass.Get());
-	}
 }
 
 TArray<AActor*> UEnemySpawner::GetAllSpawns()
@@ -43,8 +43,9 @@ TArray<AActor*> UEnemySpawner::GetAllSpawns()
 	return EnemySpawnPoolManager->GetAllSpawnedActors();
 }
 
-void UEnemySpawner::SpawnEnemy(UClass* EnemyClass)
+void UEnemySpawner::SpawnEnemy()
 {
+	UClass* EnemyClass = SoftLevel1EnemyClass.Get();
 	//if (spawnnum > 50) return;
 	if (!IsSpawnEnabled) return;
 

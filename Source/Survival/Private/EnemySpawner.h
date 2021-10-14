@@ -30,13 +30,15 @@ public:
 		bool IsSpawnEnabled = true;
 
 	UFUNCTION()
-		void SpawnEnemy(UClass* EnemyClass);
+		void SpawnEnemy();
 
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
+	UPROPERTY()
+		FTimerHandle CommonEnemySpawnTimer;
 
 	uint32 spawnnum = 0;
 	//UPROPERTY()

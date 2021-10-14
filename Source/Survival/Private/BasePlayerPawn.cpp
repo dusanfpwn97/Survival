@@ -105,12 +105,12 @@ void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerC
 {
 	UClass* SpellManagerClassToUse;
 
-	if (SpellManagerClass)
+	if (SpellManagerClass.IsValid())
 	{
 		SpellManagerClassToUse = SpellManagerClass.LoadSynchronous();
 		if (!SpellManagerClassToUse)
 		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Could not load spell manager class! Pawn.cpp -> AddSpell"));
 			return;
 		}
 	}

@@ -41,8 +41,6 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* BaseCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UStaticMeshComponent* Mesh;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UNiagaraComponent* NGParticle;
 	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
