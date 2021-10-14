@@ -83,6 +83,9 @@ protected:
 		UAnimationAsset* DeathAnimation;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
 		UAnimationAsset* HitAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
+		UAnimationAsset* RunAnimation;
+
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool IsAlive = false;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -117,6 +120,8 @@ protected:
 		void ReceiveDamage(UBaseSpellManager* SpellManagerThatDamaged);
 	UFUNCTION()
 		void UpdateStats();
+	UFUNCTION()
+		void PlayNewAnim(UAnimationAsset* AnimToPlay, bool ShouldLoop);
 
 private:
 

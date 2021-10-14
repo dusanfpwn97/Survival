@@ -10,6 +10,10 @@
 #include "UObject/ConstructorHelpers.h"
 #include "Animation/AnimationAsset.h"
 #include "BaseSpellManager.h"
+#include "Engine/EngineTypes.h"
+#include "Components/SkinnedMeshComponent.h"
+
+
 
 // Sets default values
 ABaseEnemy::ABaseEnemy()
@@ -44,18 +48,12 @@ void ABaseEnemy::ReceiveDamage(UBaseSpellManager* SpellManager)
 	if (CurrentStats.Health <= 0)
 	{
 		Die();
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpelsdfsdfsefesfeDamage"));
+		///GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpelsdfsdfsefesfeDamage"));
 	}
 	
-	if (HitAnimation && SkeletalMesh && IsAlive)
+	if (IsAlive)
 	{
-		if (SkeletalMesh->IsPlaying())
-		{
-			SkeletalMesh->Stop();
-		}
-		SkeletalMesh->SetAnimation(HitAnimation);
-		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
-		SkeletalMesh->Play(false);
+		PlayNewAnim(HitAnimation, false);
 	}
 }
 
@@ -64,7 +62,7 @@ void ABaseEnemy::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	MoveTowardsTarget();
-	
+
 }
 
 void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
@@ -110,6 +108,15 @@ void ABaseEnemy::SetupComponents()
 	SkeletalMesh->SetupAttachment(RootComponent);
 	SkeletalMesh->SetGenerateOverlapEvents(false);
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	SkeletalMesh->bEnableUpdateRateOptimizations = true;
+	//SkeletalMesh->bDisplayDebugUpdateRateOptimizations = true;
+	SkeletalMesh->SkipUpdateOverlapsOptimEnabled = true;
+	SkeletalMesh->bComponentUseFixedSkelBounds = true;
+	SkeletalMesh->bDeferKinematicBoneUpdate = true;
+	SkeletalMesh->bDisableClothSimulation = true;
+	SkeletalMesh->bEnableLineCheckWithBounds = false;
+	SkeletalMesh->bEnablePerPolyCollision = false;
+	
 
 }
 
@@ -122,6 +129,8 @@ void ABaseEnemy::Start_Implementation()
 	DestroyTimerHandle.Invalidate();
 	
 	SetupCollision();
+	PlayNewAnim(RunAnimation, true);
+
 }
 
 void ABaseEnemy::Reset_Implementation()
@@ -137,6 +146,15 @@ void ABaseEnemy::Reset_Implementation()
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> Reset implementation"));
 	
 	RemoveCollision();
+
+	// Stop Animation
+	if (SkeletalMesh)
+	{
+		if (SkeletalMesh->IsPlaying())
+		{
+			SkeletalMesh->Stop();
+		}
+	}
 }
 
 void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
@@ -222,8 +240,8 @@ void ABaseEnemy::MoveTowardsTarget()
 	//Velocity = Direction * 200 * World->GetDeltaSeconds();
 
 	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("%f"), Velocity.X));
-	//Velocity += -Velocity * 0.4;
-
+	Velocity = World->GetDeltaSeconds() * Direction * InitialStats.Speed;
+	Velocity.Z = 0;
 	AddActorWorldOffset(Velocity, false, &Hit, ETeleportType::None);
 
 }
@@ -237,18 +255,8 @@ void ABaseEnemy::Die()
 	SetActorTickEnabled(false);
 	RemoveCollision();
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
-	if (DeathAnimation && SkeletalMesh)
-	{
-		
-		if (SkeletalMesh->IsPlaying())
-		{
-			SkeletalMesh->Stop();
-		}
-		SkeletalMesh->SetAnimation(DeathAnimation);
-		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
-		SkeletalMesh->Play(false);
-	}
 
+	PlayNewAnim(DeathAnimation, false);
 }
 
 
@@ -274,6 +282,25 @@ void ABaseEnemy::UpdateStats()
 		}
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable Row for Enemy Stats")));
 	}
+}
+
+void ABaseEnemy::PlayNewAnim(UAnimationAsset* AnimToPlay, bool ShouldLoop)
+{
+	if (!SkeletalMesh) return;
+	if (!AnimToPlay)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Animation asset is null! %s"), *GetClass()->GetName()));
+		return;
+	}
+
+	if (SkeletalMesh->IsPlaying())
+	{
+		SkeletalMesh->Stop();
+	}
+	SkeletalMesh->SetAnimation(AnimToPlay);
+		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
+	SkeletalMesh->Play(ShouldLoop);
+
 }
 
 void ABaseEnemy::RemoveCollision()

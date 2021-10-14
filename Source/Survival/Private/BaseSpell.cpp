@@ -36,21 +36,36 @@ void ABaseSpell::Tick(float DeltaTime)
 void ABaseSpell::MoveTowardsTarget()
 {
 	UWorld* World = GetWorld();
-	if (TargetActor && World)
+	if (!World) return;
+	if (!TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return;
+	if (ICombatInterface::Execute_GetIsAlive(TargetActor))
 	{
-		FVector TempDirection = TargetActor->GetActorLocation() - GetActorLocation();
-		TempDirection.Normalize();
-		FHitResult Hit;
-		AddActorWorldOffset(TempDirection * 800 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
+		LastDirection = TargetActor->GetActorLocation() - GetActorLocation();
+		LastDirection.Normalize();
+
 	}
+	else
+	{
+		if (!FinishTimerHandle.IsValid())
+		{
+			GetWorld()->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 4.f, false);
+			//GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("sss"));
+		}
+	}
+
+	FHitResult Hit;
+	if (LastDirection.Z < 0) LastDirection.Z = 0;
+	AddActorWorldOffset(LastDirection * 800 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 }
 
 void ABaseSpell::Finish()
 {
+	FinishTimerHandle.Invalidate();
 	SetActorTickEnabled(false);
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseSpell::Reset_Implementation, 2.f, false);
 	SetActorHiddenInGame(true);
 	RemoveCollision();
+	
 }
 
 UBaseSpellManager* ABaseSpell::GetSpellManager() const
@@ -109,6 +124,7 @@ void ABaseSpell::Start_Implementation()
 {
 	SetActorTickEnabled(true);
 	DestroyTimerHandle.Invalidate();
+	FinishTimerHandle.Invalidate();
 	SetActorHiddenInGame(false);
 	SetupCollision();
 }
@@ -119,6 +135,8 @@ void ABaseSpell::Reset_Implementation()
 	TargetActor = nullptr;
 	SetActorHiddenInGame(true);
 	RemoveCollision();
+	DestroyTimerHandle.Invalidate();
+	FinishTimerHandle.Invalidate();
 }
 
 void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)

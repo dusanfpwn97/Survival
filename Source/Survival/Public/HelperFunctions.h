@@ -6,9 +6,7 @@
 #include "Kismet/BlueprintFunctionLibrary.h"
 #include "HelperFunctions.generated.h"
 
-/**
- * 
- */
+class UBaseSpellManager;
 UCLASS()
 class SURVIVAL_API UHelperFunctions : public UBlueprintFunctionLibrary
 {
@@ -20,4 +18,6 @@ public:
 		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
 	UFUNCTION()
 		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
+	//UFUNCTION()
+	//	static void AddNewSpell(AActor* Caster, UBaseSpellManager* SpellClass);
 };

@@ -23,9 +23,6 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
-		void SetCaster(AActor* NewCaster);
-
 protected:
 	virtual void BeginPlay() override;
 
@@ -37,7 +34,8 @@ protected:
 		UPoolManager* SpellPoolManager;
 	UPROPERTY()
 		AActor* Caster;
-
+	UPROPERTY()
+		UClass* SpellClassToSpawn;
 	//
 	UFUNCTION()
 		void CastSpell();

@@ -18,20 +18,16 @@ UBaseSpellManager::UBaseSpellManager()
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 }
 
-
-void UBaseSpellManager::SetCaster(AActor* NewCaster)
-{
-	Caster = NewCaster;
-}
-
 // Called when the game starts
 void UBaseSpellManager::BeginPlay()
 {
+
 	Super::BeginPlay();
+	Caster = GetOwner();
 
 	SpellInfo.TargetMode = TargetMode::CLOSEST;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.5f/*FMath::RandRange(2.2f, 5.3f)*/, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.3f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
 
 // Called every frame
@@ -44,27 +40,34 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
-	UClass* ClassToSpawn = SpellInfo.SpellClass.Get();
-	if (!ClassToSpawn)
+	if (!SpellClassToSpawn)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
-		return;
+		SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
+		if (!SpellClassToSpawn)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
+			return;
+		}
 	}
+
 	UWorld* World = GetWorld();
 	if (!World) return;
 	if (!Caster) return;
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Caster is nullptr, so cannot cast spell"));
-		return;
+		Caster = GetOwner();
+		if (!Caster)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Caster is nullptr, so cannot cast spell"));
+			return;
+		}
 	}
-
 
 	AActor* InitialTarget = GetActorForTarget();
 
 	// Don't cast a spell if there is no target and Target mode is not NONE!
 	if (!InitialTarget && SpellInfo.TargetMode != TargetMode::NONE) return;
 	
-	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ClassToSpawn);
+	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(SpellClassToSpawn);
 
 	if (!SpellToCast) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 

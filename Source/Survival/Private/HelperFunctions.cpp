@@ -13,6 +13,7 @@ FVector UHelperFunctions::GetRandomPointInCircle(FVector Center, float Radius)
 	float RandPoint = rand * 2 * 3.1415f;
 	Location.X = Center.X + Radius * FMath::Cos(RandPoint);
 	Location.Y = Center.Y + Radius * FMath::Sin(RandPoint);
+	Location.Z = Center.Z;
 	return Location;
 }
 
@@ -57,3 +58,19 @@ TArray<AActor*> UHelperFunctions::GetAllAliveActors(TArray<AActor*> ActorsToChec
 	}
 	return AliveActors;
 }
+/*
+void UHelperFunctions::AddSpell(AActor* Caster, UBaseSpellManager* SpellClass)
+{
+	FTransform SpawnTransform(FRotator::ZeroRotator, Origin);
+	auto AActor* Actor = Cast<UBaseSpellManager>(UGameplayStatics::SpawnActorDeferred(this, SpellClass, SpawnTransform));
+	if (MyDeferredActor != nullptr)
+	{
+		MyDeferredActor->Init(ShootDir);
+
+		UGameplayStatics::FinishSpawningActor(MyDeferredActor, SpawnTransform);
+	}
+}
+
+
+*/
+

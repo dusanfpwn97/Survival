@@ -103,16 +103,27 @@ UCombComponent* ABasePlayerPawn::GetCombatComponent() const
 */
 void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)
 {
-	SpellManagerClass.LoadSynchronous();
-	if (!SpellManagerClass)
+	UClass* SpellManagerClassToUse;
+
+	if (SpellManagerClass)
+	{
+		SpellManagerClassToUse = SpellManagerClass.LoadSynchronous();
+		if (!SpellManagerClassToUse)
+		{
+			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
+			return;
+		}
+	}
+	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
 		return;
 	}
-	//UClass* SpellClass = SpellManager->GetClass();
-	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClass.Get()); //*
+	
+	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClassToUse); //*
+	
+	//NewSpell->OnComponentCreated();
 	NewSpell->RegisterComponent();
-	NewSpell->SetCaster(this);
 	SpellManagers.Add(NewSpell);
 }
 

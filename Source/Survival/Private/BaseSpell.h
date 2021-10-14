@@ -52,9 +52,10 @@ protected:
 	UPROPERTY()
 		FTimerHandle DestroyTimerHandle;
 	UPROPERTY()
-		FVector StartingDirection;
+		FTimerHandle FinishTimerHandle;
+	UPROPERTY()
+		FVector LastDirection;
 
-	//
 	UFUNCTION()
 		void MoveTowardsTarget();
 	UFUNCTION()
