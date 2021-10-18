@@ -58,6 +58,49 @@ TArray<AActor*> UHelperFunctions::GetAllAliveActors(TArray<AActor*> ActorsToChec
 	}
 	return AliveActors;
 }
+FString UHelperFunctions::GetElementName(Element Element)
+{
+	if (Element == Element::FIRE) return "Fire";
+	if (Element == Element::DARK) return "Dark";
+	if (Element == Element::EARTH) return "Earth";
+	if (Element == Element::ELECTRICITY) return "Electricity";
+	if (Element == Element::ICE) return "Ice";
+	if (Element == Element::NO_ELEMENT) return "No Element";
+	if (Element == Element::POISON) return "Poison";
+	if (Element == Element::WATER) return "Water";
+	if (Element == Element::WIND) return "Wind";
+
+	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant Element Enum!  UHelperFunctions::GetElementName")));
+	UE_LOG(LogTemp, Warning, TEXT("Non-existant Element Enum!  UHelperFunctions::GetElementName"));
+	
+	return FString();
+}
+FString UHelperFunctions::GetCastTypeName(CastType CastType)
+{
+	if (CastType == CastType::BEAM) return "Beam";
+	if (CastType == CastType::FLICK) return "Flick";
+	if (CastType == CastType::NOVA) return "Nova";
+	if (CastType == CastType::NO_CAST_TYPE) return "No Cast Type";
+	if (CastType == CastType::PROJECTILE) return "Projectile";
+	if (CastType == CastType::SELF) return "Self";
+	if (CastType == CastType::STORM) return "Storm";
+
+	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant CastType Enum!  UHelperFunctions::GetCastTypeName")));
+	UE_LOG(LogTemp, Warning, TEXT("Non-existant CastType Enum!  UHelperFunctions::GetCastTypeName"));
+
+	return FString();
+}
+FString UHelperFunctions::GetSpellFXTypeName(SpellFXType SpellFXType)
+{
+	if (SpellFXType == SpellFXType::MAIN) return "Main";
+	if (SpellFXType == SpellFXType::ON_HIT) return "OnHit";
+	if (SpellFXType == SpellFXType::ON_SPAWN) return "OnSpawn";
+
+	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant SpellFXType Enum!  UHelperFunctions::GetSpellFXTypeName")));
+	UE_LOG(LogTemp, Warning, TEXT("Non-existant SpellFXType Enum!  UHelperFunctions::GetSpellFXTypeName"));
+
+	return FString();
+}
 /*
 void UHelperFunctions::AddSpell(AActor* Caster, UBaseSpellManager* SpellClass)
 {

@@ -94,31 +94,25 @@ FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
 {
 	return MainCollider->GetComponentLocation();
 }
-/*
-* 
-UCombComponent* ABasePlayerPawn::GetCombatComponent() const
-{
-	return CombatComponent;
-}
-*/
+
 void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)
 {
 	UClass* SpellManagerClassToUse;
 
-	if (SpellManagerClass.IsValid())
-	{
+	//if (SpellManagerClass.IsValid())
+	//{
 		SpellManagerClassToUse = SpellManagerClass.LoadSynchronous();
 		if (!SpellManagerClassToUse)
 		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Could not load spell manager class! Pawn.cpp -> AddSpell"));
 			return;
 		}
-	}
+	/*}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("SpellManager class is null! Pawn.cpp -> AddSpell"));
 		return;
-	}
+	}*/
 	
 	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClassToUse); //*
 	

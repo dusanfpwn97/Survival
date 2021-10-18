@@ -4,7 +4,9 @@
 
 #include "CoreMinimal.h"
 #include "Kismet/BlueprintFunctionLibrary.h"
+#include "SpellDatatypes.h"
 #include "HelperFunctions.generated.h"
+
 
 class UBaseSpellManager;
 UCLASS()
@@ -18,6 +20,11 @@ public:
 		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
 	UFUNCTION()
 		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
-	//UFUNCTION()
-	//	static void AddNewSpell(AActor* Caster, UBaseSpellManager* SpellClass);
+	UFUNCTION()
+		static FString GetElementName(Element Element);
+	UFUNCTION()
+		static FString GetCastTypeName(CastType CastType);
+	UFUNCTION()
+		static FString GetSpellFXTypeName(SpellFXType SpellFXType);
+
 };

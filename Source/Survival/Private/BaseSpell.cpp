@@ -5,6 +5,8 @@
 #include "CombatInterface.h"
 #include "Components/SphereComponent.h"
 #include "NiagaraComponent.h"
+#include "NiagaraSystem.h"
+#include "BaseSpellManager.h"
 
 // Sets default values
 ABaseSpell::ABaseSpell()
@@ -93,13 +95,13 @@ void ABaseSpell::SetupComponents()
 	BaseCollider = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BaseCollider")));
 	RootComponent = BaseCollider;
 
-	NGParticle = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
+	MainNiagaraFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
 
 	
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
-	NGParticle->SetupAttachment(RootComponent);
+	MainNiagaraFX->SetupAttachment(RootComponent);
 
 	SetupCollision();
 }
@@ -123,6 +125,7 @@ void ABaseSpell::Start_Implementation()
 	FinishTimerHandle.Invalidate();
 	SetActorHiddenInGame(false);
 	SetupCollision();
+	MainNiagaraFX->Activate(true);
 }
 
 void ABaseSpell::Reset_Implementation()
@@ -133,6 +136,7 @@ void ABaseSpell::Reset_Implementation()
 	RemoveCollision();
 	DestroyTimerHandle.Invalidate();
 	FinishTimerHandle.Invalidate();
+	MainNiagaraFX->Deactivate();
 }
 
 void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
@@ -143,4 +147,11 @@ void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
 void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
 {
 	SpellManager = NewSpellManager;
+	if (SpellManager)
+	{
+		FSpellInfo TempSpellInfo = SpellManager->GetSpellInfo();
+		UNiagaraSystem* NGSystem = SpellManager->GetNiagaraSystem(TempSpellInfo.Element, TempSpellInfo.CastType, SpellFXType::MAIN);
+		MainNiagaraFX->SetAsset(NGSystem);
+	}
+
 }

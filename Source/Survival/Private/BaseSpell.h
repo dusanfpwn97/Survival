@@ -41,7 +41,7 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* BaseCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UNiagaraComponent* NGParticle;
+		UNiagaraComponent* MainNiagaraFX;
 	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AActor* TargetActor;

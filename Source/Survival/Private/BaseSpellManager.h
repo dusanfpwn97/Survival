@@ -4,13 +4,14 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "GameDatatypes.h"
+#include "SpellDatatypes.h"
 
 #include "BaseSpellManager.generated.h"
 
 class ABaseSpell;
 class UPoolManager;
 class ABasePlayerPawn;
+class UNiagaraSystem;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent
@@ -23,6 +24,11 @@ public:
 
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
+	UFUNCTION()
+		UNiagaraSystem* GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType);
+
+	UFUNCTION()
+		FSpellInfo GetSpellInfo();
 protected:
 	virtual void BeginPlay() override;
 
@@ -36,6 +42,8 @@ protected:
 		AActor* Caster;
 	UPROPERTY()
 		UClass* SpellClassToSpawn;
+	UPROPERTY()
+		TMap<SpellFXType, UNiagaraSystem*> CachedParticles;
 	//
 	UFUNCTION()
 		void CastSpell();
@@ -44,7 +52,7 @@ protected:
 	UFUNCTION()
 		void UpdateSpellClass();
 
-
+	
 private:
 	
 };

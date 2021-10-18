@@ -7,6 +7,8 @@
 #include "CombatInterface.h"
 #include "PoolManager.h"
 #include "BasePlayerPawn.h"
+#include "NiagaraSystem.h"
+#include "HelperFunctions.h"
 //#include "CombatComponent.h"
 
 
@@ -18,6 +20,11 @@ UBaseSpellManager::UBaseSpellManager()
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 }
 
+FSpellInfo UBaseSpellManager::GetSpellInfo()
+{
+	return SpellInfo;
+}
+
 // Called when the game starts
 void UBaseSpellManager::BeginPlay()
 {
@@ -25,7 +32,10 @@ void UBaseSpellManager::BeginPlay()
 	Super::BeginPlay();
 	Caster = GetOwner();
 
+	
 	SpellInfo.TargetMode = TargetMode::CLOSEST;
+	SpellInfo.Element = Element::ICE;
+	SpellInfo.CastType = CastType::FLICK;
 	// ...
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.3f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
@@ -69,12 +79,16 @@ void UBaseSpellManager::CastSpell()
 	
 	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(SpellClassToSpawn);
 
-	if (!SpellToCast) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+	if (!SpellToCast)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+		return;
+	}
 
 	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(Caster);
 	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
-
 	ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
+
 	SpellToCast->SetActorLocation(Location);
 }
 
@@ -95,19 +109,52 @@ AActor* UBaseSpellManager::GetActorForTarget()
 
 void UBaseSpellManager::UpdateSpellClass()
 {
-	if (SpellInfo.SpellClass.IsValid())
+	SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
+	if (!SpellClassToSpawn)
 	{
-		SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
-		if (!SpellClassToSpawn)
-		{
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
 			return;
-		}
 	}
+	/*}
 	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No spell set! BaseSpellManager.Cpp -> CastSpell"));
 		return;
+	}*/
+}
+
+UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType)
+{
+	if (CachedParticles.Contains(SpellFXType))
+	{
+		return CachedParticles.FindRef(SpellFXType);
+	}
+
+	FString NSPath = "NiagaraSystem'/Game/_Core/Spells/NiagaraParticles/NS_";
+	
+	NSPath += UHelperFunctions::GetElementName(Element);
+	NSPath += UHelperFunctions::GetCastTypeName(CastType);
+	NSPath += UHelperFunctions::GetSpellFXTypeName(SpellFXType);
+	NSPath += ".NS_";
+	NSPath += UHelperFunctions::GetElementName(Element);
+	NSPath += UHelperFunctions::GetCastTypeName(CastType);
+	NSPath += UHelperFunctions::GetSpellFXTypeName(SpellFXType);
+	NSPath += "'";
+
+	UNiagaraSystem* NS = LoadObject<UNiagaraSystem>(nullptr, *NSPath);
+
+	if (NS)
+	{
+		CachedParticles.Add(SpellFXType, NS);
+		return NS;
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *NSPath));
+		SET_WARN_COLOR(COLOR_RED);
+		UE_LOG(LogTemp, Warning, TEXT("Failed to find Niagara System %s"), *NSPath);
+		CLEAR_WARN_COLOR();
+		return nullptr;
 	}
 }
 
