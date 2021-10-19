@@ -43,9 +43,12 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(ActorClass);
 		if (PooledActorsTemp.Actors.Num() > 0)
 		{
-			ActorToGet = PooledActorsTemp.Actors.Last();
+			//ActorToGet = PooledActorsTemp.Actors.Last();
 
-			PooledActorsTemp.Actors.Pop();
+			ActorToGet = PooledActorsTemp.Actors.Pop();
+
+			//PooledActorsTemp.Actors.RemoveAt(PooledActorsTemp.Actors.Num() - 1);
+			PooledActorsMap.Emplace(ActorToGet->GetClass(), PooledActorsTemp);
 			IPoolInterface::Execute_Start(ActorToGet);
 
 			return ActorToGet;
@@ -54,7 +57,7 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 		{
 			UWorld* World = GetWorld();
 			if (!World) return nullptr;
-			//APawn* PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+
 			FTransform Transform;
 			FActorSpawnParameters Params;
 			
@@ -71,15 +74,18 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 	else return nullptr;
 }
 
-void UPoolManager::ReleaseActorToPool(AActor* Actor)
+void UPoolManager::ReleaseToPool_Implementation(AActor* Actor)
 {
 	if (Actor)
 	{
 		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
 		PooledActorsTemp.Actors.Push(Actor);
+		//PooledActorsTemp.Actors.Add(Actor);
+		
+		//PooledActorsMap.Remove(Actor->GetClass());
 		PooledActorsMap.Emplace(Actor->GetClass(), PooledActorsTemp);
-		IPoolInterface::Execute_Reset(Actor);
+		//IPoolInterface::Execute_Reset(Actor);
 	}
 }
 

@@ -29,6 +29,8 @@ public:
 
 	UFUNCTION()
 		FSpellInfo GetSpellInfo();
+
+
 protected:
 	virtual void BeginPlay() override;
 

@@ -10,6 +10,7 @@
 class UNiagaraComponent;
 class USphereComponent;
 class UBaseSpellManager;
+class UPoolManager;
 
 #include "BaseSpell.generated.h"
 
@@ -34,9 +35,12 @@ public:
 		virtual void SetTarget_Implementation(AActor* NewTarget) override;
 	UFUNCTION()
 		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
+	UFUNCTION()
+		virtual void SetSpawner_Implementation(UObject* Object) override;
 
 protected:
 	virtual void BeginPlay() override;
+
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* BaseCollider;
@@ -52,8 +56,12 @@ protected:
 	UPROPERTY()
 		FTimerHandle FinishTimerHandle;
 	UPROPERTY()
-		FVector LastDirection;
+		FTimerHandle CheckTargetTimerHandle;
 
+	UPROPERTY()
+		FVector LastDirection;
+	UFUNCTION()
+		void CheckTarget();
 	UFUNCTION()
 		void MoveTowardsTarget();
 	UFUNCTION()
@@ -62,11 +70,14 @@ protected:
 		void RemoveCollision();
 	UFUNCTION()
 		void SetupCollision();
-
+	
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
+
+	UPROPERTY()
+		UObject* CurrentPoolManager;
 
 private:
 	UFUNCTION()

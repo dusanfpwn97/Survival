@@ -126,8 +126,10 @@ void ABaseEnemy::Start_Implementation()
 
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	DestroyTimerHandle.Invalidate();
-	
+	UWorld* World = GetWorld();
+	{
+		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+	}
 	SetupCollision();
 	PlayNewAnim(RunAnimation, true);
 
@@ -139,9 +141,14 @@ void ABaseEnemy::Reset_Implementation()
 
 	SetActorTickEnabled(false);
 	SetActorHiddenInGame(true);
-	if (Spawner)
+
+	UWorld* World = GetWorld();
 	{
-		IPoolInterface::Execute_ReleaseToPool(Spawner, this);
+		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+	}
+	if (CurrentPoolManager)
+	{
+		IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> Reset implementation"));
 	
@@ -164,15 +171,12 @@ void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
 		return;
 	}
-	Spawner = Object;
+	CurrentPoolManager = Object;
 }
 
 void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
 {
-	if (TargetActor)
-	{
-		Target = TargetActor;
-	}
+	Target = TargetActor;
 }
 
 bool ABaseEnemy::GetIsAlive_Implementation()

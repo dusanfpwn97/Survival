@@ -6,6 +6,7 @@
 #include "UObject/Interface.h"
 #include "PoolInterface.generated.h"
 
+class UPoolManager;
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPoolInterface : public UInterface
@@ -42,5 +43,6 @@ public:
 		void SetSpawner(UObject* Object);
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object);
+
 
 };

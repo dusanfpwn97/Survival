@@ -103,7 +103,7 @@ protected:
 	UPROPERTY()
 		FRotator LastRotation = FRotator::ZeroRotator;
 	UPROPERTY()
-		UObject* Spawner;
+		UObject* CurrentPoolManager;
 
 	//
 	UFUNCTION()

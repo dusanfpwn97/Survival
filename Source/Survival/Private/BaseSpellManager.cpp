@@ -34,10 +34,10 @@ void UBaseSpellManager::BeginPlay()
 
 	
 	SpellInfo.TargetMode = TargetMode::CLOSEST;
-	SpellInfo.Element = Element::ICE;
+	SpellInfo.Element = Element::FIRE;
 	SpellInfo.CastType = CastType::FLICK;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.3f/*FMath::RandRange(2.2f, 5.3f)*/, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.05f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
 
 // Called every frame
@@ -81,14 +81,18 @@ void UBaseSpellManager::CastSpell()
 
 	if (!SpellToCast)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 		return;
 	}
 
 	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(Caster);
 	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
-	ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
+	if (InitialTarget)
+	{
+		ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
+	}
 
+	IPoolInterface::Execute_SetSpawner(SpellToCast, SpellPoolManager);
 	SpellToCast->SetActorLocation(Location);
 }
 
@@ -99,9 +103,7 @@ AActor* UBaseSpellManager::GetActorForTarget()
 
 	if (SpellInfo.TargetMode == TargetMode::CLOSEST)
 	{
-		//AActor* sfd = ICombatInterface::Execute_GetClosestEnemy(Caster);
 		return ICombatInterface::Execute_GetClosestEnemy(Caster);
-
 	}
 
 	return nullptr;
@@ -115,12 +117,6 @@ void UBaseSpellManager::UpdateSpellClass()
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
 			return;
 	}
-	/*}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("No spell set! BaseSpellManager.Cpp -> CastSpell"));
-		return;
-	}*/
 }
 
 UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType)

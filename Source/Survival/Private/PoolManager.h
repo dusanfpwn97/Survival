@@ -8,7 +8,6 @@
 #include "PoolInterface.h"
 #include "PoolManager.generated.h"
 
-class IPoolInterface;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class UPoolManager : public UActorComponent, public IPoolInterface
@@ -30,7 +29,7 @@ public:
 	UFUNCTION()
 		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass);
 	UFUNCTION()
-		void ReleaseActorToPool(AActor* Actor);
+		void ReleaseToPool_Implementation(AActor* Actor);
 	UFUNCTION()
 		TArray<AActor*> GetAllSpawnedActors() const;
 private:

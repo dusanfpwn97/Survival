@@ -27,7 +27,7 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.5f, true);
+		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.2f, true);
 	}
 }
 
@@ -45,6 +45,7 @@ TArray<AActor*> UEnemySpawner::GetAllSpawns()
 
 void UEnemySpawner::SpawnEnemy()
 {
+	//return;
 	UClass* EnemyClass = SoftLevel1EnemyClass.Get();
 	//if (spawnnum > 50) return;
 	if (!IsSpawnEnabled) return;

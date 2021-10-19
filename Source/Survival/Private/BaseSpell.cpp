@@ -16,43 +16,52 @@ ABaseSpell::ABaseSpell()
 	SetupComponents();
 }
 
-// Called when the game starts or when spawned
 void ABaseSpell::BeginPlay()
 {
 	Super::BeginPlay();
 
 }
 
-
-// Called every frame
 void ABaseSpell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-	//FHitResult Hit;
-	//AddActorWorldOffset(FVector(400.f * DeltaTime, 0, 0), false, &Hit, ETeleportType::None);
+
 	MoveTowardsTarget();
 
 }
 
+void ABaseSpell::CheckTarget()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+	if (TargetActor)
+	{
+		if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
+		{
+			if (!ICombatInterface::Execute_GetIsAlive(TargetActor) && !FinishTimerHandle.IsValid())
+			{
+				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 2.f, false);
+			}
+		}
+	}
+	else if(!FinishTimerHandle.IsValid()) //TODO
+	{
+		World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 2.f, false);
+	}
+
+}
 
 void ABaseSpell::MoveTowardsTarget()
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
+	if (!TargetActor) return; //TODO
 	if (!TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return;
 	if (ICombatInterface::Execute_GetIsAlive(TargetActor))
 	{
 		LastDirection = TargetActor->GetActorLocation() - GetActorLocation();
 		LastDirection.Normalize();
 
-	}
-	else
-	{
-		if (!FinishTimerHandle.IsValid())
-		{
-			GetWorld()->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 4.f, false);
-			//GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("sss"));
-		}
 	}
 
 	FHitResult Hit;
@@ -62,12 +71,17 @@ void ABaseSpell::MoveTowardsTarget()
 
 void ABaseSpell::Finish()
 {
-	FinishTimerHandle.Invalidate();
+
 	SetActorTickEnabled(false);
-	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseSpell::Reset_Implementation, 2.f, false);
-	SetActorHiddenInGame(true);
-	RemoveCollision();
+	UWorld* World = GetWorld();
+	{
+		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
+	}
+	GetWorld()->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
 	
+	RemoveCollision();
+	MainNiagaraFX->Deactivate();
+
 }
 
 UBaseSpellManager* ABaseSpell::GetSpellManager() const
@@ -90,6 +104,76 @@ void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 	
 }
 
+void ABaseSpell::Start_Implementation()
+{
+
+	UWorld* World = GetWorld();
+	{
+		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+		World->GetTimerManager().ClearTimer(FinishTimerHandle);
+		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
+	}
+	SetActorTickEnabled(true);
+	SetActorHiddenInGame(false);
+	SetupCollision();
+	MainNiagaraFX->Activate(true);
+
+}
+
+void ABaseSpell::Reset_Implementation()
+{
+	UWorld* World = GetWorld();
+	{
+		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+		World->GetTimerManager().ClearTimer(FinishTimerHandle);
+		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
+	}
+	SetActorTickEnabled(false);
+	TargetActor = nullptr;
+	SetActorHiddenInGame(true);
+	RemoveCollision();
+
+	MainNiagaraFX->Deactivate();
+	if (CurrentPoolManager)
+	{
+		IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
+		
+	}
+	else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("CurrentPoolManager null BaseSpell::ResetImplementation!")));
+
+}
+
+void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
+{
+	TargetActor = NewTarget;
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	GetWorld()->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ABaseSpell::CheckTarget, 0.25f, true);
+}
+
+void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
+{
+	SpellManager = NewSpellManager;
+	if (SpellManager)
+	{
+		FSpellInfo TempSpellInfo = SpellManager->GetSpellInfo();
+		UNiagaraSystem* NGSystem = SpellManager->GetNiagaraSystem(TempSpellInfo.Element, TempSpellInfo.CastType, SpellFXType::MAIN);
+		MainNiagaraFX->SetAsset(NGSystem);
+	}
+
+}
+
+void ABaseSpell::SetSpawner_Implementation(UObject* Object)
+{
+	if (!Object)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
+		return;
+	}
+	CurrentPoolManager = Object;
+}
+
 void ABaseSpell::SetupComponents()
 {
 	BaseCollider = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BaseCollider")));
@@ -97,7 +181,7 @@ void ABaseSpell::SetupComponents()
 
 	MainNiagaraFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
 
-	
+
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
@@ -116,42 +200,4 @@ void ABaseSpell::SetupCollision()
 {
 	BaseCollider->SetGenerateOverlapEvents(true);
 	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
-}
-
-void ABaseSpell::Start_Implementation()
-{
-	SetActorTickEnabled(true);
-	DestroyTimerHandle.Invalidate();
-	FinishTimerHandle.Invalidate();
-	SetActorHiddenInGame(false);
-	SetupCollision();
-	MainNiagaraFX->Activate(true);
-}
-
-void ABaseSpell::Reset_Implementation()
-{
-	SetActorTickEnabled(false);
-	TargetActor = nullptr;
-	SetActorHiddenInGame(true);
-	RemoveCollision();
-	DestroyTimerHandle.Invalidate();
-	FinishTimerHandle.Invalidate();
-	MainNiagaraFX->Deactivate();
-}
-
-void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
-{
-	TargetActor = NewTarget;
-}
-
-void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
-{
-	SpellManager = NewSpellManager;
-	if (SpellManager)
-	{
-		FSpellInfo TempSpellInfo = SpellManager->GetSpellInfo();
-		UNiagaraSystem* NGSystem = SpellManager->GetNiagaraSystem(TempSpellInfo.Element, TempSpellInfo.CastType, SpellFXType::MAIN);
-		MainNiagaraFX->SetAsset(NGSystem);
-	}
-
 }
