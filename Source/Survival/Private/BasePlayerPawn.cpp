@@ -113,14 +113,15 @@ void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerC
 
 TArray<AActor*> ABasePlayerPawn::GetAliveEnemies_Implementation()
 {
-	
-	if (!CurrentGameMode)
+	if (CurrentGameMode)
+	{
+		return UHelperFunctions::GetAllAliveActors(CurrentGameMode->GetEnemySpawner()->GetAllSpawns());
+	}
+	else
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Game mode not valid! CombatComponent.cpp -> GetAllEnemies()"));
 		return TArray<AActor*>();
 	}
-
-	return UHelperFunctions::GetAllAliveActors(CurrentGameMode->GetEnemySpawner()->GetAllSpawns());
 }
 
 AActor* ABasePlayerPawn::GetClosestEnemy_Implementation()

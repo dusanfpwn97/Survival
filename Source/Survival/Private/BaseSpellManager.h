@@ -30,6 +30,11 @@ public:
 	UFUNCTION()
 		FSpellInfo GetSpellInfo();
 
+	UFUNCTION()
+		void SpawnHitParticle(FVector Location);
+
+	UFUNCTION()
+		AActor* GetCaster() const;
 
 protected:
 	virtual void BeginPlay() override;

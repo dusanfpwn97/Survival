@@ -9,7 +9,7 @@
 #include "BasePlayerPawn.h"
 #include "NiagaraSystem.h"
 #include "HelperFunctions.h"
-//#include "CombatComponent.h"
+#include "NiagaraFunctionLibrary.h"
 
 
 // Sets default values for this component's properties
@@ -37,7 +37,7 @@ void UBaseSpellManager::BeginPlay()
 	SpellInfo.Element = Element::FIRE;
 	SpellInfo.CastType = CastType::FLICK;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.05f/*FMath::RandRange(2.2f, 5.3f)*/, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.5f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
 
 // Called every frame
@@ -90,6 +90,10 @@ void UBaseSpellManager::CastSpell()
 	if (InitialTarget)
 	{
 		ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("No target"));
 	}
 
 	IPoolInterface::Execute_SetSpawner(SpellToCast, SpellPoolManager);
@@ -154,5 +158,31 @@ UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType Ca
 	}
 }
 
+void UBaseSpellManager::SpawnHitParticle(FVector Location)
+{
+	UNiagaraSystem* System = GetNiagaraSystem(SpellInfo.Element, SpellInfo.CastType, SpellFXType::ON_HIT);
 
+	
+	UWorld* World = GetWorld();
+	if (!World) return;
 
+	if (System)
+	{
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, System, Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
+	}
+	else
+	{
+		FString ss = "";
+		ss += UHelperFunctions::GetElementName(SpellInfo.Element);
+		ss += UHelperFunctions::GetCastTypeName(SpellInfo.CastType);
+		ss += UHelperFunctions::GetSpellFXTypeName(SpellFXType::ON_HIT);
+
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn Niagara System %s"), *ss));
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Niagara System %s"), *ss);
+	}
+}
+
+AActor* UBaseSpellManager::GetCaster() const
+{
+	return Caster;
+}

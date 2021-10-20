@@ -59,7 +59,7 @@ void ABaseSpell::Move()
 
 	FHitResult Hit;
 	if (LastDirection.Z < 0) LastDirection.Z = 0;
-	//LastDirection = FVector(1, 0, 0);
+	LastDirection = FVector(1, 0, 0);
 	AddActorWorldOffset(LastDirection * 800 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 }
 
@@ -82,7 +82,7 @@ UBaseSpellManager* ABaseSpell::GetSpellManager() const
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>() && OtherActor != SpellManager->GetCaster() && OtherActor != this)
+	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>() && OtherActor != SpellManager->GetCaster())
 	{
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
 		Finish();
@@ -105,7 +105,6 @@ void ABaseSpell::Start_Implementation()
 	MainNiagaraFX->Activate(true);
 
 	GetWorld()->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.1f, true);
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Finish, 10.f, true); // Safety
 }
 
 void ABaseSpell::Reset_Implementation()

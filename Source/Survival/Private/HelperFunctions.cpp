@@ -25,10 +25,10 @@ AActor* UHelperFunctions::GetClosestActor(TArray<AActor*> Actors, FVector Refere
 	uint32 ClosestActorIndex = 0;
 	float ClosestDistance = 999999.f;
 
-	for (int i = 0; i < Actors.Num() - 1; i++)
+	for (int i = 0; i <= Actors.Num() - 1; i++)
 	{
 		float TempDistance = FVector::Distance(Actors[i]->GetActorLocation(), ReferenceLocation);
-		if(ClosestDistance < TempDistance)
+		if(ClosestDistance > TempDistance)
 		{	
 			ClosestDistance = TempDistance;
 			ClosestActorIndex = i;
@@ -93,7 +93,7 @@ FString UHelperFunctions::GetCastTypeName(CastType CastType)
 FString UHelperFunctions::GetSpellFXTypeName(SpellFXType SpellFXType)
 {
 	if (SpellFXType == SpellFXType::MAIN) return "Main";
-	if (SpellFXType == SpellFXType::ON_HIT) return "OnHit";
+	if (SpellFXType == SpellFXType::ON_HIT) return "Hit";
 	if (SpellFXType == SpellFXType::ON_SPAWN) return "OnSpawn";
 
 	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant SpellFXType Enum!  UHelperFunctions::GetSpellFXTypeName")));

@@ -37,7 +37,8 @@ public:
 		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object) override;
-
+	UFUNCTION()
+		void UpdateMoveDirection();
 protected:
 	virtual void BeginPlay() override;
 
@@ -52,24 +53,28 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UBaseSpellManager* SpellManager;
 	UPROPERTY()
-		FTimerHandle DestroyTimerHandle;
+		FTimerHandle ResetTimerHandle;
 	UPROPERTY()
 		FTimerHandle FinishTimerHandle;
 	UPROPERTY()
 		FTimerHandle CheckTargetTimerHandle;
+	UPROPERTY()
+		FTimerHandle UpdateDirectionTimerHandle;
 
 	UPROPERTY()
 		FVector LastDirection;
 	UFUNCTION()
 		void CheckTarget();
 	UFUNCTION()
-		void MoveTowardsTarget();
+		void Move();
 	UFUNCTION()
 		void Finish();
 	UFUNCTION()
 		void RemoveCollision();
 	UFUNCTION()
 		void SetupCollision();
+	UFUNCTION()
+		void ClearAllTimers();
 	
 	UFUNCTION()
 		void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
