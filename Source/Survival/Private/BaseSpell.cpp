@@ -65,14 +65,12 @@ void ABaseSpell::Move()
 
 void ABaseSpell::Finish()
 {
-
 	SetActorTickEnabled(false);
 	ClearAllTimers();
 	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
-	
+	TargetActor = nullptr;
 	RemoveCollision();
 	MainNiagaraFX->Deactivate();
-
 }
 
 UBaseSpellManager* ABaseSpell::GetSpellManager() const
@@ -97,33 +95,29 @@ void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void ABaseSpell::Start_Implementation()
 {
-
 	ClearAllTimers();
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	SetupCollision();
 	MainNiagaraFX->Activate(true);
 
-	GetWorld()->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.1f, true);
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Finish, 10.f, true); // Safety
+	GetWorld()->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
+	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 10.f, true); // Safety
 }
 
 void ABaseSpell::Reset_Implementation()
 {
+	Finish();
 	ClearAllTimers();
-	SetActorTickEnabled(false);
-	TargetActor = nullptr;
-	SetActorHiddenInGame(true);
-	RemoveCollision();
 
-	MainNiagaraFX->Deactivate();
+	SetActorHiddenInGame(true);
+
 	if (CurrentPoolManager)
 	{
 		IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
 		
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("CurrentPoolManager null BaseSpell::ResetImplementation!")));
-
 }
 
 void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
@@ -133,6 +127,7 @@ void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
 	if (!World) return;
 
 	GetWorld()->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ABaseSpell::CheckTarget, 0.25f, true);
+	CheckTarget();
 	UpdateMoveDirection();
 }
 
