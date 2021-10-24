@@ -15,9 +15,6 @@ struct FPooledActors
 
 	UPROPERTY()
 		TArray<AActor*> Actors;
-	UPROPERTY()
-		TArray<int32> AvailableIndices;
-
 
 };
 

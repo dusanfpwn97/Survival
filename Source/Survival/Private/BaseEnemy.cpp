@@ -12,6 +12,7 @@
 #include "BaseSpellManager.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SkinnedMeshComponent.h"
+#include "Engine/DataTable.h"
 
 
 

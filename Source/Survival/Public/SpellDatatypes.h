@@ -121,16 +121,18 @@ struct FCastTypeAndElement : public FTableRowBase
 };
 
 USTRUCT(BlueprintType)
-struct FSpellFXInfo : public FTableRowBase
+struct FSpellVFXInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<TSoftObjectPtr<UNiagaraSystem>, FCastTypeAndElement> MainFX;
+		FCastTypeAndElement Binding;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<TSoftObjectPtr<UNiagaraSystem>, FCastTypeAndElement> SpawnFX;
+		TSoftObjectPtr<UNiagaraSystem> MainFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		TMap<TSoftObjectPtr<UNiagaraSystem>, FCastTypeAndElement> HitFX;
+		TSoftObjectPtr<UNiagaraSystem> SpawnFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSoftObjectPtr<UNiagaraSystem> HitFX;
 
 };
 

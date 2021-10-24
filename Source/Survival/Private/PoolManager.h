@@ -35,6 +35,7 @@ public:
 private:
 	UPROPERTY()
 		TMap<TSubclassOf<AActor>, FPooledActors> PooledActorsMap;
+
 	UPROPERTY()
 		TArray<AActor*> AllSpawnedActors;
 };

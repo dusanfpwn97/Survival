@@ -12,6 +12,7 @@ class ABaseSpell;
 class UPoolManager;
 class ABasePlayerPawn;
 class UNiagaraSystem;
+class UDataTable;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent
@@ -45,6 +46,8 @@ protected:
 		FTimerHandle MainSpellCastTimerHandle;
 	UPROPERTY()
 		UPoolManager* SpellPoolManager;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "_Setup")
+		UDataTable* VFX_DataTable;
 	UPROPERTY()
 		AActor* Caster;
 	UPROPERTY()
@@ -58,6 +61,8 @@ protected:
 		AActor* GetActorForTarget();
 	UFUNCTION()
 		void UpdateSpellClass();
+	UFUNCTION()
+		void SetVFXDataTable();
 
 	
 private:

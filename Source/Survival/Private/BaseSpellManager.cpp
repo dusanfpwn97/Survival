@@ -11,6 +11,7 @@
 #include "HelperFunctions.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "UObject/ConstructorHelpers.h"
 
 
 // Sets default values for this component's properties
@@ -19,6 +20,8 @@ UBaseSpellManager::UBaseSpellManager()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
+
+	SetVFXDataTable();
 }
 
 FSpellInfo UBaseSpellManager::GetSpellInfo()
@@ -38,7 +41,8 @@ void UBaseSpellManager::BeginPlay()
 	SpellInfo.Element = Element::FIRE;
 	SpellInfo.CastType = CastType::FLICK;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 1.f/*FMath::RandRange(2.2f, 5.3f)*/, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 1.f, true);
+
 }
 
 // Called every frame
@@ -127,37 +131,62 @@ void UBaseSpellManager::UpdateSpellClass()
 
 UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType)
 {
-	if (CachedParticles.Contains(SpellFXType))
+
+	if (CachedParticles.Contains(SpellFXType)) return CachedParticles.FindRef(SpellFXType);
+
+	if (!VFX_DataTable)
 	{
-		return CachedParticles.FindRef(SpellFXType);
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
+		return nullptr;
 	}
 
-	FString NSPath = "NiagaraSystem'/Game/_Core/Spells/NiagaraParticles/NS_";
-	
-	NSPath += UHelperFunctions::GetElementName(Element);
-	NSPath += UHelperFunctions::GetCastTypeName(CastType);
-	NSPath += UHelperFunctions::GetSpellFXTypeName(SpellFXType);
-	NSPath += ".NS_";
-	NSPath += UHelperFunctions::GetElementName(Element);
-	NSPath += UHelperFunctions::GetCastTypeName(CastType);
-	NSPath += UHelperFunctions::GetSpellFXTypeName(SpellFXType);
-	NSPath += "'";
+	UNiagaraSystem* NS = nullptr;
 
-	UNiagaraSystem* NS = LoadObject<UNiagaraSystem>(nullptr, *NSPath);
-
-	if (NS)
+	for (auto it : VFX_DataTable->GetRowMap())
 	{
-		CachedParticles.Add(SpellFXType, NS);
-		return NS;
+		
+		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
+		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
+		if (SpellVFXInfo)
+		{
+			if (SpellVFXInfo->Binding.Element == Element && SpellVFXInfo->Binding.CastType == CastType)
+			{
+				if (SpellFXType == SpellFXType::ON_SPAWN)
+				{
+					NS = SpellVFXInfo->SpawnFX.LoadSynchronous();
+				}
+				else if (SpellFXType == SpellFXType::MAIN)
+				{
+					NS = SpellVFXInfo->MainFX.LoadSynchronous();
+				}
+				else if (SpellFXType == SpellFXType::ON_HIT)
+				{
+					NS = SpellVFXInfo->HitFX.LoadSynchronous();
+				}
+
+				if (NS)
+				{
+					CachedParticles.Add(SpellFXType, NS);
+					return NS;
+				}
+			}
+		}
 	}
-	else
+
+	if (!NS)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *NSPath));
+
+		FString sss = UHelperFunctions::GetCastTypeName(SpellInfo.CastType);
+		sss.Append(" + ");
+		FString aa = UHelperFunctions::GetElementName(SpellInfo.Element);
+		sss.Append(aa);
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *sss));
 		SET_WARN_COLOR(COLOR_RED);
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find Niagara System %s"), *NSPath);
+		UE_LOG(LogTemp, Warning, TEXT("Failed to find Niagara System %s"), *sss);
 		CLEAR_WARN_COLOR();
 		return nullptr;
 	}
+	return nullptr;
 }
 
 void UBaseSpellManager::SpawnHitParticle(FVector Location)
@@ -188,3 +217,18 @@ AActor* UBaseSpellManager::GetCaster() const
 {
 	return Caster;
 }
+
+void UBaseSpellManager::SetVFXDataTable()
+{
+	ConstructorHelpers::FObjectFinder<UDataTable>DataTableAsset(TEXT("DataTable'/Game/GameSettings/DT_SpellVFX.DT_SpellVFX'"));
+	UDataTable* DT = DataTableAsset.Object;
+	if (DT)
+	{
+		VFX_DataTable = DT;
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("No VFX DataTable found!"));
+	}
+}
+
