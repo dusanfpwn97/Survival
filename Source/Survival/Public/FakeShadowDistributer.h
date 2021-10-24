@@ -16,11 +16,13 @@ struct FShadowInfo
 	GENERATED_BODY()
 
 	UPROPERTY()
-		AActor* Actor;
-	int32 Index;
-	FVector Offset;
+		AActor* Actor = nullptr;
 	UPROPERTY()
-		USkeletalMeshComponent* SkelMesh;
+		int32 Index;
+	UPROPERTY()
+		FVector Offset;
+	UPROPERTY()
+		USkeletalMeshComponent* SkelMesh = nullptr;
 
 	FName BoneToFollow;
 };
