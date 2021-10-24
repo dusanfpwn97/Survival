@@ -7,6 +7,7 @@
 #include "GameDatatypes.generated.h"
 
 
+
 USTRUCT()
 struct FPooledActors
 {
@@ -16,6 +17,8 @@ struct FPooledActors
 		TArray<AActor*> Actors;
 	UPROPERTY()
 		TArray<int32> AvailableIndices;
+
+
 };
 
 class SURVIVAL_API GameDatatypes

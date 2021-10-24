@@ -14,7 +14,7 @@ class UCapsuleComponent;
 class ABaseSpell;
 class UEnemySpawner;
 class USkeletalMeshComponent;
-class UAnimationAsset;
+class UAnimSequence;
 
 
 USTRUCT(BlueprintType)
@@ -69,7 +69,8 @@ public:
 		virtual void SetTarget_Implementation(AActor* TargetActor) override;
 	UFUNCTION()
 		virtual bool GetIsAlive_Implementation() override;
-
+	UFUNCTION()
+		USkeletalMeshComponent* GetSkeletalMesh();
 protected:
 	// Called when the game starts or when spawned
 	virtual void BeginPlay() override;
@@ -79,12 +80,12 @@ protected:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
 	//
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
-		UAnimationAsset* DeathAnimation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
-		UAnimationAsset* HitAnimation;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "Setup")
-		UAnimationAsset* RunAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "_Setup")
+		UAnimSequence* DeathAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "_Setup")
+		UAnimSequence* HitAnimation;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite, Category = "_Setup")
+		UAnimSequence* RunAnimation;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		bool IsAlive = false;
@@ -92,10 +93,16 @@ protected:
 		FEnemyStats InitialStats;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		FEnemyStats CurrentStats;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "Setup")
+	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "_Setup")
 		UDataTable* DataTableToUse;
 	UPROPERTY()
 		FTimerHandle DestroyTimerHandle;
+	UPROPERTY()
+		FTimerHandle StartDecomposingTimerHandle;
+	UPROPERTY()
+		FTimerHandle MoveActorDownwardsTimerHandle;
+	UPROPERTY()
+		FTimerHandle StartRunningTimerHandle;
 	UPROPERTY()
 		AActor* Target;
 	UPROPERTY()
@@ -104,6 +111,18 @@ protected:
 		FRotator LastRotation = FRotator::ZeroRotator;
 	UPROPERTY()
 		UObject* CurrentPoolManager;
+	UPROPERTY()
+		bool CanMove = false;
+
+	UFUNCTION()
+		void ClearAllTimers();
+
+	UFUNCTION()
+		void MoveActorDownwards();
+	UFUNCTION()
+		void StartDecomposing();
+	UFUNCTION()
+		void StartRunning();
 
 	//
 	UFUNCTION()
@@ -121,7 +140,7 @@ protected:
 	UFUNCTION()
 		void UpdateStats();
 	UFUNCTION()
-		void PlayNewAnim(UAnimationAsset* AnimToPlay, bool ShouldLoop);
+		void PlayNewAnim(UAnimSequence* AnimToPlay, bool ShouldLoop);
 
 private:
 

@@ -8,6 +8,8 @@
 #include "CombatInterface.h"
 #include "PoolManager.h"
 #include "HelperFunctions.h"
+#include "FakeShadowDistributer.h"
+#include "Components/SkeletalMeshComponent.h"
 
 // Sets default values for this component's properties
 UEnemySpawner::UEnemySpawner()
@@ -22,12 +24,31 @@ UEnemySpawner::UEnemySpawner()
 void UEnemySpawner::BeginPlay()
 {
 	Super::BeginPlay();
+	SpawnFakeShadowDistributer();
 	UpdatePlayerPawn();
 	SoftLevel1EnemyClass.LoadSynchronous();
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.5f, true);
+		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 1.f, true);
+	}
+	
+}
+
+void UEnemySpawner::SpawnFakeShadowDistributer()
+{
+	// Shadow distributer already exists
+	if (FakeShadowDistributer) return;
+	FTransform TempTransform;
+	TempTransform.SetLocation(FVector(0, 0, -250));
+	TempTransform.SetScale3D(FVector(1, 1, 1));
+	TempTransform.SetRotation(FRotator(-90,0,0).Quaternion());
+	FActorSpawnParameters Params;
+
+	UWorld* World = GetWorld();
+	if (World)
+	{
+		FakeShadowDistributer = World->SpawnActor<AFakeShadowDistributer>(AFakeShadowDistributer::StaticClass(), TempTransform, Params);
 	}
 }
 
@@ -65,7 +86,8 @@ void UEnemySpawner::SpawnEnemy()
 		return;
 	}
 
-	AActor* Enemy = EnemySpawnPoolManager->GetAvailableActor(EnemyClass);
+	bool IsCached;
+	AActor* Enemy = EnemySpawnPoolManager->GetAvailableActor(EnemyClass, IsCached);
 
 	if (!Enemy) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Enemy couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 	FVector SpawnLoc = PlayerPawn->GetActorLocation();
@@ -74,6 +96,15 @@ void UEnemySpawner::SpawnEnemy()
 	
 	ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
 	spawnnum++;
+
+	if (FakeShadowDistributer && !IsCached)
+	{
+		ABaseEnemy* EnemyActor = Cast<ABaseEnemy>(Enemy);
+		if (EnemyActor)
+		{
+			FakeShadowDistributer->AssignNewShadow(Enemy, FVector(0, 0, 0), EnemyActor->GetSkeletalMesh(), FName("ShadowSocket"));
+		}
+	}
 }
 
 void UEnemySpawner::UpdatePlayerPawn()

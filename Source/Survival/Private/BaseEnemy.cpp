@@ -8,7 +8,7 @@
 #include "Engine/World.h"
 #include "DrawDebugHelpers.h"
 #include "UObject/ConstructorHelpers.h"
-#include "Animation/AnimationAsset.h"
+#include "Animation/AnimSequence.h"
 #include "BaseSpellManager.h"
 #include "Engine/EngineTypes.h"
 #include "Components/SkinnedMeshComponent.h"
@@ -33,6 +33,16 @@ void ABaseEnemy::BeginPlay()
 
 }
 
+
+// Called every frame
+void ABaseEnemy::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	//if(CanMove) MoveTowardsTarget();
+	MoveTowardsTarget();
+
+}
+
 void ABaseEnemy::ReceiveDamage(UBaseSpellManager* SpellManager)
 {
 
@@ -50,19 +60,20 @@ void ABaseEnemy::ReceiveDamage(UBaseSpellManager* SpellManager)
 		Die();
 		///GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpelsdfsdfsefesfeDamage"));
 	}
-	
+
 	if (IsAlive)
 	{
+		UWorld* World = GetWorld();
+		if (!World) return;
+
+		float AnimTime = (HitAnimation->SequenceLength / HitAnimation->RateScale) - 0.05f;
+		AnimTime = FMath::Clamp(AnimTime, 0.035f, 1.0f);
+		GetWorld()->GetTimerManager().SetTimer(StartRunningTimerHandle, this, &ABaseEnemy::StartRunning, AnimTime, false);
+
+		CanMove = false;
 		PlayNewAnim(HitAnimation, false);
+
 	}
-}
-
-// Called every frame
-void ABaseEnemy::Tick(float DeltaTime)
-{
-	Super::Tick(DeltaTime);
-	MoveTowardsTarget();
-
 }
 
 void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
@@ -96,6 +107,42 @@ void ABaseEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 }
 
+void ABaseEnemy::ClearAllTimers()
+{
+	UWorld* World = GetWorld();
+	{
+		World->GetTimerManager().ClearTimer(StartDecomposingTimerHandle);
+		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+		World->GetTimerManager().ClearTimer(MoveActorDownwardsTimerHandle);
+		World->GetTimerManager().ClearTimer(StartRunningTimerHandle);
+	}
+}
+
+void ABaseEnemy::MoveActorDownwards()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	FHitResult Hit;
+	AddActorWorldOffset(FVector(0, 0, 1) * World->GetDeltaSeconds() * -250, false, &Hit, ETeleportType::None);
+}
+
+void ABaseEnemy::StartDecomposing()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	GetWorld()->GetTimerManager().SetTimer(MoveActorDownwardsTimerHandle, this, &ABaseEnemy::MoveActorDownwards, 0.035, true);
+
+}
+
+void ABaseEnemy::StartRunning()
+{
+	CanMove = true;
+	PlayNewAnim(RunAnimation, true);
+
+}
+
 void ABaseEnemy::SetupComponents()
 {
 	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
@@ -126,12 +173,9 @@ void ABaseEnemy::Start_Implementation()
 
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	UWorld* World = GetWorld();
-	{
-		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
-	}
+	ClearAllTimers();
 	SetupCollision();
-	PlayNewAnim(RunAnimation, true);
+	StartRunning();
 
 }
 
@@ -212,7 +256,7 @@ void ABaseEnemy::MoveTowardsTarget()
 	LastRotation = FMath::RInterpTo(LastRotation, (Direction.Rotation() + FRotator(0.f, -90.f, 0.f)), World->GetDeltaSeconds(), 6.f);
 	SetActorRotation(LastRotation, ETeleportType::None);
 
-
+	if (!CanMove) return;
 	for (int i = -2; i < 3; i++)
 	{
 		FRotator TempRot = (Direction.Rotation() + FRotator(0.f, i * -45.f, 0.f));
@@ -255,14 +299,19 @@ void ABaseEnemy::Die()
 	UWorld* World = GetWorld();
 	if (!World || !IsAlive) return;
 
+	ClearAllTimers();
 	IsAlive = false;
 	SetActorTickEnabled(false);
 	RemoveCollision();
+	CanMove = false;
+
 	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
+	GetWorld()->GetTimerManager().SetTimer(StartDecomposingTimerHandle, this, &ABaseEnemy::StartDecomposing, 3.5f, false);
 
+	
 	PlayNewAnim(DeathAnimation, false);
-}
 
+}
 
 void ABaseEnemy::UpdateStats()
 {
@@ -288,23 +337,25 @@ void ABaseEnemy::UpdateStats()
 	}
 }
 
-void ABaseEnemy::PlayNewAnim(UAnimationAsset* AnimToPlay, bool ShouldLoop)
+void ABaseEnemy::PlayNewAnim(UAnimSequence* AnimToPlay, bool ShouldLoop)
 {
 	if (!SkeletalMesh) return;
+
 	if (!AnimToPlay)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Animation asset is null! %s"), *GetClass()->GetName()));
 		return;
 	}
 
-	if (SkeletalMesh->IsPlaying())
-	{
-		SkeletalMesh->Stop();
-	}
-	SkeletalMesh->SetAnimation(AnimToPlay);
-		//SkeletalMesh->PlayAnimation(DeathAnimation, false);
-	SkeletalMesh->Play(ShouldLoop);
+	if (SkeletalMesh->IsPlaying()) SkeletalMesh->Stop();
 
+	SkeletalMesh->SetAnimation(AnimToPlay);
+	SkeletalMesh->Play(ShouldLoop);
+}
+
+USkeletalMeshComponent* ABaseEnemy::GetSkeletalMesh()
+{
+	return SkeletalMesh;
 }
 
 void ABaseEnemy::RemoveCollision()

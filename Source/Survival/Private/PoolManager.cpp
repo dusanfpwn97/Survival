@@ -35,7 +35,7 @@ void UPoolManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorCom
 	// ...
 }
 
-AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
+AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass, bool &IsCached)
 {
 	if (ActorClass)
 	{
@@ -46,7 +46,7 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 			//ActorToGet = PooledActorsTemp.Actors.Last();
 
 			ActorToGet = PooledActorsTemp.Actors.Pop();
-
+			IsCached = true;
 			//PooledActorsTemp.Actors.RemoveAt(PooledActorsTemp.Actors.Num() - 1);
 			PooledActorsMap.Emplace(ActorToGet->GetClass(), PooledActorsTemp);
 			IPoolInterface::Execute_Start(ActorToGet);
@@ -67,7 +67,7 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass)
 			AllSpawnedActors.Add(ActorToGet);
 			IPoolInterface::Execute_Start(ActorToGet);
 			IPoolInterface::Execute_SetSpawner(ActorToGet, this);
-
+			IsCached = false;
 			return ActorToGet;
 		}
 	}
@@ -81,11 +81,8 @@ void UPoolManager::ReleaseToPool_Implementation(AActor* Actor)
 		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
 
 		PooledActorsTemp.Actors.Push(Actor);
-		//PooledActorsTemp.Actors.Add(Actor);
-		
-		//PooledActorsMap.Remove(Actor->GetClass());
+
 		PooledActorsMap.Emplace(Actor->GetClass(), PooledActorsTemp);
-		//IPoolInterface::Execute_Reset(Actor);
 	}
 }
 

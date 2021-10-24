@@ -27,7 +27,7 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION()
-		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass);
+		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass, bool& IsCached);
 	UFUNCTION()
 		void ReleaseToPool_Implementation(AActor* Actor);
 	UFUNCTION()

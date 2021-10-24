@@ -10,6 +10,7 @@
 #include "NiagaraSystem.h"
 #include "HelperFunctions.h"
 #include "NiagaraFunctionLibrary.h"
+#include "Components/SkeletalMeshComponent.h"
 
 
 // Sets default values for this component's properties
@@ -37,7 +38,7 @@ void UBaseSpellManager::BeginPlay()
 	SpellInfo.Element = Element::FIRE;
 	SpellInfo.CastType = CastType::FLICK;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.5f/*FMath::RandRange(2.2f, 5.3f)*/, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 1.f/*FMath::RandRange(2.2f, 5.3f)*/, true);
 }
 
 // Called every frame
@@ -77,7 +78,8 @@ void UBaseSpellManager::CastSpell()
 	// Don't cast a spell if there is no target and Target mode is not NONE!
 	if (!InitialTarget && SpellInfo.TargetMode != TargetMode::NONE) return;
 	
-	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(SpellClassToSpawn);
+	bool IsCached;
+	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(SpellClassToSpawn, IsCached);
 
 	if (!SpellToCast)
 	{
