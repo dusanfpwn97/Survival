@@ -5,6 +5,7 @@
 #include "BaseEnemy.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "Components/StaticMeshComponent.h"
 #include "BaseSpell.h"
 #include "BaseSpellManager.h"
 //#include "CombatComponent.h"
@@ -87,12 +88,34 @@ void ABasePlayerPawn::SetupComponents()
 	SkeletalMesh->SetGenerateOverlapEvents(false);
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
+	StaffMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("StaffMesh")));
+	if (SkeletalMesh)
+	{
+		StaffMesh->SetupAttachment(SkeletalMesh, FName("WeaponSocket"));
+	}
+
+	StaffMesh->SetGenerateOverlapEvents(false);
+	StaffMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
+
 	//CombatComponent = CreateDefaultSubobject<UCombatComponent>(FName(TEXT("CombatComponent")));
 }
 
 FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
-{
-	return MainCollider->GetComponentLocation();
+{/*
+	if (SkeletalMesh)
+	{
+		FVector Location = SkeletalMesh->GetSocketLocation(FName("WeaponSocket"));
+		FVector ss = Location.ForwardVector;
+		ss.Normalize();
+		Location += ss * 100;
+		return Location;
+	}
+	else
+	{*/
+		return MainCollider->GetComponentLocation() + FVector(0,0,60.f);
+	//}
+	
+
 }
 
 void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)

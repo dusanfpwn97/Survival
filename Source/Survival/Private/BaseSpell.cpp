@@ -58,7 +58,10 @@ void ABaseSpell::Move()
 	if (!World) return;
 
 	FHitResult Hit;
-	if (LastDirection.Z < 0) LastDirection.Z = 0;
+	if (LastDirection.Z < 0 && !TargetActor && SpellManager->GetSpellInfo().TargetMode != TargetMode::NONE)
+	{
+		LastDirection.Z = 0;
+	}
 	//LastDirection = FVector(1, 0, 0);
 	AddActorWorldOffset(LastDirection * 800 * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 }

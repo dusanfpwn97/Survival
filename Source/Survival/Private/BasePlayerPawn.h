@@ -12,6 +12,7 @@ class UCapsuleComponent;
 class ABaseEnemy;
 class USkeletalMeshComponent;
 class UBaseSpellManager;
+class UStaticMeshComponent;
 
 class ABaseGameMode;
 
@@ -43,25 +44,31 @@ public:
 	UFUNCTION()
 		virtual AActor* GetClosestEnemy_Implementation() override;
 
-protected:
-
-	virtual void BeginPlay() override;
-
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
 	UPROPERTY()
 		ABaseGameMode* CurrentGameMode;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UStaticMeshComponent* StaffMesh;
 	//
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<UBaseSpellManager*> SpellManagers;
 
+	UFUNCTION(BlueprintCallable)
+		void AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass);
+
+
+protected:
+
+	virtual void BeginPlay() override;
+
+
+
 	//
 	UFUNCTION()
 		void SetupComponents();
-	UFUNCTION(BlueprintCallable)
-		void AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass);
 
 
 
