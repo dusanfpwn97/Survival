@@ -38,10 +38,10 @@ void UBaseSpellManager::BeginPlay()
 
 	
 	SpellInfo.TargetMode = TargetMode::CLOSEST;
-	SpellInfo.Element = Element::FIRE;
+	SpellInfo.Element = Element::DARK;
 	SpellInfo.CastType = CastType::FLICK;
 	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 1.f, true);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.6f, true);
 
 }
 
