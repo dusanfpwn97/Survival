@@ -11,6 +11,7 @@ class UNiagaraComponent;
 class USphereComponent;
 class UBaseSpellManager;
 class UPoolManager;
+class USpellMovementComponent;
 
 #include "BaseSpell.generated.h"
 
@@ -37,11 +38,9 @@ public:
 		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object) override;
-	UFUNCTION()
-		void UpdateMoveDirection();
-protected:
-	virtual void BeginPlay() override;
 
+	UPROPERTY()
+		bool IsMarkedForDestruction = false;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* BaseCollider;
@@ -53,6 +52,15 @@ protected:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UBaseSpellManager* SpellManager;
 	UPROPERTY()
+		USpellMovementComponent* SpellMovementComponent;
+
+	UFUNCTION()
+		void UpdateMoveDirection();
+protected:
+	virtual void BeginPlay() override;
+
+
+	UPROPERTY()
 		FTimerHandle ResetTimerHandle;
 	UPROPERTY()
 		FTimerHandle FinishTimerHandle;
@@ -60,6 +68,7 @@ protected:
 		FTimerHandle CheckTargetTimerHandle;
 	UPROPERTY()
 		FTimerHandle UpdateDirectionTimerHandle;
+
 
 	UPROPERTY()
 		FVector LastDirection;

@@ -4,19 +4,26 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-#include "GameDatatypes.h"
-#include "PoolInterface.h"
-#include "PoolManager.generated.h"
+#include "SpellDataTypes.h"
+#include "SpellComponent.generated.h"
 
+
+class UBaseSpellManager;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class UPoolManager : public UActorComponent, public IPoolInterface
+class SURVIVAL_API USpellComponent : public UActorComponent
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UPoolManager();
+	USpellComponent();
+
+	UFUNCTION(BlueprintCallable)
+		void AddNewSpell(FSpellInfo SpellInfo);
+
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		TArray<UBaseSpellManager*> SpellManagers;
 
 protected:
 	// Called when the game starts
@@ -26,16 +33,5 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
-		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass, bool& IsCached);
-	UFUNCTION()
-		void ReleaseToPool_Implementation(AActor* Actor);
-
-	UPROPERTY()
-		TMap<TSubclassOf<AActor>, FPooledActors> PooledActorsMap;
-
-	UPROPERTY()
-		TArray<AActor*> AllSpawnedActors;
-private:
-
+		
 };

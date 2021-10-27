@@ -85,8 +85,3 @@ void UPoolManager::ReleaseToPool_Implementation(AActor* Actor)
 		PooledActorsMap.Emplace(Actor->GetClass(), PooledActorsTemp);
 	}
 }
-
-TArray<AActor*> UPoolManager::GetAllSpawnedActors() const
-{
-	return AllSpawnedActors;
-}

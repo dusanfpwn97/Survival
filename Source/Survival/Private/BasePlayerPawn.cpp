@@ -14,6 +14,7 @@
 #include "Kismet/GameplayStatics.h"
 #include "BaseGameMode.h"
 #include "EnemySpawner.h"
+#include "SpellComponent.h"
 
 // Sets default values
 ABasePlayerPawn::ABasePlayerPawn()
@@ -37,6 +38,12 @@ void ABasePlayerPawn::BeginPlay()
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! CombatComponent.cpp -> BeginPlay"));
 
+	FSpellInfo Info;
+	Info.Element = Element::FIRE;
+	Info.CastType = CastType::PROJECTILE;
+	Info.Cooldown = 0.6f;
+	Info.Speed = 500.f;
+	SpellComponent->AddNewSpell(Info);
 }
 
 // Called every frame
@@ -89,50 +96,27 @@ void ABasePlayerPawn::SetupComponents()
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
 	StaffMesh = CreateDefaultSubobject<UStaticMeshComponent>(FName(TEXT("StaffMesh")));
+	SpellLocationTemp = CreateDefaultSubobject<USceneComponent>(FName(TEXT("SpellCastLocation")));
+
 	if (SkeletalMesh)
 	{
 		StaffMesh->SetupAttachment(SkeletalMesh, FName("WeaponSocket"));
+		SpellLocationTemp->SetupAttachment(StaffMesh);
 	}
 
 	StaffMesh->SetGenerateOverlapEvents(false);
 	StaffMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
+	SpellComponent = CreateDefaultSubobject<USpellComponent>(FName(TEXT("SpellComponent")));
+
 	//CombatComponent = CreateDefaultSubobject<UCombatComponent>(FName(TEXT("CombatComponent")));
 }
 
 FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
-{/*
-	if (SkeletalMesh)
-	{
-		FVector Location = SkeletalMesh->GetSocketLocation(FName("WeaponSocket"));
-		FVector ss = Location.ForwardVector;
-		ss.Normalize();
-		Location += ss * 100;
-		return Location;
-	}
-	else
-	{*/
-		return MainCollider->GetComponentLocation() + FVector(0,0,60.f);
-	//}
-	
-
-}
-
-void ABasePlayerPawn::AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass)
 {
-	UClass* SpellManagerClassToUse = SpellManagerClass.LoadSynchronous();
-	if (!SpellManagerClassToUse)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Could not load spell manager class! Pawn.cpp -> AddSpell"));
-		return;
-	}
-
-	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, SpellManagerClassToUse); //*
-	
-	//NewSpell->OnComponentCreated();
-	NewSpell->RegisterComponent();
-	SpellManagers.Add(NewSpell);
+	return SpellLocationTemp->GetComponentLocation();
 }
+
 
 TArray<AActor*> ABasePlayerPawn::GetAliveEnemies_Implementation()
 {

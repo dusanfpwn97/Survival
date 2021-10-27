@@ -13,7 +13,8 @@ class ABaseEnemy;
 class USkeletalMeshComponent;
 class UBaseSpellManager;
 class UStaticMeshComponent;
-
+class USpellComponent;
+class USceneComponent;
 class ABaseGameMode;
 
 UCLASS(Blueprintable)
@@ -52,12 +53,10 @@ public:
 		ABaseGameMode* CurrentGameMode;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* StaffMesh;
-	//
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		TArray<UBaseSpellManager*> SpellManagers;
-
-	UFUNCTION(BlueprintCallable)
-		void AddNewSpell(TSoftClassPtr<UBaseSpellManager> SpellManagerClass);
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USpellComponent* SpellComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		USceneComponent* SpellLocationTemp;
 
 
 protected:

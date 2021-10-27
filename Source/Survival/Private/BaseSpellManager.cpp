@@ -24,28 +24,14 @@ UBaseSpellManager::UBaseSpellManager()
 	SetVFXDataTable();
 }
 
-FSpellInfo UBaseSpellManager::GetSpellInfo()
-{
-	return SpellInfo;
-}
-
 // Called when the game starts
 void UBaseSpellManager::BeginPlay()
 {
 
 	Super::BeginPlay();
 	Caster = GetOwner();
-
-	
-	SpellInfo.TargetMode = TargetMode::CLOSEST;
-	SpellInfo.Element = Element::DARK;
-	SpellInfo.CastType = CastType::FLICK;
-	// ...
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, 0.6f, true);
-
 }
 
-// Called every frame
 void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
@@ -55,7 +41,7 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
-
+	/*
 	if (!SpellClassToSpawn)
 	{
 		UpdateSpellClass();
@@ -63,7 +49,7 @@ void UBaseSpellManager::CastSpell()
 		{
 			return;
 		}
-	}
+	}*/
 
 	UWorld* World = GetWorld();
 	if (!World) return;
@@ -80,10 +66,10 @@ void UBaseSpellManager::CastSpell()
 	AActor* InitialTarget = GetActorForTarget();
 
 	// Don't cast a spell if there is no target and Target mode is not NONE!
-	if (!InitialTarget && SpellInfo.TargetMode != TargetMode::NONE) return;
+	if (!InitialTarget && CurrentSpellInfo.TargetMode != TargetMode::NONE) return;
 	
 	bool IsCached;
-	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(SpellClassToSpawn, IsCached);
+	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ABaseSpell::StaticClass(), IsCached);
 
 	if (!SpellToCast)
 	{
@@ -111,7 +97,7 @@ AActor* UBaseSpellManager::GetActorForTarget()
 	if (!Caster) return nullptr;
 	if (!Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return nullptr;
 
-	if (SpellInfo.TargetMode == TargetMode::CLOSEST)
+	if (CurrentSpellInfo.TargetMode == TargetMode::CLOSEST)
 	{
 		return ICombatInterface::Execute_GetClosestEnemy(Caster);
 	}
@@ -119,9 +105,56 @@ AActor* UBaseSpellManager::GetActorForTarget()
 	return nullptr;
 }
 
+void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
+{
+	MarkAllSpellsForDestruction();
+	CurrentSpellInfo = NewSpellInfo;
+	UWorld* World = GetWorld();
+	if (!World) return;
+	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, true);
+
+}
+
+void UBaseSpellManager::MarkAllSpellsForDestruction()
+{
+	TArray<AActor*> SpawnedActors = SpellPoolManager->AllSpawnedActors;
+	while (SpawnedActors.Num() != 0)
+	{
+		if (SpawnedActors.Last())
+		{
+			ABaseSpell* Spell = Cast<ABaseSpell>(SpawnedActors.Last());
+			if (Spell)
+			{
+				Spell->IsMarkedForDestruction = true;
+				SpawnedActors.RemoveAt(SpawnedActors.Num() - 1);
+			}
+		}
+	}
+	CachedParticles.Empty();
+	SpellPoolManager->AllSpawnedActors.Empty();
+}
+
+void UBaseSpellManager::DestroySpellManager()
+{
+	MarkAllSpellsForDestruction();
+}
+
+void UBaseSpellManager::UpdateCastType(CastType NewCastType)
+{
+	MarkAllSpellsForDestruction();
+	CurrentSpellInfo.CastType = NewCastType;
+}
+
+void UBaseSpellManager::UpdateSpellModifier(SpellModifier NewSpellModifier)
+{
+	MarkAllSpellsForDestruction();
+	CurrentSpellInfo.SpellModifier = NewSpellModifier;
+}
+
 void UBaseSpellManager::UpdateSpellClass()
 {
-	SpellClassToSpawn = SpellInfo.SpellClass.LoadSynchronous();
+	SpellClassToSpawn = CurrentSpellInfo.SpellClass.LoadSynchronous();
 	if (!SpellClassToSpawn)
 	{
 			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
@@ -176,9 +209,9 @@ UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType Ca
 	if (!NS)
 	{
 
-		FString sss = UHelperFunctions::GetCastTypeName(SpellInfo.CastType);
+		FString sss = UHelperFunctions::GetCastTypeName(CurrentSpellInfo.CastType);
 		sss.Append(" + ");
-		FString aa = UHelperFunctions::GetElementName(SpellInfo.Element);
+		FString aa = UHelperFunctions::GetElementName(CurrentSpellInfo.Element);
 		sss.Append(aa);
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *sss));
 		SET_WARN_COLOR(COLOR_RED);
@@ -191,7 +224,7 @@ UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType Ca
 
 void UBaseSpellManager::SpawnHitParticle(FVector Location)
 {
-	UNiagaraSystem* System = GetNiagaraSystem(SpellInfo.Element, SpellInfo.CastType, SpellFXType::ON_HIT);
+	UNiagaraSystem* System = GetNiagaraSystem(CurrentSpellInfo.Element, CurrentSpellInfo.CastType, SpellFXType::ON_HIT);
 
 	
 	UWorld* World = GetWorld();
@@ -204,8 +237,8 @@ void UBaseSpellManager::SpawnHitParticle(FVector Location)
 	else
 	{
 		FString ss = "";
-		ss += UHelperFunctions::GetElementName(SpellInfo.Element);
-		ss += UHelperFunctions::GetCastTypeName(SpellInfo.CastType);
+		ss += UHelperFunctions::GetElementName(CurrentSpellInfo.Element);
+		ss += UHelperFunctions::GetCastTypeName(CurrentSpellInfo.CastType);
 		ss += UHelperFunctions::GetSpellFXTypeName(SpellFXType::ON_HIT);
 
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn Niagara System %s"), *ss));

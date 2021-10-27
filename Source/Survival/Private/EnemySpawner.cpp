@@ -61,7 +61,7 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 
 TArray<AActor*> UEnemySpawner::GetAllSpawns()
 {
-	return EnemySpawnPoolManager->GetAllSpawnedActors();
+	return EnemySpawnPoolManager->AllSpawnedActors;
 }
 
 void UEnemySpawner::SpawnEnemy()

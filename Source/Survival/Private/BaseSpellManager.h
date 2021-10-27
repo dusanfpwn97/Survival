@@ -6,6 +6,7 @@
 #include "Components/ActorComponent.h"
 #include "SpellDatatypes.h"
 
+
 #include "BaseSpellManager.generated.h"
 
 class ABaseSpell;
@@ -29,19 +30,13 @@ public:
 		UNiagaraSystem* GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType);
 
 	UFUNCTION()
-		FSpellInfo GetSpellInfo();
-
-	UFUNCTION()
 		void SpawnHitParticle(FVector Location);
 
 	UFUNCTION()
 		AActor* GetCaster() const;
 
-protected:
-	virtual void BeginPlay() override;
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FSpellInfo SpellInfo;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		FSpellInfo CurrentSpellInfo;
 	UPROPERTY()
 		FTimerHandle MainSpellCastTimerHandle;
 	UPROPERTY()
@@ -60,11 +55,24 @@ protected:
 	UFUNCTION()
 		AActor* GetActorForTarget();
 	UFUNCTION()
+		void InitSpellManager(FSpellInfo NewSpellInfo);
+	UFUNCTION()
+		void DestroySpellManager();
+	UFUNCTION()
+		void UpdateCastType(CastType NewCastType);
+	UFUNCTION()
+		void UpdateSpellModifier(SpellModifier NewSpellModifier);
+
+protected:
+	virtual void BeginPlay() override;
+
+	UFUNCTION()
 		void UpdateSpellClass();
 	UFUNCTION()
 		void SetVFXDataTable();
+	UFUNCTION()
+		void MarkAllSpellsForDestruction();
 
-	
 private:
 	
 };
