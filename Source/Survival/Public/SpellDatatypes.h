@@ -82,6 +82,8 @@ struct FSpellInfo : public FTableRowBase
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		float Speed;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+		float Radius;
+	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		Element Element;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		CastType CastType;
@@ -89,6 +91,7 @@ struct FSpellInfo : public FTableRowBase
 		SpellModifier SpellModifier;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TargetMode TargetMode;
+
 	//UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		//FSpellFXInfo ParticlesInfo;
 };

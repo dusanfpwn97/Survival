@@ -10,6 +10,7 @@
 #include "SpellMovementComponent.h"
 #include "BaseSpellManager.h"
 #include "SpellDatatypes.h"
+#include "HelperFunctions.h"
 
 // Sets default values
 ABaseSpell::ABaseSpell()
@@ -34,6 +35,9 @@ void ABaseSpell::Tick(float DeltaTime)
 
 void ABaseSpell::CheckTarget()
 {
+	if (SpellManager) { if (SpellManager->GetIsTargetlessSpell()) return; }
+
+
 	UWorld* World = GetWorld();
 	if (!World) return;
 	if (TargetActor)
@@ -42,13 +46,13 @@ void ABaseSpell::CheckTarget()
 		{
 			if (!ICombatInterface::Execute_GetIsAlive(TargetActor) && !FinishTimerHandle.IsValid())
 			{
-				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 2.f, false);
+				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
 			}
 		}
 	}
 	else if(!FinishTimerHandle.IsValid()) //TODO
 	{
-		World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 2.f, false);
+		World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
 	}
 
 }
@@ -56,9 +60,13 @@ void ABaseSpell::CheckTarget()
 void ABaseSpell::Move()
 {
 	UWorld* World = GetWorld();
-	if (!World) return;
+	if (!World || !SpellManager) return;
 
-
+	if (SpellManager->GetIsTargetlessSpell() && SpellManager->Caster)
+	{
+		SetActorLocation(SpellManager->Caster->GetActorLocation());
+		return;
+	}
 	// If target is not valid, z = 0 so that spell keeps going on without hitting the ground or going in the sky
 	if (TargetActor)
 	{
@@ -76,25 +84,53 @@ void ABaseSpell::Finish()
 {
 	SetActorTickEnabled(false);
 	ClearAllTimers();
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
+	UWorld* World = GetWorld();
+
+	if (!World || !SpellManager)
+	{
+		Reset_Implementation();
+	}
+	else
+	{
+		World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
+		if (SpellManager->GetIsTargetlessSpell())
+		{
+			World->GetTimerManager().SetTimer(StartAgainTimerHandle, this, &ABaseSpell::Start_Implementation, SpellManager->CurrentSpellInfo.Cooldown, false);
+		}
+	}
+
 	TargetActor = nullptr;
 	RemoveCollision();
-	MainNiagaraFX->Deactivate();
-}
-
-UBaseSpellManager* ABaseSpell::GetSpellManager() const
-{
-	return SpellManager;
+	MainNiagaraFX->DeactivateImmediate();
+	
 }
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>() && OtherActor != SpellManager->GetCaster() && OtherActor != this)
+	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>() && OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
 	{
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
-		Finish();
+		CollidedActors.Add(OtherActor);
 		SpellManager->SpawnHitParticle(GetActorLocation());
+		
+		if (!FinishTimerHandle.IsValid())
+		{
+			if (SpellManager->GetIsTargetlessSpell() && SpellManager->CurrentSpellInfo.CastType != CastType::SELF)
+			{
+				//UWorld* World = GetWorld();
+				if (!StartAgainTimerHandle.IsValid())
+				{
+					Finish();
+				}
 
+				//else World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 1.f, false);
+
+			}
+			else
+			{
+				Finish();
+			}
+		}
 	}
 }
 
@@ -105,14 +141,21 @@ void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void ABaseSpell::Start_Implementation()
 {
+	// Note: Spell manager is null the first time!
+
+	UWorld* World = GetWorld();
+	if (!World) return;
+
 	ClearAllTimers();
+	World->GetTimerManager().ClearTimer(StartAgainTimerHandle);
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	SetupCollision();
 	MainNiagaraFX->Activate(true);
+	CollidedActors.Empty();
 
-
-	GetWorld()->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 10.f, true); // Safety
+	SetWatchdogTimers();
+	
 }
 
 void ABaseSpell::Reset_Implementation()
@@ -121,6 +164,9 @@ void ABaseSpell::Reset_Implementation()
 	ClearAllTimers();
 
 	SetActorHiddenInGame(true);
+	CollidedActors.Empty();
+	UWorld* World = GetWorld();
+	if (!World) return;
 
 	if (!IsMarkedForDestruction)
 	{
@@ -129,6 +175,7 @@ void ABaseSpell::Reset_Implementation()
 			IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
 		}
 		else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("CurrentPoolManager null BaseSpell::ResetImplementation!")));
+	
 	}
 	else
 	{
@@ -156,6 +203,8 @@ void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManag
 		FSpellInfo TempSpellInfo = SpellManager->CurrentSpellInfo;
 		UNiagaraSystem* NGSystem = SpellManager->GetNiagaraSystem(TempSpellInfo.Element, TempSpellInfo.CastType, SpellFXType::MAIN);
 		MainNiagaraFX->SetAsset(NGSystem);
+		SetWatchdogTimers();
+		BaseCollider->SetSphereRadius(SpellManager->CurrentSpellInfo.Radius);
 	}
 }
 
@@ -207,6 +256,7 @@ void ABaseSpell::ClearAllTimers()
 		World->GetTimerManager().ClearTimer(FinishTimerHandle);
 		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
 		World->GetTimerManager().ClearTimer(UpdateDirectionTimerHandle);
+		World->GetTimerManager().ClearTimer(CheckForMarkedForDestructionTimerHandle);
 	}
 }
 
@@ -215,5 +265,50 @@ void ABaseSpell::UpdateMoveDirection()
 	if (SpellMovementComponent)
 	{
 		LastDirection = SpellMovementComponent->GetMoveDirection(LastDirection);
+
+	}
+}
+
+void ABaseSpell::CheckForMarkedForDestruction()
+{
+	if (IsMarkedForDestruction)
+	{
+		Finish();
+	}
+}
+
+UBaseSpellManager* ABaseSpell::GetSpellManager() const
+{
+	return SpellManager;
+}
+
+void ABaseSpell::SetWatchdogTimers()
+{
+	UWorld* World = GetWorld();
+	if (!World)
+	{
+		IsMarkedForDestruction = true;
+		Reset_Implementation();
+		return;
+	}
+
+	if (SpellManager)
+	{
+		if (!SpellManager->GetIsTargetlessSpell())
+		{
+			if (!ResetTimerHandle.IsValid())
+			{
+				World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 10.f, false);
+			}
+		}
+		else
+		{
+			if (!CheckForMarkedForDestructionTimerHandle.IsValid())
+			{
+
+			}
+
+			World->GetTimerManager().SetTimer(CheckForMarkedForDestructionTimerHandle, this, &ABaseSpell::CheckForMarkedForDestruction, 1.f, true); // Safety
+		}
 	}
 }

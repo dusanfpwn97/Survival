@@ -9,7 +9,7 @@
 
 
 class UBaseSpellManager;
-UCLASS()
+UCLASS(BlueprintType)
 class SURVIVAL_API UHelperFunctions : public UBlueprintFunctionLibrary
 {
 	GENERATED_BODY()
@@ -20,11 +20,13 @@ public:
 		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
 	UFUNCTION()
 		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		static FString GetElementName(Element Element);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		static FString GetCastTypeName(CastType CastType);
-	UFUNCTION()
+	UFUNCTION(BlueprintCallable)
 		static FString GetSpellFXTypeName(SpellFXType SpellFXType);
+	UFUNCTION(BlueprintCallable)
+		static TArray<CastType> GetAllTargetlessCastTypes();
 
 };

@@ -41,15 +41,6 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
-	/*
-	if (!SpellClassToSpawn)
-	{
-		UpdateSpellClass();
-		if (!SpellClassToSpawn)
-		{
-			return;
-		}
-	}*/
 
 	UWorld* World = GetWorld();
 	if (!World) return;
@@ -63,11 +54,22 @@ void UBaseSpellManager::CastSpell()
 		}
 	}
 
-	AActor* InitialTarget = GetActorForTarget();
+	AActor* InitialTarget;
+	if (!IsTargetlessSpell)
+	{
+		InitialTarget = GetActorForTarget();
+	}
+	else
+	{
+		if (SpellPoolManager->AllSpawnedActors.Num() > 0)
+		{
+			return;
+		}
+		InitialTarget = nullptr;
 
+	}
 	// Don't cast a spell if there is no target and Target mode is not NONE!
-	if (!InitialTarget && CurrentSpellInfo.TargetMode != TargetMode::NONE) return;
-	
+
 	bool IsCached;
 	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ABaseSpell::StaticClass(), IsCached);
 
@@ -82,10 +84,6 @@ void UBaseSpellManager::CastSpell()
 	if (InitialTarget)
 	{
 		ICombatInterface::Execute_SetTarget(SpellToCast, InitialTarget);
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("No target"));
 	}
 
 	IPoolInterface::Execute_SetSpawner(SpellToCast, SpellPoolManager);
@@ -109,11 +107,13 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo = NewSpellInfo;
+	UpdateIsTargetlessSpell();
 	UWorld* World = GetWorld();
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, true);
-
+	
+	CastSpell(); // Debug
 }
 
 void UBaseSpellManager::MarkAllSpellsForDestruction()
@@ -138,12 +138,6 @@ void UBaseSpellManager::MarkAllSpellsForDestruction()
 void UBaseSpellManager::DestroySpellManager()
 {
 	MarkAllSpellsForDestruction();
-}
-
-void UBaseSpellManager::UpdateCastType(CastType NewCastType)
-{
-	MarkAllSpellsForDestruction();
-	CurrentSpellInfo.CastType = NewCastType;
 }
 
 void UBaseSpellManager::UpdateSpellModifier(SpellModifier NewSpellModifier)
@@ -265,3 +259,20 @@ void UBaseSpellManager::SetVFXDataTable()
 	}
 }
 
+bool UBaseSpellManager::GetIsTargetlessSpell() const
+{
+	return IsTargetlessSpell;
+}
+
+void UBaseSpellManager::UpdateIsTargetlessSpell()
+{
+	TArray<CastType> Temp = UHelperFunctions::GetAllTargetlessCastTypes();
+	IsTargetlessSpell = Temp.Contains(CurrentSpellInfo.CastType);
+}
+
+void UBaseSpellManager::UpdateCastType(CastType NewCastType)
+{
+	MarkAllSpellsForDestruction();
+	CurrentSpellInfo.CastType = NewCastType;
+	UpdateIsTargetlessSpell();
+}

@@ -28,9 +28,10 @@ void USpellMovementComponent::BeginPlay()
 
 FVector USpellMovementComponent::GetMoveDirection(FVector CurrentDirection)
 {
+
 	UWorld* World = GetWorld();
 
-	if (!SpellOwner || !World || !SpellOwner->SpellManager)
+	if (!SpellOwner || !World || !SpellOwner->SpellManager || SpellOwner->SpellManager->GetIsTargetlessSpell())
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("SpellOwner not valid! Should not happen USpellMovementComponent::GetMoveDirection()"));
 		return CurrentDirection;

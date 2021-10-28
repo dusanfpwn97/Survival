@@ -54,12 +54,15 @@ public:
 	UPROPERTY()
 		USpellMovementComponent* SpellMovementComponent;
 
+	TArray<AActor*> CollidedActors;
+
 	UFUNCTION()
 		void UpdateMoveDirection();
 protected:
 	virtual void BeginPlay() override;
 
-
+	UFUNCTION()
+		void SetWatchdogTimers();
 	UPROPERTY()
 		FTimerHandle ResetTimerHandle;
 	UPROPERTY()
@@ -68,8 +71,13 @@ protected:
 		FTimerHandle CheckTargetTimerHandle;
 	UPROPERTY()
 		FTimerHandle UpdateDirectionTimerHandle;
+	UPROPERTY()
+		FTimerHandle CheckForMarkedForDestructionTimerHandle;
+	UPROPERTY()
+		FTimerHandle StartAgainTimerHandle;
 
-
+	UFUNCTION()
+		void CheckForMarkedForDestruction();
 	UPROPERTY()
 		FVector LastDirection;
 	UFUNCTION()
@@ -92,6 +100,7 @@ protected:
 
 	UPROPERTY()
 		UObject* CurrentPoolManager;
+
 
 private:
 	UFUNCTION()

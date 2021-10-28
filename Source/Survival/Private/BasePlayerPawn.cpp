@@ -40,9 +40,10 @@ void ABasePlayerPawn::BeginPlay()
 
 	FSpellInfo Info;
 	Info.Element = Element::FIRE;
-	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.6f;
+	Info.CastType = CastType::SELF;
+	Info.Cooldown = 1.6f;
 	Info.Speed = 500.f;
+	Info.Radius = 150.f;
 	SpellComponent->AddNewSpell(Info);
 }
 

@@ -49,6 +49,8 @@ public:
 		UClass* SpellClassToSpawn;
 	UPROPERTY()
 		TMap<SpellFXType, UNiagaraSystem*> CachedParticles;
+	UFUNCTION()
+		bool GetIsTargetlessSpell() const;
 	//
 	UFUNCTION()
 		void CastSpell();
@@ -72,7 +74,14 @@ protected:
 		void SetVFXDataTable();
 	UFUNCTION()
 		void MarkAllSpellsForDestruction();
+	
+	UPROPERTY()
+		bool IsTargetlessSpell = false;
 
+
+	UFUNCTION()
+		void UpdateIsTargetlessSpell();
 private:
 	
+
 };

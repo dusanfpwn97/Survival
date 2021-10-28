@@ -101,6 +101,14 @@ FString UHelperFunctions::GetSpellFXTypeName(SpellFXType SpellFXType)
 
 	return FString();
 }
+TArray<CastType> UHelperFunctions::GetAllTargetlessCastTypes()
+{
+	TArray<CastType> Temp;
+	Temp.Add(CastType::NOVA);
+	Temp.Add(CastType::SELF);
+
+	return Temp;
+}
 /*
 void UHelperFunctions::AddSpell(AActor* Caster, UBaseSpellManager* SpellClass)
 {
