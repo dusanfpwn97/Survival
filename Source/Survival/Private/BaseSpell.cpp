@@ -82,7 +82,7 @@ void ABaseSpell::Move()
 
 void ABaseSpell::Finish()
 {
-	SetActorTickEnabled(false);
+	
 	ClearAllTimers();
 	UWorld* World = GetWorld();
 
@@ -160,6 +160,7 @@ void ABaseSpell::Start_Implementation()
 
 void ABaseSpell::Reset_Implementation()
 {
+	SetActorTickEnabled(false);
 	Finish();
 	ClearAllTimers();
 
