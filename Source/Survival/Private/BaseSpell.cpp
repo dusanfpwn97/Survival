@@ -11,6 +11,7 @@
 #include "BaseSpellManager.h"
 #include "SpellDatatypes.h"
 #include "HelperFunctions.h"
+#include "SpellVFXComponent.h"
 
 // Sets default values
 ABaseSpell::ABaseSpell()
@@ -24,12 +25,13 @@ void ABaseSpell::BeginPlay()
 {
 	if (SpellMovementComponent) SpellMovementComponent->SpellOwner = this;
 	Super::BeginPlay();
+
 }
 
 void ABaseSpell::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	
 	Move();
 }
 
@@ -47,18 +49,24 @@ void ABaseSpell::CheckTarget()
 			if (!ICombatInterface::Execute_GetIsAlive(TargetActor) && !FinishTimerHandle.IsValid())
 			{
 				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
+				//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
+				TargetActor = nullptr; // TODO look into how to optimize. Maybe some timers are called during these 8 seconds
 			}
 		}
 	}
 	else if(!FinishTimerHandle.IsValid()) //TODO
 	{
 		World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
+		//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
 	}
 
 }
 
 void ABaseSpell::Move()
 {
+
+	
+	UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
 	UWorld* World = GetWorld();
 	if (!World || !SpellManager) return;
 
@@ -70,11 +78,16 @@ void ABaseSpell::Move()
 	// If target is not valid, z = 0 so that spell keeps going on without hitting the ground or going in the sky
 	if (TargetActor)
 	{
-		if (LastDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
+		if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 		{
-			LastDirection.Z = 0;
+			if (LastDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
+			{
+				LastDirection.Z = 0;
+			}
 		}
-	} else LastDirection.Z = 0;
+
+	} 
+	else LastDirection.Z = 0;
 
 	FHitResult Hit;
 	AddActorWorldOffset(LastDirection * SpellManager->CurrentSpellInfo.Speed * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
@@ -82,7 +95,7 @@ void ABaseSpell::Move()
 
 void ABaseSpell::Finish()
 {
-	
+	//SetActorTickEnabled(false);
 	ClearAllTimers();
 	UWorld* World = GetWorld();
 
@@ -101,8 +114,7 @@ void ABaseSpell::Finish()
 
 	TargetActor = nullptr;
 	RemoveCollision();
-	MainNiagaraFX->DeactivateImmediate();
-	
+	VFXComponent->StopMainVFX();
 }
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -111,7 +123,8 @@ void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 	{
 		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
 		CollidedActors.Add(OtherActor);
-		SpellManager->SpawnHitParticle(GetActorLocation());
+
+		if(VFXComponent) VFXComponent->StartHitVFX();
 		
 		if (!FinishTimerHandle.IsValid())
 		{
@@ -151,7 +164,7 @@ void ABaseSpell::Start_Implementation()
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	SetupCollision();
-	MainNiagaraFX->Activate(true);
+	VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
 
 	SetWatchdogTimers();
@@ -166,6 +179,8 @@ void ABaseSpell::Reset_Implementation()
 
 	SetActorHiddenInGame(true);
 	CollidedActors.Empty();
+
+	VFXComponent->Hibernate();
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -201,9 +216,7 @@ void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManag
 	SpellManager = NewSpellManager;
 	if (SpellManager)
 	{
-		FSpellInfo TempSpellInfo = SpellManager->CurrentSpellInfo;
-		UNiagaraSystem* NGSystem = SpellManager->GetNiagaraSystem(TempSpellInfo.Element, TempSpellInfo.CastType, SpellFXType::MAIN);
-		MainNiagaraFX->SetAsset(NGSystem);
+		VFXComponent->SetupVFX(SpellManager, this);
 		SetWatchdogTimers();
 		BaseCollider->SetSphereRadius(SpellManager->CurrentSpellInfo.Radius);
 	}
@@ -224,14 +237,11 @@ void ABaseSpell::SetupComponents()
 	BaseCollider = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BaseCollider")));
 	RootComponent = BaseCollider;
 
-	MainNiagaraFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("NGParticle")));
+	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 	SpellMovementComponent = CreateDefaultSubobject<USpellMovementComponent>(FName(TEXT("SpellMovementComponent")));
-
 
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
-
-	MainNiagaraFX->SetupAttachment(RootComponent);
 
 	SetupCollision();
 }
@@ -266,7 +276,7 @@ void ABaseSpell::UpdateMoveDirection()
 	if (SpellMovementComponent)
 	{
 		LastDirection = SpellMovementComponent->GetMoveDirection(LastDirection);
-
+		//LastDirection = FVector(0.5f, 0, 0);
 	}
 }
 
@@ -299,7 +309,7 @@ void ABaseSpell::SetWatchdogTimers()
 		{
 			if (!ResetTimerHandle.IsValid())
 			{
-				World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 10.f, false);
+				World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, WatchdogTime, false);
 			}
 		}
 		else

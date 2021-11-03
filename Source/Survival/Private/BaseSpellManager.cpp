@@ -21,7 +21,7 @@ UBaseSpellManager::UBaseSpellManager()
 
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 
-	SetVFXDataTable();
+	
 }
 
 // Called when the game starts
@@ -29,7 +29,6 @@ void UBaseSpellManager::BeginPlay()
 {
 
 	Super::BeginPlay();
-	Caster = GetOwner();
 }
 
 void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -41,34 +40,26 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
-
 	UWorld* World = GetWorld();
 	if (!World) return;
-	if (!Caster) return;
-	{
-		Caster = GetOwner();
-		if (!Caster)
-		{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Caster is nullptr, so cannot cast spell"));
-			return;
-		}
-	}
 
-	AActor* InitialTarget;
+	if (!Caster)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Caster is nullptr, so cannot cast spell"));
+		return;
+	}
+	
+	AActor* InitialTarget = nullptr;
 	if (!IsTargetlessSpell)
 	{
 		InitialTarget = GetActorForTarget();
-	}
-	else
-	{
-		if (SpellPoolManager->AllSpawnedActors.Num() > 0)
+
+		if (InitialTarget == nullptr)
 		{
+			// Don't cast a spell if there is no target
 			return;
 		}
-		InitialTarget = nullptr;
-
 	}
-	// Don't cast a spell if there is no target and Target mode is not NONE!
 
 	bool IsCached;
 	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ABaseSpell::StaticClass(), IsCached);
@@ -88,6 +79,7 @@ void UBaseSpellManager::CastSpell()
 
 	IPoolInterface::Execute_SetSpawner(SpellToCast, SpellPoolManager);
 	SpellToCast->SetActorLocation(Location);
+
 }
 
 AActor* UBaseSpellManager::GetActorForTarget()
@@ -112,8 +104,8 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, true);
-	
-	CastSpell(); // Debug
+
+	//CastSpell(); // Debug
 }
 
 void UBaseSpellManager::MarkAllSpellsForDestruction()
@@ -131,7 +123,6 @@ void UBaseSpellManager::MarkAllSpellsForDestruction()
 			}
 		}
 	}
-	CachedParticles.Empty();
 	SpellPoolManager->AllSpawnedActors.Empty();
 }
 
@@ -156,107 +147,9 @@ void UBaseSpellManager::UpdateSpellClass()
 	}
 }
 
-UNiagaraSystem* UBaseSpellManager::GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType)
-{
-
-	if (CachedParticles.Contains(SpellFXType)) return CachedParticles.FindRef(SpellFXType);
-
-	if (!VFX_DataTable)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
-		return nullptr;
-	}
-
-	UNiagaraSystem* NS = nullptr;
-
-	for (auto it : VFX_DataTable->GetRowMap())
-	{
-		
-		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
-		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
-		if (SpellVFXInfo)
-		{
-			if (SpellVFXInfo->Binding.Element == Element && SpellVFXInfo->Binding.CastType == CastType)
-			{
-				if (SpellFXType == SpellFXType::ON_SPAWN)
-				{
-					NS = SpellVFXInfo->SpawnFX.LoadSynchronous();
-				}
-				else if (SpellFXType == SpellFXType::MAIN)
-				{
-					NS = SpellVFXInfo->MainFX.LoadSynchronous();
-				}
-				else if (SpellFXType == SpellFXType::ON_HIT)
-				{
-					NS = SpellVFXInfo->HitFX.LoadSynchronous();
-				}
-
-				if (NS)
-				{
-					CachedParticles.Add(SpellFXType, NS);
-					return NS;
-				}
-			}
-		}
-	}
-
-	if (!NS)
-	{
-
-		FString sss = UHelperFunctions::GetCastTypeName(CurrentSpellInfo.CastType);
-		sss.Append(" + ");
-		FString aa = UHelperFunctions::GetElementName(CurrentSpellInfo.Element);
-		sss.Append(aa);
-		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *sss));
-		SET_WARN_COLOR(COLOR_RED);
-		UE_LOG(LogTemp, Warning, TEXT("Failed to find Niagara System %s"), *sss);
-		CLEAR_WARN_COLOR();
-		return nullptr;
-	}
-	return nullptr;
-}
-
-void UBaseSpellManager::SpawnHitParticle(FVector Location)
-{
-	UNiagaraSystem* System = GetNiagaraSystem(CurrentSpellInfo.Element, CurrentSpellInfo.CastType, SpellFXType::ON_HIT);
-
-	
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	if (System)
-	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, System, Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
-	}
-	else
-	{
-		FString ss = "";
-		ss += UHelperFunctions::GetElementName(CurrentSpellInfo.Element);
-		ss += UHelperFunctions::GetCastTypeName(CurrentSpellInfo.CastType);
-		ss += UHelperFunctions::GetSpellFXTypeName(SpellFXType::ON_HIT);
-
-		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn Niagara System %s"), *ss));
-		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Niagara System %s"), *ss);
-	}
-}
-
 AActor* UBaseSpellManager::GetCaster() const
 {
 	return Caster;
-}
-
-void UBaseSpellManager::SetVFXDataTable()
-{
-	ConstructorHelpers::FObjectFinder<UDataTable>DataTableAsset(TEXT("DataTable'/Game/GameSettings/DT_SpellVFX.DT_SpellVFX'"));
-	UDataTable* DT = DataTableAsset.Object;
-	if (DT)
-	{
-		VFX_DataTable = DT;
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("No VFX DataTable found!"));
-	}
 }
 
 bool UBaseSpellManager::GetIsTargetlessSpell() const

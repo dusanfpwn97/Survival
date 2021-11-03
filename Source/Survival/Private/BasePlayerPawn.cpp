@@ -40,11 +40,13 @@ void ABasePlayerPawn::BeginPlay()
 
 	FSpellInfo Info;
 	Info.Element = Element::FIRE;
-	Info.CastType = CastType::SELF;
-	Info.Cooldown = 1.6f;
-	Info.Speed = 500.f;
-	Info.Radius = 150.f;
+	Info.CastType = CastType::FLICK;
+	Info.Cooldown = 0.5f;
+	Info.Speed = 700.f;
+	Info.Radius = 30.f;
+	Info.TargetMode = TargetMode::CLOSEST;
 	SpellComponent->AddNewSpell(Info);
+
 }
 
 // Called every frame

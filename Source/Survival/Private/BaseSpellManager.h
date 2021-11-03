@@ -27,12 +27,6 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 	UFUNCTION()
-		UNiagaraSystem* GetNiagaraSystem(Element Element, CastType CastType, SpellFXType SpellFXType);
-
-	UFUNCTION()
-		void SpawnHitParticle(FVector Location);
-
-	UFUNCTION()
 		AActor* GetCaster() const;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -41,14 +35,12 @@ public:
 		FTimerHandle MainSpellCastTimerHandle;
 	UPROPERTY()
 		UPoolManager* SpellPoolManager;
-	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = "_Setup")
-		UDataTable* VFX_DataTable;
+
 	UPROPERTY()
 		AActor* Caster;
 	UPROPERTY()
 		UClass* SpellClassToSpawn;
-	UPROPERTY()
-		TMap<SpellFXType, UNiagaraSystem*> CachedParticles;
+
 	UFUNCTION()
 		bool GetIsTargetlessSpell() const;
 	//
@@ -70,8 +62,7 @@ protected:
 
 	UFUNCTION()
 		void UpdateSpellClass();
-	UFUNCTION()
-		void SetVFXDataTable();
+
 	UFUNCTION()
 		void MarkAllSpellsForDestruction();
 	

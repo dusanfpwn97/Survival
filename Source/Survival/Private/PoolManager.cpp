@@ -71,7 +71,11 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass, bool &Is
 			return ActorToGet;
 		}
 	}
-	else return nullptr;
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("sdfwefw"));
+		return nullptr;
+	}
 }
 
 void UPoolManager::ReleaseToPool_Implementation(AActor* Actor)

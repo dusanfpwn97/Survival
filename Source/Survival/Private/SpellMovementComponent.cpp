@@ -38,17 +38,23 @@ FVector USpellMovementComponent::GetMoveDirection(FVector CurrentDirection)
 	}
 
 	if (!SpellOwner->TargetActor) return CurrentDirection;
-	if (!SpellOwner->TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return CurrentDirection;
+
 	
 	FSpellInfo SpellInfo = SpellOwner->SpellManager->CurrentSpellInfo;
 	FVector NewDirection;
 
-	if (ICombatInterface::Execute_GetIsAlive(SpellOwner->TargetActor))
+	if (SpellOwner->TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 	{
-		//if(SpellInfo.CastType == CastType::FLICK)
-		NewDirection = SpellOwner->TargetActor->GetActorLocation() - SpellOwner->GetActorLocation();
-		NewDirection.Normalize();
-		return NewDirection;
+		if (ICombatInterface::Execute_GetIsAlive(SpellOwner->TargetActor))
+		{
+			//if(SpellInfo.CastType == CastType::FLICK)
+			NewDirection = SpellOwner->TargetActor->GetActorLocation() - SpellOwner->GetActorLocation();
+			NewDirection.Normalize();
+			return NewDirection;
+		}
+		else return CurrentDirection;
 	}
-	else return CurrentDirection;
+
+	return CurrentDirection;
+
 }

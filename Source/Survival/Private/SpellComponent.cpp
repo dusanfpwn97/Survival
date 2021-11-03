@@ -40,4 +40,5 @@ void USpellComponent::AddNewSpell(FSpellInfo SpellInfo)
 	NewSpell->RegisterComponent();
 	SpellManagers.Add(NewSpell);
 	NewSpell->InitSpellManager(SpellInfo);
+	NewSpell->Caster = GetOwner();
 }

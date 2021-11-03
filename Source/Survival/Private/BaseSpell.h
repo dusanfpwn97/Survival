@@ -12,6 +12,7 @@ class USphereComponent;
 class UBaseSpellManager;
 class UPoolManager;
 class USpellMovementComponent;
+class USpellVFXComponent;
 
 #include "BaseSpell.generated.h"
 
@@ -44,8 +45,9 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USphereComponent* BaseCollider;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		UNiagaraComponent* MainNiagaraFX;
+	UPROPERTY()
+		USpellVFXComponent* VFXComponent;
+	
 	//
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AActor* TargetActor;
@@ -58,6 +60,8 @@ public:
 
 	UFUNCTION()
 		void UpdateMoveDirection();
+	UPROPERTY()
+		FVector LastDirection;
 protected:
 	virtual void BeginPlay() override;
 
@@ -78,8 +82,7 @@ protected:
 
 	UFUNCTION()
 		void CheckForMarkedForDestruction();
-	UPROPERTY()
-		FVector LastDirection;
+
 	UFUNCTION()
 		void CheckTarget();
 	UFUNCTION()
@@ -101,6 +104,7 @@ protected:
 	UPROPERTY()
 		UObject* CurrentPoolManager;
 
+	float WatchdogTime = 15.f;
 
 private:
 	UFUNCTION()
