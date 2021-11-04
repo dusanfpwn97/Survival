@@ -18,8 +18,10 @@ ABaseSpell::ABaseSpell()
 {
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = false;
-	
+
 	SetupComponents();
+
+
 }
 
 void ABaseSpell::BeginPlay()
