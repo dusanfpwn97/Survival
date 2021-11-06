@@ -68,12 +68,11 @@ void ABaseSpell::CheckTarget()
 void ABaseSpell::Move()
 {
 
-	
-	UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
+	//UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
 	UWorld* World = GetWorld();
 	if (!World || !SpellManager) return;
 
-	if (SpellManager->GetIsTargetlessSpell() && SpellManager->Caster)
+	if ((SpellManager->CurrentSpellInfo.CastType == CastType ::NOVA || SpellManager->CurrentSpellInfo.CastType == CastType::SHIELD) && SpellManager->Caster)
 	{
 		SetActorLocation(SpellManager->Caster->GetActorLocation());
 		return;
@@ -109,15 +108,14 @@ void ABaseSpell::Finish()
 	else
 	{
 		World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
-		if (SpellManager->GetIsTargetlessSpell())
-		{
-			World->GetTimerManager().SetTimer(StartAgainTimerHandle, this, &ABaseSpell::Start_Implementation, SpellManager->CurrentSpellInfo.Cooldown, false);
-		}
+
 	}
 
 	TargetActor = nullptr;
 	RemoveCollision();
 	VFXComponent->StopMainVFX();
+
+	SpellManager->OnSpellFinished(this);
 }
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
@@ -129,24 +127,7 @@ void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 
 		if(VFXComponent) VFXComponent->StartHitVFX();
 		
-		if (!FinishTimerHandle.IsValid())
-		{
-			if (SpellManager->GetIsTargetlessSpell() && SpellManager->CurrentSpellInfo.CastType != CastType::SELF)
-			{
-				//UWorld* World = GetWorld();
-				if (!StartAgainTimerHandle.IsValid())
-				{
-					Finish();
-				}
-
-				//else World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 1.f, false);
-
-			}
-			else
-			{
-				Finish();
-			}
-		}
+		Finish();
 	}
 }
 
@@ -163,10 +144,10 @@ void ABaseSpell::Start_Implementation()
 	if (!World) return;
 
 	ClearAllTimers();
-	World->GetTimerManager().ClearTimer(StartAgainTimerHandle);
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	SetupCollision();
+	World->GetTimerManager().SetTimer(SetupCollisionTimerHandle, this, &ABaseSpell::SetupCollision, 0.075f, true);
+
 	VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
 
@@ -270,7 +251,8 @@ void ABaseSpell::ClearAllTimers()
 		World->GetTimerManager().ClearTimer(FinishTimerHandle);
 		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
 		World->GetTimerManager().ClearTimer(UpdateDirectionTimerHandle);
-		World->GetTimerManager().ClearTimer(CheckForMarkedForDestructionTimerHandle);
+		World->GetTimerManager().ClearTimer(SetupCollisionTimerHandle);
+		
 	}
 }
 
@@ -280,14 +262,6 @@ void ABaseSpell::UpdateMoveDirection()
 	{
 		LastDirection = SpellMovementComponent->GetMoveDirection(LastDirection);
 		//LastDirection = FVector(0.5f, 0, 0);
-	}
-}
-
-void ABaseSpell::CheckForMarkedForDestruction()
-{
-	if (IsMarkedForDestruction)
-	{
-		Finish();
 	}
 }
 
@@ -306,23 +280,5 @@ void ABaseSpell::SetWatchdogTimers()
 		return;
 	}
 
-	if (SpellManager)
-	{
-		if (!SpellManager->GetIsTargetlessSpell())
-		{
-			if (!ResetTimerHandle.IsValid())
-			{
-				World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, WatchdogTime, false);
-			}
-		}
-		else
-		{
-			if (!CheckForMarkedForDestructionTimerHandle.IsValid())
-			{
-
-			}
-
-			World->GetTimerManager().SetTimer(CheckForMarkedForDestructionTimerHandle, this, &ABaseSpell::CheckForMarkedForDestruction, 1.f, true); // Safety
-		}
-	}
+	World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, WatchdogTime, false);
 }

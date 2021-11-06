@@ -57,6 +57,13 @@ public:
 	UFUNCTION()
 		void UpdateSpellModifier(SpellModifier NewSpellModifier);
 
+
+	void StartCastSpellTimer(bool ShouldLoop);
+
+	void OnSpellFinished(ABaseSpell* FinishedSpell);
+
+	bool IsSingleCastSpell();
+
 protected:
 	virtual void BeginPlay() override;
 

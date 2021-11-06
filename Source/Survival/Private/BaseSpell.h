@@ -76,12 +76,7 @@ protected:
 	UPROPERTY()
 		FTimerHandle UpdateDirectionTimerHandle;
 	UPROPERTY()
-		FTimerHandle CheckForMarkedForDestructionTimerHandle;
-	UPROPERTY()
-		FTimerHandle StartAgainTimerHandle;
-
-	UFUNCTION()
-		void CheckForMarkedForDestruction();
+		FTimerHandle SetupCollisionTimerHandle;
 
 	UFUNCTION()
 		void CheckTarget();
@@ -104,7 +99,7 @@ protected:
 	UPROPERTY()
 		UObject* CurrentPoolManager;
 
-	float WatchdogTime = 15.f;
+	float WatchdogTime = 10.f;
 
 private:
 	UFUNCTION()

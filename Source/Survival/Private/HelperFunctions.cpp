@@ -61,14 +61,14 @@ TArray<AActor*> UHelperFunctions::GetAllAliveActors(TArray<AActor*> ActorsToChec
 FString UHelperFunctions::GetElementName(Element Element)
 {
 	if (Element == Element::FIRE) return "Fire";
-	if (Element == Element::DARK) return "Dark";
+	if (Element == Element::VOID) return "Void";
 	if (Element == Element::EARTH) return "Earth";
 	if (Element == Element::ELECTRICITY) return "Electricity";
 	if (Element == Element::ICE) return "Ice";
 	if (Element == Element::NO_ELEMENT) return "No Element";
 	if (Element == Element::POISON) return "Poison";
 	if (Element == Element::WATER) return "Water";
-	if (Element == Element::WIND) return "Wind";
+	if (Element == Element::AIR) return "Air";
 
 	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant Element Enum!  UHelperFunctions::GetElementName")));
 	UE_LOG(LogTemp, Warning, TEXT("Non-existant Element Enum!  UHelperFunctions::GetElementName"));
@@ -82,7 +82,7 @@ FString UHelperFunctions::GetCastTypeName(CastType CastType)
 	if (CastType == CastType::NOVA) return "Nova";
 	if (CastType == CastType::NO_CAST_TYPE) return "No Cast Type";
 	if (CastType == CastType::PROJECTILE) return "Projectile";
-	if (CastType == CastType::SELF) return "Self";
+	if (CastType == CastType::SHIELD) return "Shield";
 	if (CastType == CastType::STORM) return "Storm";
 
 	GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Non-existant CastType Enum!  UHelperFunctions::GetCastTypeName")));
@@ -105,7 +105,7 @@ TArray<CastType> UHelperFunctions::GetAllTargetlessCastTypes()
 {
 	TArray<CastType> Temp;
 	Temp.Add(CastType::NOVA);
-	Temp.Add(CastType::SELF);
+	Temp.Add(CastType::SHIELD);
 
 	return Temp;
 }

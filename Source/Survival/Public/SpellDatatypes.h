@@ -28,10 +28,10 @@ enum class Element : uint8
 	NO_ELEMENT,
 	FIRE,
 	WATER,
-	WIND,
+	AIR,
 	ELECTRICITY,
 	POISON,
-	DARK,
+	VOID,
 	EARTH,
 	ICE
 };
@@ -41,7 +41,7 @@ enum class CastType : uint8
 {
 	NO_CAST_TYPE,
 	PROJECTILE,
-	SELF,
+	SHIELD,
 	BEAM,
 	NOVA,
 	STORM,

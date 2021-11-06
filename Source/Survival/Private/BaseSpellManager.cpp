@@ -40,6 +40,7 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 
 void UBaseSpellManager::CastSpell()
 {
+
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -103,7 +104,10 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	UWorld* World = GetWorld();
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, true);
+	
+	StartCastSpellTimer(!IsSingleCastSpell());
+
+
 
 	//CastSpell(); // Debug
 }
@@ -135,6 +139,25 @@ void UBaseSpellManager::UpdateSpellModifier(SpellModifier NewSpellModifier)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo.SpellModifier = NewSpellModifier;
+}
+
+void UBaseSpellManager::StartCastSpellTimer(bool ShouldLoop)
+{
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, ShouldLoop);
+}
+
+void UBaseSpellManager::OnSpellFinished(ABaseSpell* FinishedSpell)
+{
+	if (IsSingleCastSpell())
+	{
+		StartCastSpellTimer(false);
+	}
+}
+
+bool UBaseSpellManager::IsSingleCastSpell()
+{
+	if (CurrentSpellInfo.CastType == CastType::NOVA || CurrentSpellInfo.CastType == CastType::SHIELD) return true;
+	else return false;
 }
 
 void UBaseSpellManager::UpdateSpellClass()

@@ -41,9 +41,17 @@ void ABasePlayerPawn::BeginPlay()
 	FSpellInfo Info;
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::FLICK;
-	Info.Cooldown = 0.5f;
-	Info.Speed = 700.f;
+	Info.Cooldown = 0.8f;
+	Info.Speed = 900.f;
 	Info.Radius = 30.f;
+	Info.TargetMode = TargetMode::CLOSEST;
+	SpellComponent->AddNewSpell(Info);
+
+	Info.Element = Element::VOID;
+	Info.CastType = CastType::PROJECTILE;
+	Info.Cooldown = 2.5f;
+	Info.Speed = 300.f;
+	Info.Radius = 40.f;
 	Info.TargetMode = TargetMode::CLOSEST;
 	SpellComponent->AddNewSpell(Info);
 
@@ -69,7 +77,6 @@ void ABasePlayerPawn::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor
 	if (OverlappedComp == MainCollider && OtherActor->Implements<UCombatInterface>())
 	{
 
-		//ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
 	}
 }
 
