@@ -40,7 +40,7 @@ void ABaseSpell::Tick(float DeltaTime)
 
 void ABaseSpell::CheckTarget()
 {
-	if (SpellManager) { if (SpellManager->GetIsTargetlessSpell()) return; }
+	if (SpellManager) { if (SpellManager->GetIsStaticLocationSpell()) return; }
 
 
 	UWorld* World = GetWorld();
@@ -68,7 +68,7 @@ void ABaseSpell::CheckTarget()
 void ABaseSpell::Move()
 {
 
-	//UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
+	
 	UWorld* World = GetWorld();
 	if (!World || !SpellManager) return;
 
@@ -77,20 +77,27 @@ void ABaseSpell::Move()
 		SetActorLocation(SpellManager->Caster->GetActorLocation());
 		return;
 	}
+
+	UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
+
 	// If target is not valid, z = 0 so that spell keeps going on without hitting the ground or going in the sky
-	if (TargetActor)
+	
+	if (SpellManager->CurrentSpellInfo.CastType != CastType::STORM)
 	{
-		if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
+		if (TargetActor)
 		{
-			if (LastDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
+			if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 			{
-				LastDirection.Z = 0;
+				if (LastDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
+				{
+					LastDirection.Z = 0;
+				}
 			}
 		}
-
-	} 
-	else LastDirection.Z = 0;
-
+		else LastDirection.Z = 0;
+	}
+	
+	
 	FHitResult Hit;
 	AddActorWorldOffset(LastDirection * SpellManager->CurrentSpellInfo.Speed * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 }
@@ -120,13 +127,16 @@ void ABaseSpell::Finish()
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-	if (OverlappedComp == BaseCollider && OtherActor->Implements<UCombatInterface>() && OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
+	if (OverlappedComp == BaseCollider && OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
 	{
-		ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
+		if (OtherActor->Implements<UCombatInterface>())
+		{
+			ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
+		}
+
 		CollidedActors.Add(OtherActor);
 
-		if(VFXComponent) VFXComponent->StartHitVFX();
-		
+		if (VFXComponent) VFXComponent->StartHitVFX();
 		Finish();
 	}
 }
@@ -146,13 +156,18 @@ void ABaseSpell::Start_Implementation()
 	ClearAllTimers();
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	World->GetTimerManager().SetTimer(SetupCollisionTimerHandle, this, &ABaseSpell::SetupCollision, 0.075f, true);
+	World->GetTimerManager().SetTimer(SetupCollisionTimerHandle, this, &ABaseSpell::SetupCollision, 0.1f, true);
 
 	VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
 
 	SetWatchdogTimers();
-	
+
+	if (SpellManager)
+	{
+		if (!SpellManager->GetIsStaticLocationSpell()) UpdateMoveDirection();
+	}
+
 }
 
 void ABaseSpell::Reset_Implementation()
@@ -189,7 +204,7 @@ void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	World->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
+	//World->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
 	World->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ABaseSpell::CheckTarget, 0.25f, true);
 	CheckTarget();
 	UpdateMoveDirection();
@@ -261,7 +276,6 @@ void ABaseSpell::UpdateMoveDirection()
 	if (SpellMovementComponent)
 	{
 		LastDirection = SpellMovementComponent->GetMoveDirection(LastDirection);
-		//LastDirection = FVector(0.5f, 0, 0);
 	}
 }
 

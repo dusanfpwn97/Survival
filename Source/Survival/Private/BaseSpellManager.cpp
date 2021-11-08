@@ -51,17 +51,17 @@ void UBaseSpellManager::CastSpell()
 	}
 	
 	AActor* InitialTarget = nullptr;
-	if (!IsTargetlessSpell)
+	if (!IsStaticLocationSpell)
 	{
 		InitialTarget = GetActorForTarget();
 
 		if (InitialTarget == nullptr)
 		{
 			// Don't cast a spell if there is no target
-			return;
+			//return;
 		}
 	}
-
+	
 	bool IsCached;
 	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ABaseSpell::StaticClass(), IsCached);
 
@@ -70,8 +70,8 @@ void UBaseSpellManager::CastSpell()
 		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 		return;
 	}
-
-	FVector Location = ICombatInterface::Execute_GetSpellCastLocation(Caster);
+	
+	FVector Location = GetStartingSpellLocation();
 	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
 	if (InitialTarget)
 	{
@@ -141,11 +141,25 @@ void UBaseSpellManager::UpdateSpellModifier(SpellModifier NewSpellModifier)
 	CurrentSpellInfo.SpellModifier = NewSpellModifier;
 }
 
+FVector UBaseSpellManager::GetStartingSpellLocation()
+{
+	FVector Vec = ICombatInterface::Execute_GetSpellCastLocation(Caster);
+
+	if (CurrentSpellInfo.CastType == CastType::STORM)
+	{
+		Vec.Z += 1000.f;
+		Vec.X += FMath::FRandRange(-600.f, 600.f);
+		Vec.Y += FMath::FRandRange(-600.f, 600.f);
+	}
+	
+	return Vec;
+}
+
 void UBaseSpellManager::StartCastSpellTimer(bool ShouldLoop)
 {
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, ShouldLoop);
 }
-
+ 
 void UBaseSpellManager::OnSpellFinished(ABaseSpell* FinishedSpell)
 {
 	if (IsSingleCastSpell())
@@ -175,15 +189,19 @@ AActor* UBaseSpellManager::GetCaster() const
 	return Caster;
 }
 
-bool UBaseSpellManager::GetIsTargetlessSpell() const
+bool UBaseSpellManager::GetIsStaticLocationSpell() const
 {
-	return IsTargetlessSpell;
+	return IsStaticLocationSpell;
 }
 
 void UBaseSpellManager::UpdateIsTargetlessSpell()
 {
+	IsStaticLocationSpell = false;
 	TArray<CastType> Temp = UHelperFunctions::GetAllTargetlessCastTypes();
-	IsTargetlessSpell = Temp.Contains(CurrentSpellInfo.CastType);
+	if (Temp.Contains(CurrentSpellInfo.CastType))
+	{
+		IsStaticLocationSpell = true;
+	}
 }
 
 void UBaseSpellManager::UpdateCastType(CastType NewCastType)

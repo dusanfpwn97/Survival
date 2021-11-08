@@ -42,7 +42,7 @@ public:
 		UClass* SpellClassToSpawn;
 
 	UFUNCTION()
-		bool GetIsTargetlessSpell() const;
+		bool GetIsStaticLocationSpell() const;
 	//
 	UFUNCTION()
 		void CastSpell();
@@ -56,6 +56,8 @@ public:
 		void UpdateCastType(CastType NewCastType);
 	UFUNCTION()
 		void UpdateSpellModifier(SpellModifier NewSpellModifier);
+	UFUNCTION()
+		FVector GetStartingSpellLocation();
 
 
 	void StartCastSpellTimer(bool ShouldLoop);
@@ -74,7 +76,7 @@ protected:
 		void MarkAllSpellsForDestruction();
 	
 	UPROPERTY()
-		bool IsTargetlessSpell = false;
+		bool IsStaticLocationSpell = false;
 
 
 	UFUNCTION()

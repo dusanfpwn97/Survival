@@ -22,7 +22,9 @@ public:
 
 	UFUNCTION()
 		FVector GetMoveDirection(FVector CurrentDirection);
-	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	bool hasset = false;
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
