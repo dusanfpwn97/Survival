@@ -5,8 +5,6 @@
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
 #include "SpellDatatypes.h"
-
-
 #include "BaseSpellManager.generated.h"
 
 class ABaseSpell;
