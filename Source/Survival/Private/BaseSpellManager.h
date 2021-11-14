@@ -35,7 +35,8 @@ public:
 		FTimerHandle MainSpellCastTimerHandle;
 	UPROPERTY()
 		UPoolManager* SpellPoolManager;
-
+	UPROPERTY()
+		TArray<SpellModifier> SpellModifiers;
 	UPROPERTY()
 		AActor* Caster;
 	UPROPERTY()
@@ -58,7 +59,10 @@ public:
 		void UpdateSpellModifier(SpellModifier NewSpellModifier);
 	UFUNCTION()
 		FVector GetStartingSpellLocation();
-
+	UFUNCTION()
+		void AddSpellModifier(SpellModifier NewSpellModifier);
+	UFUNCTION()
+		void RemoveSpellModifier(SpellModifier NewSpellModifier);
 
 	void StartCastSpellTimer(bool ShouldLoop);
 
@@ -80,7 +84,7 @@ protected:
 
 
 	UFUNCTION()
-		void UpdateIsTargetlessSpell();
+		void UpdateIsStaticLocationSpell();
 private:
 	
 

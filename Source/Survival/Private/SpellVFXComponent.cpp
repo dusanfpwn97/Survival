@@ -10,6 +10,7 @@
 #include "HelperFunctions.h"
 #include "NiagaraFunctionLibrary.h"
 #include "Kismet/KismetMathLibrary.h"
+#include "SpellFunctionLibrary.h"
 
 // Sets default values for this component's properties
 USpellVFXComponent::USpellVFXComponent()
@@ -91,9 +92,9 @@ void USpellVFXComponent::StartHitVFX()
 	else
 	{
 		FString ss = "";
-		ss += UHelperFunctions::GetElementName(SpellManagerOwner->CurrentSpellInfo.Element);
-		ss += UHelperFunctions::GetCastTypeName(SpellManagerOwner->CurrentSpellInfo.CastType);
-		ss += UHelperFunctions::GetSpellFXTypeName(SpellFXType::ON_HIT);
+		ss += USpellFunctionLibrary::GetElementName(SpellManagerOwner->CurrentSpellInfo.Element);
+		ss += USpellFunctionLibrary::GetCastTypeName(SpellManagerOwner->CurrentSpellInfo.CastType);
+		ss += USpellFunctionLibrary::GetSpellFXTypeName(SpellFXType::ON_HIT);
 
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn Niagara System %s"), *ss));
 		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Niagara System %s"), *ss);
@@ -179,9 +180,9 @@ UNiagaraSystem* USpellVFXComponent::GetNiagaraSystem(SpellFXType SpellFXType)
 	if (!NS)
 	{
 
-		FString sss = UHelperFunctions::GetCastTypeName(SpellManagerOwner->CurrentSpellInfo.CastType);
+		FString sss = USpellFunctionLibrary::GetCastTypeName(SpellManagerOwner->CurrentSpellInfo.CastType);
 		sss.Append(" + ");
-		FString aa = UHelperFunctions::GetElementName(SpellManagerOwner->CurrentSpellInfo.Element);
+		FString aa = USpellFunctionLibrary::GetElementName(SpellManagerOwner->CurrentSpellInfo.Element);
 		sss.Append(aa);
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to find Niagara System %s"), *sss));
 		SET_WARN_COLOR(COLOR_RED);

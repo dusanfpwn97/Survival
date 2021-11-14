@@ -29,7 +29,7 @@ void UBaseSpellManager::BeginPlay()
 {
 
 	Super::BeginPlay();
-
+	AddSpellModifier(SpellModifier::BOUNCE);
 }
 
 void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
@@ -107,7 +107,7 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
-	AddSpellModifier(SpellModifier::SPLIT);
+
 
 
 	//CastSpell(); // Debug

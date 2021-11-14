@@ -20,13 +20,5 @@ public:
 		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
 	UFUNCTION()
 		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
-	UFUNCTION(BlueprintCallable)
-		static FString GetElementName(Element Element);
-	UFUNCTION(BlueprintCallable)
-		static FString GetCastTypeName(CastType CastType);
-	UFUNCTION(BlueprintCallable)
-		static FString GetSpellFXTypeName(SpellFXType SpellFXType);
-	UFUNCTION(BlueprintCallable)
-		static TArray<CastType> GetAllTargetlessCastTypes();
 
 };
