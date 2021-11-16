@@ -50,7 +50,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.Element = Element::VOID;
 	Info.CastType = CastType::PROJECTILE;
 	Info.Cooldown = 0.41f;
-	Info.Speed = 500.f;
+	Info.Speed = 800.f;
 	Info.Radius = 50.f;
 	Info.TargetMode = TargetMode::CLOSEST;
 	//SpellComponent->AddNewSpell(Info);
@@ -58,7 +58,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::PROJECTILE;
 	Info.Cooldown = 0.32f;
-	Info.Speed = 800.f;
+	Info.Speed = 1100.f;
 	Info.Radius = 30.f;
 	Info.TargetMode = TargetMode::CLOSEST;
 	//SpellComponent->AddNewSpell(Info);

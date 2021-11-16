@@ -13,7 +13,9 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "SpellFunctionLibrary.h"
-
+#include "SpellProjectile.h"
+#include "SpellFlick.h"
+#include "SpellStorm.h"
 
 // Sets default values for this component's properties
 UBaseSpellManager::UBaseSpellManager()
@@ -39,7 +41,31 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 	// ...
 }
 
-void UBaseSpellManager::CastSpell()
+void UBaseSpellManager::CastSpellLoop()
+{
+	FVector Location = GetStartingSpellLocation();
+
+	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
+	{
+		if(SpellModifiers.Contains(SpellModifier::SPLIT))
+		{
+			if (Caster)
+			{
+				for (int i = -2; i <= 2; i++)
+				{
+					//FVector NewLoc = Location + Caster->GetActorRightVector() * i * 100;
+					
+					CastSpell(Location);
+				}
+				return;
+			}
+		}
+	}
+
+	CastSpell(Location);
+}
+
+void UBaseSpellManager::CastSpell(FVector Location)
 {
 
 	UWorld* World = GetWorld();
@@ -52,27 +78,28 @@ void UBaseSpellManager::CastSpell()
 	}
 	
 	AActor* InitialTarget = nullptr;
-	if (!IsStaticLocationSpell)
+	if (!IsTargetlessSpell)
 	{
 		InitialTarget = GetActorForTarget();
-
-		if (InitialTarget == nullptr)
-		{
-			// Don't cast a spell if there is no target
-			return;
-		}
 	}
 	
 	bool IsCached;
-	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ABaseSpell::StaticClass(), IsCached);
+	UClass* ss = GetSpellClassForSpawning();
+	if (!ss)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned Spell class us null. Need to set it in GetSpellClassForSpawning(). Shouldn't happen! UBaseSpellManager::CastSpell"));
+		return;
+	}
+
+	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ss, IsCached);
 
 	if (!SpellToCast)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
+		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! UBaseSpellManager::CastSpell"));
 		return;
 	}
 	
-	FVector Location = GetStartingSpellLocation();
+	
 	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
 	if (InitialTarget)
 	{
@@ -101,7 +128,7 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo = NewSpellInfo;
-	UpdateIsStaticLocationSpell();
+	UpdateIsTargetlessSpell();
 	UWorld* World = GetWorld();
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
@@ -144,8 +171,9 @@ void UBaseSpellManager::UpdateSpellModifier(SpellModifier NewSpellModifier)
 
 FVector UBaseSpellManager::GetStartingSpellLocation()
 {
-	FVector Vec = ICombatInterface::Execute_GetSpellCastLocation(Caster);
-
+	//FVector Vec = ICombatInterface::Execute_GetSpellCastLocation(Caster);
+	FVector Vec = Caster->GetActorLocation();
+	Vec.Z += 100.f;
 	if (CurrentSpellInfo.CastType == CastType::STORM)
 	{
 		Vec.Z += 1000.f;
@@ -175,7 +203,7 @@ void UBaseSpellManager::RemoveSpellModifier(SpellModifier NewSpellModifier)
 
 void UBaseSpellManager::StartCastSpellTimer(bool ShouldLoop)
 {
-	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpell, CurrentSpellInfo.Cooldown, ShouldLoop);
+	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &UBaseSpellManager::CastSpellLoop, CurrentSpellInfo.Cooldown, ShouldLoop);
 }
  
 void UBaseSpellManager::OnSpellFinished(ABaseSpell* FinishedSpell)
@@ -209,22 +237,33 @@ AActor* UBaseSpellManager::GetCaster() const
 
 bool UBaseSpellManager::GetIsStaticLocationSpell() const
 {
-	return IsStaticLocationSpell;
+	return IsTargetlessSpell;
 }
 
-void UBaseSpellManager::UpdateIsStaticLocationSpell()
+void UBaseSpellManager::UpdateIsTargetlessSpell()
 {
-	IsStaticLocationSpell = false;
+	IsTargetlessSpell = false;
 	TArray<CastType> Temp = USpellFunctionLibrary::GetAllTargetlessCastTypes();
 	if (Temp.Contains(CurrentSpellInfo.CastType))
 	{
-		IsStaticLocationSpell = true;
+		IsTargetlessSpell = true;
 	}
+}
+
+UClass* UBaseSpellManager::GetSpellClassForSpawning()
+{
+	if (CurrentSpellInfo.CastType == CastType::PROJECTILE) return ASpellProjectile::StaticClass(); 
+	if (CurrentSpellInfo.CastType == CastType::FLICK) return ASpellFlick::StaticClass();
+	if (CurrentSpellInfo.CastType == CastType::STORM) return ASpellStorm::StaticClass();
+
+	
+	
+	return nullptr;
 }
 
 void UBaseSpellManager::UpdateCastType(CastType NewCastType)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo.CastType = NewCastType;
-	UpdateIsStaticLocationSpell();
+	UpdateIsTargetlessSpell();
 }

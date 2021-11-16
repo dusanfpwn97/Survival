@@ -44,7 +44,9 @@ public:
 		bool GetIsStaticLocationSpell() const;
 	//
 	UFUNCTION()
-		void CastSpell();
+		void CastSpell(FVector Location);
+	UFUNCTION()
+		void CastSpellLoop();
 	UFUNCTION()
 		AActor* GetActorForTarget();
 	UFUNCTION()
@@ -78,11 +80,14 @@ protected:
 		void MarkAllSpellsForDestruction();
 	
 	UPROPERTY()
-		bool IsStaticLocationSpell = false;
+		bool IsTargetlessSpell = false;
 
 
 	UFUNCTION()
-		void UpdateIsStaticLocationSpell();
+		void UpdateIsTargetlessSpell();
+
+	UFUNCTION()
+		UClass* GetSpellClassForSpawning();
 private:
 	
 

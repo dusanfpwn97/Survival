@@ -47,7 +47,7 @@ void USpellVFXComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (SpellOwner)
 	{
-		MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->LastDirection));
+		MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection));
 	}
 }
 

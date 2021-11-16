@@ -7,8 +7,6 @@
 #include "NiagaraComponent.h"
 #include "NiagaraSystem.h"
 #include "BaseSpellManager.h"
-#include "SpellMovementComponent.h"
-#include "BaseSpellManager.h"
 #include "SpellDatatypes.h"
 #include "HelperFunctions.h"
 #include "SpellVFXComponent.h"
@@ -20,13 +18,10 @@ ABaseSpell::ABaseSpell()
 	PrimaryActorTick.bStartWithTickEnabled = false;
 
 	SetupComponents();
-
-
 }
 
 void ABaseSpell::BeginPlay()
 {
-	if (SpellMovementComponent) SpellMovementComponent->SpellOwner = this;
 	Super::BeginPlay();
 
 }
@@ -67,39 +62,32 @@ void ABaseSpell::CheckTarget()
 
 void ABaseSpell::Move()
 {
-
-	
-	UWorld* World = GetWorld();
-	if (!World || !SpellManager) return;
-
+	/*
 	if ((SpellManager->CurrentSpellInfo.CastType == CastType ::NOVA || SpellManager->CurrentSpellInfo.CastType == CastType::SHIELD) && SpellManager->Caster)
 	{
 		SetActorLocation(SpellManager->Caster->GetActorLocation());
 		return;
 	}
-
-	UpdateMoveDirection(); // TODO: Optimize. Current problem is thjat at the start there is visible delay
-
+	*/
 	// If target is not valid, z = 0 so that spell keeps going on without hitting the ground or going in the sky
-	
+	/*
 	if (SpellManager->CurrentSpellInfo.CastType != CastType::STORM)
 	{
 		if (TargetActor)
 		{
 			if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 			{
-				if (LastDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
+				if (CurrentDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
 				{
-					LastDirection.Z = 0;
+					CurrentDirection.Z = 0;
 				}
 			}
 		}
-		else LastDirection.Z = 0;
+		else CurrentDirection.Z = 0;
 	}
 	
+	*/
 	
-	FHitResult Hit;
-	AddActorWorldOffset(LastDirection * SpellManager->CurrentSpellInfo.Speed * World->GetDeltaSeconds(), false, &Hit, ETeleportType::None);
 }
 
 void ABaseSpell::Finish()
@@ -108,14 +96,13 @@ void ABaseSpell::Finish()
 	ClearAllTimers();
 	UWorld* World = GetWorld();
 
-	if (!World || !SpellManager)
+	if (!World)
 	{
-		Reset_Implementation();
+		Destroy();
 	}
 	else
 	{
 		World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, 1.f, true);
-
 	}
 
 	TargetActor = nullptr;
@@ -148,8 +135,6 @@ void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* Other
 
 void ABaseSpell::Start_Implementation()
 {
-	// Note: Spell manager is null the first time!
-
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -157,7 +142,7 @@ void ABaseSpell::Start_Implementation()
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	World->GetTimerManager().SetTimer(SetupCollisionTimerHandle, this, &ABaseSpell::SetupCollision, 0.1f, true);
-
+	HasDeterminedDirection = false;
 	VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
 
@@ -165,7 +150,13 @@ void ABaseSpell::Start_Implementation()
 
 	if (SpellManager)
 	{
-		if (!SpellManager->GetIsStaticLocationSpell()) UpdateMoveDirection();
+		if (SpellManager->Caster)
+		{
+			//Set initial direction so that spells can move if there is no inital target
+			CurrentDirection = SpellManager->Caster->GetActorForwardVector();
+		}
+
+		if (!SpellManager->GetIsStaticLocationSpell()) CurrentDirection = GetMoveDirection();
 	}
 
 }
@@ -190,7 +181,6 @@ void ABaseSpell::Reset_Implementation()
 			IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
 		}
 		else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, FString::Printf(TEXT("CurrentPoolManager null BaseSpell::ResetImplementation!")));
-	
 	}
 	else
 	{
@@ -207,7 +197,7 @@ void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
 	//World->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
 	World->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ABaseSpell::CheckTarget, 0.25f, true);
 	CheckTarget();
-	UpdateMoveDirection();
+	CurrentDirection = GetMoveDirection();
 }
 
 void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
@@ -218,6 +208,7 @@ void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManag
 		VFXComponent->SetupVFX(SpellManager, this);
 		SetWatchdogTimers();
 		BaseCollider->SetSphereRadius(SpellManager->CurrentSpellInfo.Radius);
+		
 	}
 }
 
@@ -237,7 +228,6 @@ void ABaseSpell::SetupComponents()
 	RootComponent = BaseCollider;
 
 	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
-	SpellMovementComponent = CreateDefaultSubobject<USpellMovementComponent>(FName(TEXT("SpellMovementComponent")));
 
 	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
 	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
@@ -271,14 +261,6 @@ void ABaseSpell::ClearAllTimers()
 	}
 }
 
-void ABaseSpell::UpdateMoveDirection()
-{
-	if (SpellMovementComponent)
-	{
-		LastDirection = SpellMovementComponent->GetMoveDirection(LastDirection);
-	}
-}
-
 UBaseSpellManager* ABaseSpell::GetSpellManager() const
 {
 	return SpellManager;
@@ -295,4 +277,10 @@ void ABaseSpell::SetWatchdogTimers()
 	}
 
 	World->GetTimerManager().SetTimer(ResetTimerHandle, this, &ABaseSpell::Reset_Implementation, WatchdogTime, false);
+}
+
+FVector ABaseSpell::GetMoveDirection()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, TEXT("Called base GetMoveDirection Function in BaseSpell. Shoud be overriden in children. Investigate..."));
+	return CurrentDirection;
 }

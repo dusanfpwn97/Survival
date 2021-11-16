@@ -11,7 +11,6 @@ class UNiagaraComponent;
 class USphereComponent;
 class UBaseSpellManager;
 class UPoolManager;
-class USpellMovementComponent;
 class USpellVFXComponent;
 
 #include "BaseSpell.generated.h"
@@ -53,15 +52,15 @@ public:
 		AActor* TargetActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		UBaseSpellManager* SpellManager;
-	UPROPERTY()
-		USpellMovementComponent* SpellMovementComponent;
 
 	TArray<AActor*> CollidedActors;
 
 	UFUNCTION()
-		void UpdateMoveDirection();
+		virtual FVector GetMoveDirection();
 	UPROPERTY()
-		FVector LastDirection;
+		FVector CurrentDirection;
+
+	bool HasDeterminedDirection = false;
 protected:
 	virtual void BeginPlay() override;
 
@@ -81,7 +80,7 @@ protected:
 	UFUNCTION()
 		void CheckTarget();
 	UFUNCTION()
-		void Move();
+		virtual void Move();
 	UFUNCTION()
 		void Finish();
 	UFUNCTION()
