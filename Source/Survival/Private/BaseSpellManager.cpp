@@ -16,6 +16,7 @@
 #include "SpellProjectile.h"
 #include "SpellFlick.h"
 #include "SpellStorm.h"
+#include "SpellShield.h"
 
 // Sets default values for this component's properties
 UBaseSpellManager::UBaseSpellManager()
@@ -255,8 +256,8 @@ UClass* UBaseSpellManager::GetSpellClassForSpawning()
 	if (CurrentSpellInfo.CastType == CastType::PROJECTILE) return ASpellProjectile::StaticClass(); 
 	if (CurrentSpellInfo.CastType == CastType::FLICK) return ASpellFlick::StaticClass();
 	if (CurrentSpellInfo.CastType == CastType::STORM) return ASpellStorm::StaticClass();
+	if (CurrentSpellInfo.CastType == CastType::SHIELD) return ASpellShield::StaticClass();
 
-	
 	
 	return nullptr;
 }

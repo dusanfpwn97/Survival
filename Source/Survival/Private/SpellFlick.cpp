@@ -23,8 +23,12 @@ FVector ASpellFlick::GetMoveDirection()
 {
 	if (!TargetActor)
 	{
+		if(HasDeterminedDirection) return CurrentDirection;
+
 		if (CurrentDirection.IsNearlyZero(0.01))
 		{
+			HasDeterminedDirection = true;
+
 			CurrentDirection = SpellManager->Caster->GetActorForwardVector();
 		}
 		return CurrentDirection;
@@ -38,7 +42,13 @@ FVector ASpellFlick::GetMoveDirection()
 			NewDirection.Normalize();
 			return NewDirection;
 		}
+		else if (CurrentDirection.Z < 0)
+		{
+			CurrentDirection.Z = 0;
+			return CurrentDirection;
+		}
 		else return CurrentDirection;
+
 	}
 	return CurrentDirection;
 }

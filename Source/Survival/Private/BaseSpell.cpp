@@ -62,32 +62,7 @@ void ABaseSpell::CheckTarget()
 
 void ABaseSpell::Move()
 {
-	/*
-	if ((SpellManager->CurrentSpellInfo.CastType == CastType ::NOVA || SpellManager->CurrentSpellInfo.CastType == CastType::SHIELD) && SpellManager->Caster)
-	{
-		SetActorLocation(SpellManager->Caster->GetActorLocation());
-		return;
-	}
-	*/
-	// If target is not valid, z = 0 so that spell keeps going on without hitting the ground or going in the sky
-	/*
-	if (SpellManager->CurrentSpellInfo.CastType != CastType::STORM)
-	{
-		if (TargetActor)
-		{
-			if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
-			{
-				if (CurrentDirection.Z < 0 && !ICombatInterface::Execute_GetIsAlive(TargetActor))
-				{
-					CurrentDirection.Z = 0;
-				}
-			}
-		}
-		else CurrentDirection.Z = 0;
-	}
-	
-	*/
-	
+
 }
 
 void ABaseSpell::Finish()
@@ -150,12 +125,6 @@ void ABaseSpell::Start_Implementation()
 
 	if (SpellManager)
 	{
-		if (SpellManager->Caster)
-		{
-			//Set initial direction so that spells can move if there is no inital target
-			CurrentDirection = SpellManager->Caster->GetActorForwardVector();
-		}
-
 		if (!SpellManager->GetIsStaticLocationSpell()) CurrentDirection = GetMoveDirection();
 	}
 
