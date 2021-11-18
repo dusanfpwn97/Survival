@@ -61,13 +61,15 @@ FVector ASpellProjectile::GetDirectionForSplit()
 			FVector Result;
 			if (OrderIndex % 2 == 0)
 			{
-				Result = Forward + Right * OrderIndex;
+				Result = Forward + Right;
+				Result.Normalize();
 			}
 			else
 			{
-				Result = Forward + Right * -1 * (OrderIndex + 1) ;
+				Result = Forward + Right * -1;
+				Result.Normalize();
 			}
-			Result.Normalize();
+
 			return Result;
 		}
 	}

@@ -61,7 +61,10 @@ void ASpellFlick::Start_Implementation()
 
 void ASpellFlick::UpdateTarget()
 {
+
 	if (!SpellManager) return;
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell qwdqwdqwdasww"));
+
 	if (!SpellManager->Caster) return;
 	if (!SpellManager->Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return;
 
@@ -78,6 +81,7 @@ void ASpellFlick::UpdateTarget()
 	World->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ASpellFlick::CheckTarget, 0.25f, true);
 	CheckTarget();
 }
+
 
 void ASpellFlick::CheckTarget()
 {

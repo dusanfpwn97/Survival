@@ -33,11 +33,13 @@ public:
 	UFUNCTION()
 		virtual void Reset_Implementation() override;
 	UFUNCTION()
-		virtual void SetTarget_Implementation(AActor* NewTarget) override;
-	UFUNCTION()
 		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object) override;
+	UFUNCTION()
+		virtual void SetOrderIndex_Implementation(int NewOrderIndex) override;
+	UFUNCTION()
+		virtual void UpdateTarget();
 
 	UPROPERTY()
 		bool IsMarkedForDestruction = false;
@@ -78,7 +80,7 @@ protected:
 		FTimerHandle SetupCollisionTimerHandle;
 
 	UFUNCTION()
-		void CheckTarget();
+		virtual void CheckTarget();
 	UFUNCTION()
 		virtual void Move();
 	UFUNCTION()
@@ -100,6 +102,9 @@ protected:
 
 	float WatchdogTime = 10.f;
 
+	FVector DirectionConstant;
+
+	int OrderIndex = 0;
 private:
 	UFUNCTION()
 		void SetupComponents();

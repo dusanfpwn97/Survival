@@ -19,4 +19,10 @@ class ASpellFlick : public ABaseSpell
 
 	virtual void Move() override;
 	virtual FVector GetMoveDirection() override;
+	virtual void Start_Implementation() override;
+	virtual void UpdateTarget() override;
+
+	virtual void CheckTarget() override;
+
+	virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager);
 };

@@ -20,3 +20,7 @@ void IPoolInterface::ReleaseToPool_Implementation(AActor* Actor)
 void IPoolInterface::SetSpawner_Implementation(UObject* Actor)
 {
 }
+
+void IPoolInterface::SetOrderIndex_Implementation(int NewOrderIndex)
+{
+}

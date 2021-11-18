@@ -35,34 +35,10 @@ void ABaseSpell::Tick(float DeltaTime)
 
 void ABaseSpell::CheckTarget()
 {
-	if (SpellManager) { if (SpellManager->GetIsStaticLocationSpell()) return; }
-
-
-	UWorld* World = GetWorld();
-	if (!World) return;
-	if (TargetActor)
-	{
-		if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
-		{
-			if (!ICombatInterface::Execute_GetIsAlive(TargetActor) && !FinishTimerHandle.IsValid())
-			{
-				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
-				//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
-				TargetActor = nullptr; // TODO look into how to optimize. Maybe some timers are called during these 8 seconds
-			}
-		}
-	}
-	else if(!FinishTimerHandle.IsValid()) //TODO
-	{
-		World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ABaseSpell::Finish, 8.f, false);
-		//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
-	}
-
 }
 
 void ABaseSpell::Move()
 {
-
 }
 
 void ABaseSpell::Finish()
@@ -120,13 +96,7 @@ void ABaseSpell::Start_Implementation()
 	HasDeterminedDirection = false;
 	VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
-
 	SetWatchdogTimers();
-
-	if (SpellManager)
-	{
-		if (!SpellManager->GetIsStaticLocationSpell()) CurrentDirection = GetMoveDirection();
-	}
 
 }
 
@@ -138,7 +108,7 @@ void ABaseSpell::Reset_Implementation()
 
 	SetActorHiddenInGame(true);
 	CollidedActors.Empty();
-
+	HasDeterminedDirection = false;
 	VFXComponent->Hibernate();
 	UWorld* World = GetWorld();
 	if (!World) return;
@@ -157,18 +127,6 @@ void ABaseSpell::Reset_Implementation()
 	}
 }
 
-void ABaseSpell::SetTarget_Implementation(AActor* NewTarget)
-{
-	TargetActor = NewTarget;
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	//World->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
-	World->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &ABaseSpell::CheckTarget, 0.25f, true);
-	CheckTarget();
-	CurrentDirection = GetMoveDirection();
-}
-
 void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
 {
 	SpellManager = NewSpellManager;
@@ -185,10 +143,17 @@ void ABaseSpell::SetSpawner_Implementation(UObject* Object)
 {
 	if (!Object)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
+		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("PoolManager not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
 		return;
 	}
 	CurrentPoolManager = Object;
+
+}
+
+void ABaseSpell::SetOrderIndex_Implementation(int NewOrderIndex)
+{
+
+	OrderIndex = NewOrderIndex;
 }
 
 void ABaseSpell::SetupComponents()
@@ -215,6 +180,7 @@ void ABaseSpell::SetupCollision()
 
 	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
 	BaseCollider->SetGenerateOverlapEvents(true);
+
 }
 
 void ABaseSpell::ClearAllTimers()
@@ -252,4 +218,8 @@ FVector ABaseSpell::GetMoveDirection()
 {
 	GEngine->AddOnScreenDebugMessage(-1, 3.0f, FColor::Orange, TEXT("Called base GetMoveDirection Function in BaseSpell. Shoud be overriden in children. Investigate..."));
 	return CurrentDirection;
+}
+
+void ABaseSpell::UpdateTarget()
+{
 }

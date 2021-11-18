@@ -44,5 +44,9 @@ public:
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object);
 
+	UFUNCTION(BlueprintNativeEvent)
+		void SetOrderIndex(int NewOrderIndex);
+	UFUNCTION()
+		virtual void SetOrderIndex_Implementation(int NewOrderIndex);
 
 };

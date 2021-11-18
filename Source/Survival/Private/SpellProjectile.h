@@ -19,4 +19,9 @@ class ASpellProjectile : public ABaseSpell
 
 	virtual void Move() override;
 	virtual FVector GetMoveDirection() override;
+
+	virtual void Start_Implementation() override;
+	virtual void Reset_Implementation() override;
+
+	FVector GetDirectionForSplit();
 };

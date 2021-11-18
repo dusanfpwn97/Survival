@@ -140,6 +140,15 @@ struct FSpellVFXInfo : public FTableRowBase
 
 };
 
+USTRUCT()
+struct FAdditionalSpellInfo
+{
+	GENERATED_BODY()
+
+	int OrderIndex = 0;
+	FVector StartingLocation;
+};
+
 class SURVIVAL_API SpellDatatypes
 {
 public:

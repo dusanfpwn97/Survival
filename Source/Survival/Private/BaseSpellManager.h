@@ -44,11 +44,9 @@ public:
 		bool GetIsStaticLocationSpell() const;
 	//
 	UFUNCTION()
-		void CastSpell(FVector Location);
+		void CastSpell(FAdditionalSpellInfo AdditonalInfo);
 	UFUNCTION()
 		void CastSpellLoop();
-	UFUNCTION()
-		AActor* GetActorForTarget();
 	UFUNCTION()
 		void InitSpellManager(FSpellInfo NewSpellInfo);
 	UFUNCTION()
