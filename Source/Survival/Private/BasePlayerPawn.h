@@ -36,14 +36,13 @@ public:
 	UFUNCTION()
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	//
-	UFUNCTION()
-		virtual void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy) override;
+
 	UFUNCTION()
 		virtual FVector GetSpellCastLocation_Implementation() override;
-	UFUNCTION()
-		virtual TArray<AActor*> GetAliveEnemies_Implementation() override;
-	UFUNCTION()
-		virtual AActor* GetClosestEnemy_Implementation() override;
+	//UFUNCTION()
+		virtual TArray<AActor*> GetAliveEnemies() override;
+	//UFUNCTION()
+		virtual AActor* GetClosestEnemy() override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCapsuleComponent* MainCollider;

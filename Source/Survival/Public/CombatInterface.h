@@ -34,15 +34,28 @@ public:
 		virtual void OnCollidedWithSpell_Implementation(ABaseSpell* Spell);
 
 	UFUNCTION(BlueprintNativeEvent)
-		void OnCollidedWithEnemy(ABaseEnemy* Spell);
-	UFUNCTION()
-		virtual void OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy);
-
-	UFUNCTION(BlueprintNativeEvent)
 		void SetTarget(AActor* TargetActor);
 	UFUNCTION()
 		virtual void SetTarget_Implementation(AActor* TargetActor);
 
+	UFUNCTION(BlueprintNativeEvent)
+		FVector GetSpellCastLocation();
+	UFUNCTION()
+		virtual FVector GetSpellCastLocation_Implementation();
+
+	UFUNCTION(BlueprintNativeEvent)
+		void SetSpellManager(UBaseSpellManager* SpellManager);
+	UFUNCTION()
+		virtual void SetSpellManager_Implementation(UBaseSpellManager* SpellManager);
+
+		virtual bool GetIsAlive();
+		virtual TArray<AActor*> GetAliveEnemies();
+		virtual AActor* GetClosestEnemy();
+
+
+
+	/*
+	
 	UFUNCTION(BlueprintNativeEvent)
 		FVector GetSpellCastLocation();
 	UFUNCTION()
@@ -58,15 +71,22 @@ public:
 	UFUNCTION()
 		virtual bool GetIsAlive_Implementation();
 
+	//UFUNCTION(BlueprintNativeEvent)
+		//virtual bool GetIsAliveCpp();
+	
+		virtual bool GetIsAlive();
+
 	UFUNCTION(BlueprintNativeEvent)
-		TArray<AActor*> GetAliveEnemies();
+		TArray<AActor*> GetAliveEnemiesBP();
 	UFUNCTION()
-		virtual TArray<AActor*> GetAliveEnemies_Implementation();
+		virtual TArray<AActor*> GetAliveEnemiesBP_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent)
 		AActor* GetClosestEnemy();
 	UFUNCTION()
 		virtual AActor* GetClosestEnemy_Implementation();
-
+	
+	
+	*/
 
 };

@@ -36,7 +36,8 @@ FVector ASpellFlick::GetMoveDirection()
 
 	if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 	{
-		if (ICombatInterface::Execute_GetIsAlive(TargetActor))
+		ICombatInterface* TempInterface = Cast<ICombatInterface>(TargetActor);
+		if (TempInterface->GetIsAlive())
 		{
 			FVector NewDirection = TargetActor->GetActorLocation() - GetActorLocation();
 			NewDirection.Normalize();
@@ -64,11 +65,13 @@ void ASpellFlick::UpdateTarget()
 	if (!SpellManager) return;
 	if (!SpellManager->Caster) return;
 	if (!SpellManager->Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return;
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(SpellManager->Caster);
+	if (!TempInterface) return;
 
 	if (SpellManager->CurrentSpellInfo.TargetMode == TargetMode::CLOSEST)
 	{
 
-		TargetActor = ICombatInterface::Execute_GetClosestEnemy(SpellManager->Caster);
+		TargetActor = TempInterface->GetClosestEnemy();
 	}
 
 	UWorld* World = GetWorld();
@@ -85,13 +88,18 @@ void ASpellFlick::CheckTarget()
 	if (!World) return;
 	if (TargetActor)
 	{
-		if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
+		if (!FinishTimerHandle.IsValid())
 		{
-			if (!ICombatInterface::Execute_GetIsAlive(TargetActor) && !FinishTimerHandle.IsValid())
+			if (TargetActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 			{
-				World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ASpellFlick::Finish, 8.f, false);
-				//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
-				TargetActor = nullptr; // TODO look into how to optimize. Maybe some timers are called during these 8 seconds
+				ICombatInterface* TempInterface = Cast<ICombatInterface>(TargetActor);
+				if (TempInterface->GetIsAlive())
+				{
+					World->GetTimerManager().SetTimer(FinishTimerHandle, this, &ASpellFlick::Finish, 8.f, false);
+					//World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
+					TargetActor = nullptr; // TODO look into how to optimize. Maybe some timers are called during these 8 seconds
+
+				}
 			}
 		}
 	}

@@ -68,7 +68,7 @@ public:
 	UFUNCTION()
 		virtual void SetTarget_Implementation(AActor* TargetActor) override;
 	UFUNCTION()
-		virtual bool GetIsAlive_Implementation() override;
+		virtual bool GetIsAlive() override;
 	UFUNCTION()
 		USkeletalMeshComponent* GetSkeletalMesh();
 protected:

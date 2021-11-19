@@ -21,7 +21,7 @@ USpellVFXComponent::USpellVFXComponent()
 	PrimaryComponentTick.bStartWithTickEnabled = true;
 
 	MainVFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("MainVFX")));
-	
+	MainVFX->SetCanEverAffectNavigation(false);
 	//MainVFX->Owner
 	//MainNiagaraFX->SetupAttachment(RootComponent);
 
@@ -35,7 +35,7 @@ void USpellVFXComponent::BeginPlay()
 	Super::BeginPlay();
 
 	// ...
-	
+
 }
 
 
@@ -47,7 +47,7 @@ void USpellVFXComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 
 	if (SpellOwner)
 	{
-		MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection));
+		MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection), false);
 	}
 }
 
@@ -66,7 +66,6 @@ void USpellVFXComponent::StopMainVFX()
 	if (MainVFX)
 	{
 		MainVFX->DeactivateImmediate();
-
 	}
 }
 
@@ -74,7 +73,7 @@ void USpellVFXComponent::StartHitVFX()
 {
 	if (SpellManagerOwner == nullptr)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("SpellManagerOwner or SpellOwner is nullptr!!!")));
+		//GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("SpellManagerOwner or SpellOwner is nullptr spellvfx component!!!")));
 		return;
 	}
 
@@ -104,6 +103,7 @@ void USpellVFXComponent::StartHitVFX()
 
 void USpellVFXComponent::SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner)
 {
+	/*
 	SpellManagerOwner = NewSpellManager;
 	SpellOwner = NewSpellOwner;
 
@@ -116,7 +116,7 @@ void USpellVFXComponent::SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell
 
 		MainVFX->SetAsset(GetNiagaraSystem(SpellFXType::MAIN));
 	}
-
+	*/
 	
 }
 

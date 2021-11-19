@@ -11,6 +11,9 @@
 #include "HelperFunctions.h"
 #include "SpellVFXComponent.h"
 
+
+//TODO disable navdata
+
 // Sets default values
 ABaseSpell::ABaseSpell()
 {
@@ -31,7 +34,56 @@ void ABaseSpell::Tick(float DeltaTime)
 	Super::Tick(DeltaTime);
 	
 	Move();
+	CheckOverlapDistance();
 }
+
+void ABaseSpell::CheckOverlapDistance()
+{
+	if (!SpellManager) return;
+	if (!SpellManager->Caster) return;
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(SpellManager->Caster);
+	
+	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+
+	for (AActor* Actor : ActorsToCheck)
+	{
+		if (Actor != this && !CollidedActors.Contains(Actor) && Actor != SpellManager->Caster)
+		{
+			float Dist = FVector::Dist(this->GetActorLocation(), Actor->GetActorLocation());
+
+			if (Dist < 100)
+			{
+				OnOverlapBeginDistance(Actor);
+				return;
+			}
+		}
+	}
+	
+}
+
+void ABaseSpell::OnOverlapBeginDistance(AActor* OtherActor)
+{
+	if (OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
+	{
+		if (OtherActor->Implements<UCombatInterface>())
+		{
+			ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
+		}
+
+		CollidedActors.Add(OtherActor);
+
+		if (VFXComponent) VFXComponent->StartHitVFX();
+		Finish();
+	}
+
+}
+
+
+
+
+
+
+
 
 void ABaseSpell::CheckTarget()
 {
@@ -64,7 +116,7 @@ void ABaseSpell::Finish()
 }
 
 void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{
+{/*
 	if (OverlappedComp == BaseCollider && OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
 	{
 		if (OtherActor->Implements<UCombatInterface>())
@@ -77,6 +129,7 @@ void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* Oth
 		if (VFXComponent) VFXComponent->StartHitVFX();
 		Finish();
 	}
+	*/
 }
 
 void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -160,26 +213,29 @@ void ABaseSpell::SetupComponents()
 {
 	BaseCollider = CreateDefaultSubobject<USphereComponent>(FName(TEXT("BaseCollider")));
 	RootComponent = BaseCollider;
-
+	BaseCollider->SetGenerateOverlapEvents(false);
+	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 
-	BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
-	BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
+	BaseCollider->SetCanEverAffectNavigation(false);
+	VFXComponent->SetCanEverAffectNavigation(false);
+	//BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
+	//BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
 
-	SetupCollision();
+	//SetupCollision();
 }
 
 void ABaseSpell::RemoveCollision()
 {
-	BaseCollider->SetGenerateOverlapEvents(false);
-	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
+//	BaseCollider->SetGenerateOverlapEvents(false);
+//	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
 }
 
 void ABaseSpell::SetupCollision()
 {
 
-	BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
-	BaseCollider->SetGenerateOverlapEvents(true);
+	//BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
+	//BaseCollider->SetGenerateOverlapEvents(true);
 
 }
 

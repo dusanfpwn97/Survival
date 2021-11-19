@@ -96,10 +96,7 @@ void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
 
 void ABaseEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
-		if (OverlappedComp == MainCollider && OtherActor->Implements<UCombatInterface>())
-		{
-			ICombatInterface::Execute_OnCollidedWithEnemy(OtherActor, this);
-		}
+		//TODO Replace
 }
 
 void ABaseEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
@@ -223,7 +220,7 @@ void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
 	Target = TargetActor;
 }
 
-bool ABaseEnemy::GetIsAlive_Implementation()
+bool ABaseEnemy::GetIsAlive()
 {
 	return IsAlive;
 }

@@ -13,14 +13,9 @@ void ICombatInterface::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
 
 }
 
-void ICombatInterface::OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy)
-{
-
-}
-
 void ICombatInterface::SetTarget_Implementation(AActor* TargetActor)
 {
-
+	
 }
 
 FVector ICombatInterface::GetSpellCastLocation_Implementation()
@@ -33,17 +28,17 @@ void ICombatInterface::SetSpellManager_Implementation(UBaseSpellManager* SpellMa
 
 }
 
-TArray<AActor*> ICombatInterface::GetAliveEnemies_Implementation()
+TArray<AActor*> ICombatInterface::GetAliveEnemies()
 {
 	return TArray<AActor*>();
 }
 
-bool ICombatInterface::GetIsAlive_Implementation()
+bool ICombatInterface::GetIsAlive()
 {
 	return false;
 }
 
-AActor* ICombatInterface::GetClosestEnemy_Implementation()
+AActor* ICombatInterface::GetClosestEnemy()
 {
 	return nullptr;
 }

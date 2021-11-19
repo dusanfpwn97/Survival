@@ -49,6 +49,7 @@ void UBaseSpellManager::CastSpellLoop()
 
 	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
 	{
+		Info.StartingLocation.Z += -50;
 		if(SpellModifiers.Contains(SpellModifier::SPLIT))
 		{
 			if (Caster)
@@ -56,6 +57,7 @@ void UBaseSpellManager::CastSpellLoop()
 				for (int i = 0; i <= 8; i++)
 				{
 					Info.OrderIndex = i;
+					
 					CastSpell(Info);
 				}
 				return;

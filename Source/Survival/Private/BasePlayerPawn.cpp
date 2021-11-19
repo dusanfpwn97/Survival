@@ -41,7 +41,7 @@ void ABasePlayerPawn::BeginPlay()
 	FSpellInfo Info;
 	Info.Element = Element::ELECTRICITY;
 	Info.CastType = CastType::FLICK;
-	Info.Cooldown = 0.3f;
+	Info.Cooldown = 0.1f;
 	Info.Speed = 1500.f;
 	Info.Radius = 20.f;
 	Info.TargetMode = TargetMode::CLOSEST;
@@ -49,7 +49,7 @@ void ABasePlayerPawn::BeginPlay()
 
 	Info.Element = Element::VOID;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.41f;
+	Info.Cooldown = 0.05f;
 	Info.Speed = 800.f;
 	Info.Radius = 50.f;
 	Info.TargetMode = TargetMode::CLOSEST;
@@ -102,11 +102,6 @@ void ABasePlayerPawn::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 
 }
 
-void ABasePlayerPawn::OnCollidedWithEnemy_Implementation(ABaseEnemy* Enemy)
-{
-
-}
-
 void ABasePlayerPawn::SetupComponents()
 {
 
@@ -145,7 +140,7 @@ FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
 }
 
 
-TArray<AActor*> ABasePlayerPawn::GetAliveEnemies_Implementation()
+TArray<AActor*> ABasePlayerPawn::GetAliveEnemies()
 {
 	if (CurrentGameMode)
 	{
@@ -158,7 +153,7 @@ TArray<AActor*> ABasePlayerPawn::GetAliveEnemies_Implementation()
 	}
 }
 
-AActor* ABasePlayerPawn::GetClosestEnemy_Implementation()
+AActor* ABasePlayerPawn::GetClosestEnemy()
 {
-	return UHelperFunctions::GetClosestActor(GetAliveEnemies_Implementation(), GetActorLocation());
+	return UHelperFunctions::GetClosestActor(GetAliveEnemies(), GetActorLocation());
 }

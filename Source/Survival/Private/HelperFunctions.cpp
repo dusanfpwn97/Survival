@@ -49,7 +49,12 @@ TArray<AActor*> UHelperFunctions::GetAllAliveActors(TArray<AActor*> ActorsToChec
 		{
 			if (Actor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 			{
-				if (ICombatInterface::Execute_GetIsAlive(Actor))
+				ICombatInterface* TempInterface = Cast<ICombatInterface>(Actor);
+				
+				//interfacess->GetIsAliveCpp_Implementation
+				//bool ss = ICombatInterface::GetIsAliveCpp(Actor);
+				
+				if (TempInterface->GetIsAlive())
 				{
 					AliveActors.Add(Actor);
 				}
