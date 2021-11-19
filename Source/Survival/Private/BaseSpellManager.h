@@ -12,6 +12,8 @@ class UPoolManager;
 class ABasePlayerPawn;
 class UNiagaraSystem;
 class UDataTable;
+class USpellVFXComponent;
+class UInstancedStaticMeshComponent;
 
 UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
 class UBaseSpellManager : public UActorComponent
@@ -26,11 +28,14 @@ public:
 
 	UFUNCTION()
 		AActor* GetCaster() const;
-
+	UPROPERTY()
+		USpellVFXComponent* VFXComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		FSpellInfo CurrentSpellInfo;
 	UPROPERTY()
 		FTimerHandle MainSpellCastTimerHandle;
+	UPROPERTY()
+		UInstancedStaticMeshComponent* ISMComp;
 	UPROPERTY()
 		UPoolManager* SpellPoolManager;
 	UPROPERTY()
@@ -39,12 +44,22 @@ public:
 		AActor* Caster;
 	UPROPERTY()
 		UClass* SpellClassToSpawn;
-
+	UPROPERTY()
+		TArray<FSpellRuntimeInfo> SpellInstances;
 	UFUNCTION()
 		bool GetIsStaticLocationSpell() const;
+	UPROPERTY()
+		UDataTable* VFX_DataTable;
+	UFUNCTION()
+		void SetVFXDataTable();
+	UFUNCTION()
+		UStaticMesh* GetMeshFromDT();
 	//
 	UFUNCTION()
-		void CastSpell(FAdditionalSpellInfo AdditonalInfo);
+		void CastSpell(FSpellRuntimeInfo AdditonalInfo);
+
+	UFUNCTION()
+		int GetAvailableSpellInstanceIndex();
 	UFUNCTION()
 		void CastSpellLoop();
 	UFUNCTION()
@@ -61,6 +76,8 @@ public:
 		void AddSpellModifier(SpellModifier NewSpellModifier);
 	UFUNCTION()
 		void RemoveSpellModifier(SpellModifier NewSpellModifier);
+
+	void UpdateSpellLocations();
 
 	void StartCastSpellTimer(bool ShouldLoop);
 

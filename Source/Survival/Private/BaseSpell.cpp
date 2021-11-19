@@ -72,17 +72,11 @@ void ABaseSpell::OnOverlapBeginDistance(AActor* OtherActor)
 
 		CollidedActors.Add(OtherActor);
 
-		if (VFXComponent) VFXComponent->StartHitVFX();
+		//if (VFXComponent) VFXComponent->StartHitVFX();
 		Finish();
 	}
 
 }
-
-
-
-
-
-
 
 
 void ABaseSpell::CheckTarget()
@@ -109,32 +103,10 @@ void ABaseSpell::Finish()
 	}
 
 	TargetActor = nullptr;
-	RemoveCollision();
-	VFXComponent->StopMainVFX();
+
+	//VFXComponent->StopMainVFX();
 
 	SpellManager->OnSpellFinished(this);
-}
-
-void ABaseSpell::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
-{/*
-	if (OverlappedComp == BaseCollider && OtherActor != SpellManager->GetCaster() && OtherActor != this && !CollidedActors.Contains(OtherActor))
-	{
-		if (OtherActor->Implements<UCombatInterface>())
-		{
-			ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
-		}
-
-		CollidedActors.Add(OtherActor);
-
-		if (VFXComponent) VFXComponent->StartHitVFX();
-		Finish();
-	}
-	*/
-}
-
-void ABaseSpell::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-	
 }
 
 void ABaseSpell::Start_Implementation()
@@ -145,9 +117,8 @@ void ABaseSpell::Start_Implementation()
 	ClearAllTimers();
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
-	World->GetTimerManager().SetTimer(SetupCollisionTimerHandle, this, &ABaseSpell::SetupCollision, 0.1f, true);
 	HasDeterminedDirection = false;
-	VFXComponent->StartMainVFX();
+	//VFXComponent->StartMainVFX();
 	CollidedActors.Empty();
 	SetWatchdogTimers();
 
@@ -162,7 +133,7 @@ void ABaseSpell::Reset_Implementation()
 	SetActorHiddenInGame(true);
 	CollidedActors.Empty();
 	HasDeterminedDirection = false;
-	VFXComponent->Hibernate();
+//	VFXComponent->Hibernate();
 	UWorld* World = GetWorld();
 	if (!World) return;
 
@@ -185,7 +156,7 @@ void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManag
 	SpellManager = NewSpellManager;
 	if (SpellManager)
 	{
-		VFXComponent->SetupVFX(SpellManager, this);
+		//VFXComponent->SetupVFX(SpellManager, this);
 		SetWatchdogTimers();
 		BaseCollider->SetSphereRadius(SpellManager->CurrentSpellInfo.Radius);
 		
@@ -215,27 +186,8 @@ void ABaseSpell::SetupComponents()
 	RootComponent = BaseCollider;
 	BaseCollider->SetGenerateOverlapEvents(false);
 	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
-	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 
 	BaseCollider->SetCanEverAffectNavigation(false);
-	VFXComponent->SetCanEverAffectNavigation(false);
-	//BaseCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseSpell::OnOverlapBegin);
-	//BaseCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseSpell::OnOverlapEnd);
-
-	//SetupCollision();
-}
-
-void ABaseSpell::RemoveCollision()
-{
-//	BaseCollider->SetGenerateOverlapEvents(false);
-//	BaseCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
-}
-
-void ABaseSpell::SetupCollision()
-{
-
-	//BaseCollider->SetCollisionProfileName(FName(TEXT("Spell")));
-	//BaseCollider->SetGenerateOverlapEvents(true);
 
 }
 
@@ -247,8 +199,7 @@ void ABaseSpell::ClearAllTimers()
 		World->GetTimerManager().ClearTimer(FinishTimerHandle);
 		World->GetTimerManager().ClearTimer(CheckTargetTimerHandle);
 		World->GetTimerManager().ClearTimer(UpdateDirectionTimerHandle);
-		World->GetTimerManager().ClearTimer(SetupCollisionTimerHandle);
-		
+
 	}
 }
 

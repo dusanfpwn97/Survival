@@ -103,7 +103,7 @@ void USpellVFXComponent::StartHitVFX()
 
 void USpellVFXComponent::SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner)
 {
-	/*
+	
 	SpellManagerOwner = NewSpellManager;
 	SpellOwner = NewSpellOwner;
 
@@ -116,7 +116,7 @@ void USpellVFXComponent::SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell
 
 		MainVFX->SetAsset(GetNiagaraSystem(SpellFXType::MAIN));
 	}
-	*/
+	
 	
 }
 

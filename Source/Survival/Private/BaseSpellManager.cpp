@@ -17,6 +17,9 @@
 #include "SpellFlick.h"
 #include "SpellStorm.h"
 #include "SpellShield.h"
+#include "SpellVFXComponent.h"
+#include "Components/InstancedStaticMeshComponent.h"
+#include "Engine/StaticMesh.h"
 
 // Sets default values for this component's properties
 UBaseSpellManager::UBaseSpellManager()
@@ -24,13 +27,14 @@ UBaseSpellManager::UBaseSpellManager()
 	PrimaryComponentTick.bCanEverTick = true;
 
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
-
+	//VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
+	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(TEXT("ISMComp")));
+	SetVFXDataTable();
 }
 
 // Called when the game starts
 void UBaseSpellManager::BeginPlay()
 {
-
 	Super::BeginPlay();
 
 }
@@ -39,17 +43,24 @@ void UBaseSpellManager::TickComponent(float DeltaTime, ELevelTick TickType, FAct
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	//UpdateSpellLocations();
 	// ...
+	if (Caster)
+	{
+		FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetNotIncludingScale;
+
+		ISMComp->AttachToComponent(Caster->GetRootComponent(), Rules);
+	}
+
 }
 
 void UBaseSpellManager::CastSpellLoop()
 {
-	FAdditionalSpellInfo Info;
-	Info.StartingLocation = GetStartingSpellLocation();
+	FSpellRuntimeInfo Info;
 
 	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
 	{
-		Info.StartingLocation.Z += -50;
+		//Info.StartingLocation.Z += -50;
 		if(SpellModifiers.Contains(SpellModifier::SPLIT))
 		{
 			if (Caster)
@@ -68,7 +79,7 @@ void UBaseSpellManager::CastSpellLoop()
 	CastSpell(Info);
 }
 
-void UBaseSpellManager::CastSpell(FAdditionalSpellInfo AdditonalInfo)
+void UBaseSpellManager::CastSpell(FSpellRuntimeInfo SpellRuntimeInfo)
 {
 	if (!Caster)
 	{
@@ -76,25 +87,137 @@ void UBaseSpellManager::CastSpell(FAdditionalSpellInfo AdditonalInfo)
 		return;
 	}
 
-	UClass* ss = GetSpellClassForSpawning();
-	if (!ss)
+	int InstanceIndex = GetAvailableSpellInstanceIndex();
+	
+	FSpellRuntimeInfo NewInfo = SpellInstances[InstanceIndex];
+	NewInfo.OrderIndex = SpellRuntimeInfo.OrderIndex;
+	NewInfo.IsActive = true;
+	NewInfo.Transform.SetLocation(Caster->GetActorLocation());
+
+	ISMComp->UpdateInstanceTransform(InstanceIndex, NewInfo.Transform, true, true, true);
+
+	
+}
+
+void UBaseSpellManager::UpdateSpellLocations()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	for (int i = 0; i < SpellInstances.Num(); i++)
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned Spell class us null. Need to set it in GetSpellClassForSpawning(). Shouldn't happen! UBaseSpellManager::CastSpell"));
-		return;
+		if (SpellInstances[i].IsActive)
+		{
+			bool IsDirty = false;
+			FTransform NewTransform = SpellInstances[i].Transform;
+			FVector NewLoc = NewTransform.GetLocation();
+			NewLoc += SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * World->DeltaTimeSeconds;
+
+			if (i == SpellInstances.Num() - 1) IsDirty = true;
+			ISMComp->UpdateInstanceTransform(i, NewTransform, true, IsDirty, true);
+		}
+	}
+}
+
+UStaticMesh* UBaseSpellManager::GetMeshFromDT()
+{
+	if (!VFX_DataTable)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
+		return nullptr;
 	}
 
-	bool IsCached;
-	AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ss, IsCached);
+	UStaticMesh* Mesh = nullptr;
 
-	if (!SpellToCast)
+	for (auto it : VFX_DataTable->GetRowMap())
 	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! UBaseSpellManager::CastSpell"));
-		return;
+		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
+		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
+		if (SpellVFXInfo)
+		{
+			if (SpellVFXInfo->Binding.Element == CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == CurrentSpellInfo.CastType)
+			{
+				Mesh = SpellVFXInfo->MainMesh.LoadSynchronous();
+				return Mesh;
+			}
+		}
 	}
+	return Mesh;
+	/*
+	UNiagaraSystem* NS = nullptr;
 
-	ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
-	IPoolInterface::Execute_SetOrderIndex(SpellToCast, AdditonalInfo.OrderIndex);
-	SpellToCast->SetActorLocation(AdditonalInfo.StartingLocation);
+	for (auto it : VFX_DataTable->GetRowMap())
+	{
+
+		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
+		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
+		if (SpellVFXInfo)
+		{
+			if (SpellVFXInfo->Binding.Element == SpellManagerOwner->CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == SpellManagerOwner->CurrentSpellInfo.CastType)
+			{
+				if (SpellFXType == SpellFXType::ON_SPAWN)
+				{
+					NS = SpellVFXInfo->SpawnFX.LoadSynchronous();
+					return NS;
+				}
+				else if (SpellFXType == SpellFXType::MAIN)
+				{
+					NS = SpellVFXInfo->MainFX.LoadSynchronous();
+					return NS;
+				}
+				else if (SpellFXType == SpellFXType::ON_HIT)
+				{
+					NS = SpellVFXInfo->HitFX.LoadSynchronous();
+					return NS;
+				}
+			}
+		}
+	}*/
+}
+
+int UBaseSpellManager::GetAvailableSpellInstanceIndex()
+{
+	if (SpellInstances.Num() > 0)
+	{
+		for (int i = 0; i < SpellInstances.Num(); i++)
+		{
+			if (!SpellInstances[i].IsActive)
+			{
+			//	return i;
+			}
+		}
+	}
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("%i"), 33));
+
+	FSpellRuntimeInfo Info;
+
+	// Not found. Add new
+
+	SpellInstances.Add(Info);
+	FTransform Transform;
+	Transform.SetScale3D(FVector(1, 1, 1));
+	Transform.SetLocation(GetStartingSpellLocation());
+
+	
+	Info.ISMIndex = ISMComp->AddInstance(Transform);
+	Info.CurrentDirection = FVector(1, 0, 0);
+	Info.IsActive = true;
+	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("%d"), Transform.GetLocation().X));
+	return Info.ISMIndex;
+}
+
+void UBaseSpellManager::SetVFXDataTable()
+{
+	ConstructorHelpers::FObjectFinder<UDataTable>DataTableAsset(TEXT("DataTable'/Game/GameSettings/DT_SpellVFX.DT_SpellVFX'"));
+	UDataTable* DT = DataTableAsset.Object;
+	if (DT)
+	{
+		VFX_DataTable = DT;
+	}
+	else
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("No VFX DataTable found!"));
+	}
 }
 
 void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
@@ -108,7 +231,7 @@ void UBaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::SPLIT);
-
+	ISMComp->SetStaticMesh(GetMeshFromDT());
 
 	//CastSpell(); // Debug
 }
@@ -240,3 +363,28 @@ void UBaseSpellManager::UpdateCastType(CastType NewCastType)
 	CurrentSpellInfo.CastType = NewCastType;
 	UpdateIsTargetlessSpell();
 }
+
+
+/*
+UClass* ss = GetSpellClassForSpawning();
+if (!ss)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned Spell class us null. Need to set it in GetSpellClassForSpawning(). Shouldn't happen! UBaseSpellManager::CastSpell"));
+	return;
+}
+
+
+//bool IsCached;
+//AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ss, IsCached);
+
+if (!SpellToCast)
+{
+	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! UBaseSpellManager::CastSpell"));
+	return;
+}
+
+
+ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
+IPoolInterface::Execute_SetOrderIndex(SpellToCast, AdditonalInfo.OrderIndex);
+SpellToCast->SetActorLocation(AdditonalInfo.StartingLocation);
+*/
