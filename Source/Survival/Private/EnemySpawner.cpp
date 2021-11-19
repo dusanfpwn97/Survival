@@ -30,7 +30,7 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.02f, true);
+		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.03f, true);
 	}
 	
 }

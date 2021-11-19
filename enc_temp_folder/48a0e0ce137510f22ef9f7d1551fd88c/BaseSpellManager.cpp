@@ -35,7 +35,10 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetGenerateOverlapEvents(false);
 	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISMComp->SetCanEverAffectNavigation(false);
+
 	SetVFXDataTable();
+
 }
 
 // Called when the game starts
@@ -117,7 +120,9 @@ void ABaseSpellManager::UpdateSpellLocations()
 			bool IsDirty = false;
 			FTransform NewTransform = SpellInstances[i].Transform;
 			FVector NewLoc = NewTransform.GetLocation();
-			NewLoc += SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed* World->DeltaTimeSeconds;
+			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed*0.01) * World->DeltaTimeSeconds;
+
+			NewLoc += SpellInstances[i].Velocity;
 
 			SpellInstances[i].Transform.SetLocation(NewLoc);
 
@@ -167,7 +172,7 @@ void ABaseSpellManager::ResetInstance(const int Index)
 
 AActor* ABaseSpellManager::IsColliding(const int Index, TArray<AActor*> &ActorsToCheck)
 {
-	if (!Caster) return false;
+	if (!Caster) return nullptr;
 
 	for (AActor* Actor : ActorsToCheck)
 	{
@@ -181,7 +186,7 @@ AActor* ABaseSpellManager::IsColliding(const int Index, TArray<AActor*> &ActorsT
 			}
 		}
 	}
-	return false;
+	return nullptr;
 }
 
 int ABaseSpellManager::GetAvailableSpellInstanceIndex()

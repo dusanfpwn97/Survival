@@ -158,12 +158,14 @@ struct FSpellRuntimeInfo
 	float SpawnTime = 0.f;
 	FTransform Transform;
 	TArray<AActor*> CollidedActors;
+	FVector Velocity = FVector(0, 0, 0);
 
 	void Reset()
 	{
 		CollidedActors.Empty();
 		IsActive = false;
-		Transform.SetLocation(Transform.GetLocation() + FVector(0, 0, 3000));
+		Transform.SetLocation(Transform.GetLocation() + FVector(0, 0, 4000));
+		Velocity = FVector(0,0,0);
 	}
 };
 

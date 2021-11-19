@@ -120,7 +120,11 @@ void ABaseSpellManager::UpdateSpellLocations()
 			bool IsDirty = false;
 			FTransform NewTransform = SpellInstances[i].Transform;
 			FVector NewLoc = NewTransform.GetLocation();
-			NewLoc += SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed* World->DeltaTimeSeconds;
+			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed*0.04) * World->DeltaTimeSeconds;
+
+			SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
+
+			NewLoc += SpellInstances[i].Velocity;
 
 			SpellInstances[i].Transform.SetLocation(NewLoc);
 
