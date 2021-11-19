@@ -9,7 +9,7 @@
 
 class ABaseSpell;
 class ABaseEnemy;
-class USpellManager;
+class ABaseSpellManager;
 
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI, Blueprintable)
@@ -29,9 +29,9 @@ class SURVIVAL_API ICombatInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 	UFUNCTION(BlueprintNativeEvent)
-		void OnCollidedWithSpell(ABaseSpell* Spell);
+		void OnCollidedWithSpell(ABaseSpellManager* Spell);
 	UFUNCTION()
-		virtual void OnCollidedWithSpell_Implementation(ABaseSpell* Spell);
+		virtual void OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell);
 
 	UFUNCTION(BlueprintNativeEvent)
 		void SetTarget(AActor* TargetActor);
@@ -44,9 +44,9 @@ public:
 		virtual FVector GetSpellCastLocation_Implementation();
 
 	UFUNCTION(BlueprintNativeEvent)
-		void SetSpellManager(UBaseSpellManager* SpellManager);
+		void SetSpellManager(ABaseSpellManager* SpellManager);
 	UFUNCTION()
-		virtual void SetSpellManager_Implementation(UBaseSpellManager* SpellManager);
+		virtual void SetSpellManager_Implementation(ABaseSpellManager* SpellManager);
 
 		virtual bool GetIsAlive();
 		virtual TArray<AActor*> GetAliveEnemies();

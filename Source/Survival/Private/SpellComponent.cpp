@@ -33,12 +33,19 @@ void USpellComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActor
 
 void USpellComponent::AddNewSpell(FSpellInfo SpellInfo)
 {
+	UWorld* World = GetWorld();
+	if (!World) return;
 
-	UBaseSpellManager* NewSpell = NewObject<UBaseSpellManager>(this, UBaseSpellManager::StaticClass()); //*
+	FTransform TempTransform;
+	TempTransform.SetLocation(FVector(0, 0, 500));
+	TempTransform.SetScale3D(FVector(1, 1, 1));
+	TempTransform.SetRotation(FRotator(0, 0, 0).Quaternion());
+	FActorSpawnParameters Params;
 
-	//NewSpell->OnComponentCreated();
-	NewSpell->RegisterComponent();
+	ABaseSpellManager* NewSpell = World->SpawnActor<ABaseSpellManager>(ABaseSpellManager::StaticClass(), TempTransform, Params);
+
 	SpellManagers.Add(NewSpell);
 	NewSpell->InitSpellManager(SpellInfo);
 	NewSpell->Caster = GetOwner();
+
 }

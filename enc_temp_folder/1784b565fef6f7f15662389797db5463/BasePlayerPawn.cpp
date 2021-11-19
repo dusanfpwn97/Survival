@@ -49,7 +49,7 @@ void ABasePlayerPawn::BeginPlay()
 
 	Info.Element = Element::VOID;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.1f;
+	Info.Cooldown = 0.05f;
 	Info.Speed = 1200.f;
 	Info.Radius = 50.f;
 	Info.TargetMode = TargetMode::CLOSEST;

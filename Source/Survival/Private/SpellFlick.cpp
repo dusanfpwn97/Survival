@@ -111,7 +111,7 @@ void ASpellFlick::CheckTarget()
 
 }
 
-void ASpellFlick::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
+void ASpellFlick::SetSpellManager_Implementation(ABaseSpellManager* NewSpellManager)
 {
 	Super::SetSpellManager_Implementation(NewSpellManager);
 

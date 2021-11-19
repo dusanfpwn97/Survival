@@ -8,7 +8,7 @@
 #include "SpellComponent.generated.h"
 
 
-class UBaseSpellManager;
+class ABaseSpellManager;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SURVIVAL_API USpellComponent : public UActorComponent
@@ -23,7 +23,7 @@ public:
 		void AddNewSpell(FSpellInfo SpellInfo);
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		TArray<UBaseSpellManager*> SpellManagers;
+		TArray<ABaseSpellManager*> SpellManagers;
 
 
 protected:

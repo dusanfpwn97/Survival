@@ -8,7 +8,7 @@
 
 // Add default functionality here for any ICombatInterface functions that are not pure virtual.
 
-void ICombatInterface::OnCollidedWithSpell_Implementation(ABaseSpell* Spell)
+void ICombatInterface::OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell)
 {
 
 }
@@ -23,7 +23,7 @@ FVector ICombatInterface::GetSpellCastLocation_Implementation()
 	return FVector();
 }
 
-void ICombatInterface::SetSpellManager_Implementation(UBaseSpellManager* SpellManager)
+void ICombatInterface::SetSpellManager_Implementation(ABaseSpellManager* SpellManager)
 {
 
 }

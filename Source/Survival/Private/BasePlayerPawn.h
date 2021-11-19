@@ -11,7 +11,7 @@
 class UCapsuleComponent;
 class ABaseEnemy;
 class USkeletalMeshComponent;
-class UBaseSpellManager;
+class ABaseSpellManager;
 class UStaticMeshComponent;
 class USpellComponent;
 class USceneComponent;

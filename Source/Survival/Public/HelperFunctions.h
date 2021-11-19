@@ -8,7 +8,7 @@
 #include "HelperFunctions.generated.h"
 
 
-class UBaseSpellManager;
+class ABaseSpellManager;
 UCLASS(BlueprintType)
 class SURVIVAL_API UHelperFunctions : public UBlueprintFunctionLibrary
 {

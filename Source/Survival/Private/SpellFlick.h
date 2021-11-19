@@ -24,5 +24,5 @@ class ASpellFlick : public ABaseSpell
 
 	virtual void CheckTarget() override;
 
-	virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager);
+	virtual void SetSpellManager_Implementation(ABaseSpellManager* NewSpellManager);
 };

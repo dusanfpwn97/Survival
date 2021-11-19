@@ -67,7 +67,7 @@ void ABaseSpell::OnOverlapBeginDistance(AActor* OtherActor)
 	{
 		if (OtherActor->Implements<UCombatInterface>())
 		{
-			ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
+			//ICombatInterface::Execute_OnCollidedWithSpell(OtherActor, this);
 		}
 
 		CollidedActors.Add(OtherActor);
@@ -151,7 +151,7 @@ void ABaseSpell::Reset_Implementation()
 	}
 }
 
-void ABaseSpell::SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager)
+void ABaseSpell::SetSpellManager_Implementation(ABaseSpellManager* NewSpellManager)
 {
 	SpellManager = NewSpellManager;
 	if (SpellManager)
@@ -203,7 +203,7 @@ void ABaseSpell::ClearAllTimers()
 	}
 }
 
-UBaseSpellManager* ABaseSpell::GetSpellManager() const
+ABaseSpellManager* ABaseSpell::GetSpellManager() const
 {
 	return SpellManager;
 }

@@ -15,6 +15,7 @@ class ABaseSpell;
 class UEnemySpawner;
 class USkeletalMeshComponent;
 class UAnimSequence;
+class ABaseSpellManager;
 
 
 USTRUCT(BlueprintType)
@@ -58,7 +59,7 @@ public:
 		void OnOverlapEnd(class UPrimitiveComponent* OverlappedComp, class AActor* OtherActor, class UPrimitiveComponent* OtherComp, int32 OtherBodyIndex);
 	//
 	UFUNCTION()
-		void OnCollidedWithSpell_Implementation(ABaseSpell* Spell) override;
+		void OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell) override;
 	UFUNCTION()
 		virtual void Start_Implementation() override;
 	UFUNCTION()
@@ -136,7 +137,7 @@ protected:
 	UFUNCTION()
 		void SetupCollision();
 	UFUNCTION()
-		void ReceiveDamage(UBaseSpellManager* SpellManagerThatDamaged);
+		void ReceiveDamage(ABaseSpellManager* SpellManagerThatDamaged);
 	UFUNCTION()
 		void UpdateStats();
 	UFUNCTION()

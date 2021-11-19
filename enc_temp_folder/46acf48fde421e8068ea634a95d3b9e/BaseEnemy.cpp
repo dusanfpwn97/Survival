@@ -141,7 +141,6 @@ void ABaseEnemy::SetupComponents()
 	
 	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
 	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
-	MainCollider->SetCanEverAffectNavigation(false);
 
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("SkeletalMesh")));
 	SkeletalMesh->SetupAttachment(RootComponent);
@@ -155,7 +154,7 @@ void ABaseEnemy::SetupComponents()
 	SkeletalMesh->bDisableClothSimulation = true;
 	SkeletalMesh->bEnableLineCheckWithBounds = false;
 	SkeletalMesh->bEnablePerPolyCollision = false;
-	SkeletalMesh->SetCanEverAffectNavigation(false);
+	
 
 }
 

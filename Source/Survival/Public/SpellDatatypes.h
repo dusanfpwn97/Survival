@@ -9,6 +9,7 @@
 class ABaseSpell;
 class UNiagaraSystem;
 class UStaticMesh;
+class UMaterialInterface;
 
 UENUM(BlueprintType)
 enum class SpellModifier : uint8
@@ -140,6 +141,8 @@ struct FSpellVFXInfo : public FTableRowBase
 		TSoftObjectPtr<UNiagaraSystem> HitFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSoftObjectPtr<UStaticMesh> MainMesh;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSoftObjectPtr<UMaterialInterface> MainMaterial;
 
 };
 
@@ -154,7 +157,14 @@ struct FSpellRuntimeInfo
 	FVector CurrentDirection;
 	float SpawnTime = 0.f;
 	FTransform Transform;
+	TArray<AActor*> CollidedActors;
 
+	void Reset()
+	{
+		CollidedActors.Empty();
+		IsActive = false;
+		Transform.SetLocation(Transform.GetLocation() + FVector(0, 0, 3000));
+	}
 };
 
 class SURVIVAL_API SpellDatatypes

@@ -11,7 +11,7 @@
 class UNiagaraSystem;
 class UNiagaraComponent;
 class ABaseSpell;
-class UBaseSpellManager;
+class ABaseSpellManager;
  
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class SURVIVAL_API USpellVFXComponent : public UActorComponent
@@ -29,7 +29,7 @@ public:
 	UPROPERTY()
 		ABaseSpell* SpellOwner;
 	UPROPERTY()
-		UBaseSpellManager* SpellManagerOwner;
+		ABaseSpellManager* SpellManagerOwner;
 
 protected:
 	// Called when the game starts
@@ -55,7 +55,7 @@ public:
 	UFUNCTION()
 	void StartHitVFX();
 	UFUNCTION()
-	void SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner);
+	void SetupVFX(ABaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner);
 	UFUNCTION()
 	void Hibernate();
 	

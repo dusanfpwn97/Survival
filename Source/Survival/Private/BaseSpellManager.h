@@ -3,7 +3,7 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "Components/ActorComponent.h"
+#include "GameFramework/Actor.h"
 #include "SpellDatatypes.h"
 #include "BaseSpellManager.generated.h"
 
@@ -15,16 +15,18 @@ class UDataTable;
 class USpellVFXComponent;
 class UInstancedStaticMeshComponent;
 
-UCLASS(ClassGroup = (Custom), meta = (BlueprintSpawnableComponent), Blueprintable)
-class UBaseSpellManager : public UActorComponent
+
+
+UCLASS()
+class ABaseSpellManager : public AActor
 {
 	GENERATED_BODY()
 
 public:	
 	// Sets default values for this component's properties
-	UBaseSpellManager();
+	ABaseSpellManager();
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
 		AActor* GetCaster() const;
@@ -34,6 +36,8 @@ public:
 		FSpellInfo CurrentSpellInfo;
 	UPROPERTY()
 		FTimerHandle MainSpellCastTimerHandle;
+	UPROPERTY()
+		FTimerHandle DebugTimerHandle;
 	UPROPERTY()
 		UInstancedStaticMeshComponent* ISMComp;
 	UPROPERTY()
@@ -53,11 +57,13 @@ public:
 	UFUNCTION()
 		void SetVFXDataTable();
 	UFUNCTION()
-		UStaticMesh* GetMeshFromDT();
+		void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
 	//
 	UFUNCTION()
 		void CastSpell(FSpellRuntimeInfo AdditonalInfo);
 
+	UFUNCTION()
+		void ResetInstance(const int Index);
 	UFUNCTION()
 		int GetAvailableSpellInstanceIndex();
 	UFUNCTION()
@@ -76,6 +82,10 @@ public:
 		void AddSpellModifier(SpellModifier NewSpellModifier);
 	UFUNCTION()
 		void RemoveSpellModifier(SpellModifier NewSpellModifier);
+	UFUNCTION()
+		void DebugValues();
+
+	AActor* IsColliding(const int Index, TArray<AActor*>& ActorsToCheck);
 
 	void UpdateSpellLocations();
 
@@ -84,6 +94,8 @@ public:
 	void OnSpellFinished(ABaseSpell* FinishedSpell);
 
 	bool IsSingleCastSpell();
+
+	void OnInstanceCollided(int Index, AActor* Actor);
 
 protected:
 	virtual void BeginPlay() override;

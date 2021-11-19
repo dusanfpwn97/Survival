@@ -9,7 +9,7 @@
 
 class UNiagaraComponent;
 class USphereComponent;
-class UBaseSpellManager;
+class ABaseSpellManager;
 class UPoolManager;
 
 
@@ -26,14 +26,14 @@ public:
 	virtual void Tick(float DeltaTime) override;
 
 	UFUNCTION()
-		UBaseSpellManager* GetSpellManager() const;
+		ABaseSpellManager* GetSpellManager() const;
 	//
 	UFUNCTION()
 		virtual void Start_Implementation() override;
 	UFUNCTION()
 		virtual void Reset_Implementation() override;
 	UFUNCTION()
-		virtual void SetSpellManager_Implementation(UBaseSpellManager* NewSpellManager) override;
+		virtual void SetSpellManager_Implementation(ABaseSpellManager* NewSpellManager) override;
 	UFUNCTION()
 		virtual void SetSpawner_Implementation(UObject* Object) override;
 	UFUNCTION()
@@ -51,7 +51,7 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		AActor* TargetActor;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		UBaseSpellManager* SpellManager;
+		ABaseSpellManager* SpellManager;
 
 	TArray<AActor*> CollidedActors;
 

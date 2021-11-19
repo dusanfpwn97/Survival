@@ -35,10 +35,7 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetGenerateOverlapEvents(false);
 	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
-	ISMComp->SetCanEverAffectNavigation(false);
-
 	SetVFXDataTable();
-
 }
 
 // Called when the game starts
@@ -170,7 +167,7 @@ void ABaseSpellManager::ResetInstance(const int Index)
 
 AActor* ABaseSpellManager::IsColliding(const int Index, TArray<AActor*> &ActorsToCheck)
 {
-	if (!Caster) return nullptr;
+	if (!Caster) return false;
 
 	for (AActor* Actor : ActorsToCheck)
 	{
@@ -184,7 +181,7 @@ AActor* ABaseSpellManager::IsColliding(const int Index, TArray<AActor*> &ActorsT
 			}
 		}
 	}
-	return nullptr;
+	return false;
 }
 
 int ABaseSpellManager::GetAvailableSpellInstanceIndex()

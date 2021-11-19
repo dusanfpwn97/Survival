@@ -101,7 +101,7 @@ void USpellVFXComponent::StartHitVFX()
 
 }
 
-void USpellVFXComponent::SetupVFX(UBaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner)
+void USpellVFXComponent::SetupVFX(ABaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner)
 {
 	
 	SpellManagerOwner = NewSpellManager;
