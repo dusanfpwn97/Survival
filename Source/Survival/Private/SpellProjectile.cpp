@@ -59,17 +59,24 @@ FVector ASpellProjectile::GetDirectionForSplit()
 			FVector Forward = SpellManager->Caster->GetActorForwardVector();
 			FVector Right = SpellManager->Caster->GetActorRightVector();
 			FVector Result;
+			float LerpAlpha = 0.f;
 			if (OrderIndex % 2 == 0)
 			{
-				Result = Forward + Right * OrderIndex;
+				//Result = Forward + (Right * OrderIndex) * OrderIndex;
+				LerpAlpha = 1.f / 8.f * OrderIndex;
+				Result = FMath::Lerp(Forward, Right, LerpAlpha);
 			}
 			else
 			{
-				Result = Forward + Right * -1 * (OrderIndex + 1) ;
+				LerpAlpha = 1.f / 8.f * (OrderIndex+1);
+				//Result = Forward + (Right * -1 * (OrderIndex + 1) * OrderIndex+1) ;
+				Result = FMath::Lerp(Forward, Right*-1, LerpAlpha);
 			}
+			
 			Result.Normalize();
 			return Result;
 		}
+
 	}
 	return FVector(0, 0, 0);
 }
