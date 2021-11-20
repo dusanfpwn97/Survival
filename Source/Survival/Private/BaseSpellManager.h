@@ -50,6 +50,8 @@ public:
 		UClass* SpellClassToSpawn;
 	UPROPERTY()
 		TArray<FSpellRuntimeInfo> SpellInstances;
+	UPROPERTY()
+		UNiagaraSystem* HitNS;
 	UFUNCTION()
 		bool GetIsStaticLocationSpell() const;
 	UPROPERTY()

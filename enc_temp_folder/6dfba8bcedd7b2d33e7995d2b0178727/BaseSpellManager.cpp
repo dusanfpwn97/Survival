@@ -65,7 +65,6 @@ void ABaseSpellManager::CastSpellLoop()
 
 	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
 	{
-		//Info.StartingLocation.Z += -50;
 		if(SpellModifiers.Contains(SpellModifier::SPLIT))
 		{
 			if (Caster)
@@ -149,7 +148,10 @@ void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 		{
 			ICombatInterface::Execute_OnCollidedWithSpell(Actor, this);
 		}
+		UWorld* World = GetWorld();
+		if (!World) return;
 
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
 		ResetInstance(Index);
 	}
 }
@@ -290,8 +292,6 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 
 	FVector Vec = Caster->GetActorLocation();
 
-	Vec.Z += 100.f;
-
 	if (CurrentSpellInfo.CastType == CastType::STORM)
 	{
 		Vec.Z += 1000.f;
@@ -392,10 +392,10 @@ void ABaseSpellManager::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*
 		{
 			if (SpellVFXInfo->Binding.Element == CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == CurrentSpellInfo.CastType)
 			{
-				UStaticMesh* TempMesh = SpellVFXInfo->MainMesh.LoadSynchronous();
-				UMaterialInterface* TempMat = SpellVFXInfo->MainMaterial.LoadSynchronous();
-				Mesh = TempMesh;
-				Mat = TempMat;
+				Mesh = SpellVFXInfo->MainMesh.LoadSynchronous();
+				Mat = SpellVFXInfo->MainMaterial.LoadSynchronous();
+				HitNS = SpellVFXInfo->HitFX.LoadSynchronous();
+
 				return;
 			}
 		}
