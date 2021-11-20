@@ -16,7 +16,7 @@ class AProjectileSpellManager : public ABaseSpellManager
 public:
 	AProjectileSpellManager();
 
-	virtual FVector GetDirection(const int Index) override;
+	virtual FVector UpdateDirection(const int Index) override;
 
 	FVector GetDirectionForSplit(const int Index);
 

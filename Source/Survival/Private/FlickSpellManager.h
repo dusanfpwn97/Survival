@@ -16,7 +16,7 @@ class AFlickSpellManager : public ABaseSpellManager
 public:
 
 	AFlickSpellManager();
-	virtual FVector GetDirection(const int Index) override;
+	virtual FVector UpdateDirection(const int Index) override;
 
 	virtual void UpdateInstanceTransforms() override;
 

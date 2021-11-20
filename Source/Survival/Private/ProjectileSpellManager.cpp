@@ -8,7 +8,7 @@ AProjectileSpellManager::AProjectileSpellManager()
 
 }
 
-FVector AProjectileSpellManager::GetDirection(const int Index)
+FVector AProjectileSpellManager::UpdateDirection(const int Index)
 {
 	//return FVector(1, 0, 0);
 
@@ -68,7 +68,8 @@ void AProjectileSpellManager::UpdateInstanceTransforms()
 	{
 		if (SpellInstances[i].IsActive)
 		{
-			SpellInstances[i].Velocity += (GetDirection(i) * CurrentSpellInfo.Speed * 0.06) * World->DeltaTimeSeconds;
+			UpdateDirection(i);
+			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 0.06) * World->DeltaTimeSeconds;
 			SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
 			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity);
 		}

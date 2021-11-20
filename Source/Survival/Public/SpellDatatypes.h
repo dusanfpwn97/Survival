@@ -170,7 +170,7 @@ public:
 		IsActive = false;
 		Transform.SetLocation(FVector(0.f, 0.f, 4000.f));
 		Transform.SetRotation(FRotator(0, 0, 0).Quaternion());
-
+		Target = nullptr;
 		Velocity = FVector(0.f,0.f,0.f);
 		HasGotInitialDirection = false;
 	}

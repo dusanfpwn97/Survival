@@ -65,6 +65,7 @@ void ABaseSpellManager::CastSpellLoop()
 
 	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
 	{
+		//Info.StartingLocation.Z += -50;
 		if(SpellModifiers.Contains(SpellModifier::SPLIT))
 		{
 			if (Caster)
@@ -288,6 +289,8 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 	if (!Caster) return FVector();
 
 	FVector Vec = Caster->GetActorLocation();
+
+	Vec.Z += 100.f;
 
 	if (CurrentSpellInfo.CastType == CastType::STORM)
 	{

@@ -9,9 +9,8 @@ AFlickSpellManager::AFlickSpellManager()
 
 }
 
-FVector AFlickSpellManager::GetDirection(const int Index)
+FVector AFlickSpellManager::UpdateDirection(const int Index)
 {
-
 	AActor* Target = SpellInstances[Index].Target;
 	if (Target)
 	{
@@ -21,15 +20,15 @@ FVector AFlickSpellManager::GetDirection(const int Index)
 
 			if (TempInterface->GetIsAlive())
 			{
-				FVector NewDirection = Target->GetActorLocation() - SpellInstances[Index].Transform.GetLocation();
-				NewDirection.Normalize();
+				SpellInstances[Index].CurrentDirection = Target->GetActorLocation() - SpellInstances[Index].Transform.GetLocation();
+				SpellInstances[Index].CurrentDirection.Normalize();
 				
-				return NewDirection;
+				return SpellInstances[Index].CurrentDirection;
 			}
 			else
 			{
-				return FVector(1, 0, 0);
 				SpellInstances[Index].Target = nullptr;
+
 				SpellInstances[Index].HasGotInitialDirection = true;
 				//FVector NewDirection = 
 				SpellInstances[Index].CurrentDirection.Z = 0; // 
@@ -77,7 +76,8 @@ void AFlickSpellManager::UpdateInstanceTransforms()
 	{
 		if (SpellInstances[i].IsActive)
 		{
-			SpellInstances[i].Velocity = (GetDirection(i) * CurrentSpellInfo.Speed * 1.06) * World->DeltaTimeSeconds;
+			UpdateDirection(i);
+			SpellInstances[i].Velocity = (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 1.06) * World->DeltaTimeSeconds;
 			//SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
 			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity);
 		}

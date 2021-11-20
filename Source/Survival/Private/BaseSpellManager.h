@@ -101,7 +101,7 @@ public:
 
 	void OnInstanceCollided(int Index, AActor* Actor);
 
-	virtual FVector GetDirection(const int Index);
+	virtual FVector UpdateDirection(const int Index);
 protected:
 	virtual void BeginPlay() override;
 
