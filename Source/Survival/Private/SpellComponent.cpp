@@ -3,6 +3,8 @@
 
 #include "SpellComponent.h"
 #include "BaseSpellManager.h"
+#include "ProjectileSpellManager.h"
+#include "FlickSpellManager.h"
 
 // Sets default values for this component's properties
 USpellComponent::USpellComponent()
@@ -41,11 +43,24 @@ void USpellComponent::AddNewSpell(FSpellInfo SpellInfo)
 	TempTransform.SetScale3D(FVector(1, 1, 1));
 	TempTransform.SetRotation(FRotator(0, 0, 0).Quaternion());
 	FActorSpawnParameters Params;
-
-	ABaseSpellManager* NewSpell = World->SpawnActor<ABaseSpellManager>(ABaseSpellManager::StaticClass(), TempTransform, Params);
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	UClass* ClassToSpawn = GetSpellClassForSpawning(SpellInfo.CastType);
+	ABaseSpellManager* NewSpell = World->SpawnActor<ABaseSpellManager>(ClassToSpawn, TempTransform, Params);
 
 	SpellManagers.Add(NewSpell);
-	NewSpell->InitSpellManager(SpellInfo);
 	NewSpell->Caster = GetOwner();
+	NewSpell->InitSpellManager(SpellInfo);
 
+
+}
+
+UClass* USpellComponent::GetSpellClassForSpawning(CastType CastType)
+{
+	if (CastType == CastType::PROJECTILE) return AProjectileSpellManager::StaticClass();
+	if (CastType == CastType::FLICK) return AFlickSpellManager::StaticClass();
+	//if (CastType == CastType::STORM) return ASpellStorm::StaticClass();
+	//if (CastType == CastType::SHIELD) return ASpellShield::StaticClass();
+
+
+	return nullptr;
 }

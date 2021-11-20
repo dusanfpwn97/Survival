@@ -78,7 +78,6 @@ void ABaseSpell::OnOverlapBeginDistance(AActor* OtherActor)
 
 }
 
-
 void ABaseSpell::CheckTarget()
 {
 }
@@ -156,6 +155,7 @@ void ABaseSpell::SetSpellManager_Implementation(ABaseSpellManager* NewSpellManag
 	SpellManager = NewSpellManager;
 	if (SpellManager)
 	{
+
 		//VFXComponent->SetupVFX(SpellManager, this);
 		SetWatchdogTimers();
 		BaseCollider->SetSphereRadius(SpellManager->CurrentSpellInfo.Radius);

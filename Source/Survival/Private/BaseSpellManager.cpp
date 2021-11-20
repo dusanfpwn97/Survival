@@ -28,7 +28,6 @@ ABaseSpellManager::ABaseSpellManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 	//VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(TEXT("ISMComp")));
 	RootComponent = ISMComp;
@@ -37,6 +36,7 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ISMComp->SetCanEverAffectNavigation(false);
 
+	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 	SetVFXDataTable();
 
 }
@@ -52,7 +52,8 @@ void ABaseSpellManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 
-	UpdateSpellLocations();
+	MoveSpells();
+	CheckForCollisions();
 	// ...
 
 }
@@ -92,63 +93,50 @@ void ABaseSpellManager::CastSpell(FSpellRuntimeInfo SpellRuntimeInfo)
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	int InstanceIndex = GetAvailableSpellInstanceIndex();
+	const int InstanceIndex = GetAvailableSpellInstanceIndex();
 
 	SpellInstances[InstanceIndex].OrderIndex = SpellRuntimeInfo.OrderIndex;
 	SpellInstances[InstanceIndex].IsActive = true;
 	SpellInstances[InstanceIndex].Transform.SetLocation(Caster->GetActorLocation());
 	SpellInstances[InstanceIndex].SpawnTime = World->TimeSeconds;
-
+	SpellInstances[InstanceIndex].CurrentDirection = GetDirection(InstanceIndex);
+	UpdateTarget(InstanceIndex);
+	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("%d"), SpellInstances[InstanceIndex].CurrentDirection.X));
 	ISMComp->UpdateInstanceTransform(InstanceIndex, SpellInstances[InstanceIndex].Transform, true, true, true);
 
-	
 }
 
-void ABaseSpellManager::UpdateSpellLocations()
+void ABaseSpellManager::MoveSpells()
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
 
-	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
-	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+	UpdateInstanceTransforms();
 
 	for (int i = 0; i < SpellInstances.Num(); i++)
 	{
 		if (SpellInstances[i].IsActive)
 		{
-			//
-			bool IsDirty = false;
-			FTransform NewTransform = SpellInstances[i].Transform;
-			FVector NewLoc = NewTransform.GetLocation();
-			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed*0.04) * World->DeltaTimeSeconds;
+			ISMComp->UpdateInstanceTransform(i, SpellInstances[i].Transform, true, false, true);
 
-			SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
-
-			NewLoc += SpellInstances[i].Velocity;
-
-			SpellInstances[i].Transform.SetLocation(NewLoc);
-
-			if (i == SpellInstances.Num() - 1) IsDirty = true;
-
-			ISMComp->UpdateInstanceTransform(i, NewTransform, true, false, true);
-			
-			//
-
-			AActor* CollidedActor = IsColliding(i, ActorsToCheck);
-			if (CollidedActor)
+			if (World->TimeSeconds - SpellInstances[i].SpawnTime > 9.3f)// TODO optimize Doesnt need to be called every frame
 			{
-				OnInstanceCollided(i, CollidedActor);
-			}
-
-			//
-
-			if (World->TimeSeconds - SpellInstances[i].SpawnTime > 9.3f)
-			{
-				ResetInstance(i);
+				ResetInstance(i); 
 			}
 		}
 	}
+
 	ISMComp->MarkRenderStateDirty();
+}
+
+void ABaseSpellManager::UpdateInstanceTransforms()
+{
+	return;
+}
+
+FVector ABaseSpellManager::GetDirection(const int Index)
+{
+	return FVector();
 }
 
 void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
@@ -160,8 +148,6 @@ void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 			ICombatInterface::Execute_OnCollidedWithSpell(Actor, this);
 		}
 
-		//CollidedActors.Add(OtherActor);
-
 		ResetInstance(Index);
 	}
 }
@@ -169,26 +155,32 @@ void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 void ABaseSpellManager::ResetInstance(const int Index)
 {
 	SpellInstances[Index].Reset();
-	ISMComp->UpdateInstanceTransform(Index, SpellInstances[Index].Transform, true, true, true);
+	//ISMComp->UpdateInstanceTransform(Index, SpellInstances[Index].Transform, true, true, true);
 }
 
-AActor* ABaseSpellManager::IsColliding(const int Index, TArray<AActor*> &ActorsToCheck)
+void ABaseSpellManager::CheckForCollisions()
 {
-	if (!Caster) return nullptr;
+	// TODO check how much time this takes
+	if (!Caster) return;
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
 
-	for (AActor* Actor : ActorsToCheck)
+	for (int j = 0; j < SpellInstances.Num(); j++)
 	{
-		if (Actor != this/* && !CollidedActors.Contains(Actor) */&& Actor != Caster && Actor)
+		for (int i = 0; i < ActorsToCheck.Num(); i++)
 		{
-			float Dist = FVector::Dist(SpellInstances[Index].Transform.GetLocation(), Actor->GetActorLocation());
-
-			if (Dist < 100)
+			AActor* TempActor = ActorsToCheck[i];
+			if (TempActor != this/* && !CollidedActors.Contains(Actor) */&& TempActor != Caster && TempActor)
 			{
-				return Actor;
+				float Dist = FVector::Dist(SpellInstances[j].Transform.GetLocation(), TempActor->GetActorLocation());
+
+				if (Dist < 80)
+				{
+					OnInstanceCollided(j, TempActor);
+				}
 			}
 		}
 	}
-	return nullptr;
 }
 
 int ABaseSpellManager::GetAvailableSpellInstanceIndex()
@@ -205,18 +197,17 @@ int ABaseSpellManager::GetAvailableSpellInstanceIndex()
 	}
 	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("%i"), 33));
 
-	FSpellRuntimeInfo Info;
+	FSpellRuntimeInfo TempInfo;
+	TempInfo.Reset();
+	SpellInstances.Add(TempInfo);
+	SpellInstances.Last().Transform.SetScale3D(FVector(0.3f, 0.3f, 0.3f));
+	SpellInstances.Last().Transform.SetLocation(GetStartingSpellLocation());
+	SpellInstances.Last().IsActive = true;
+	FTransform Transform;
 
-	Info.Transform.SetScale3D(FVector(0.3, 0.3, 0.3));
-	Info.Transform.SetLocation(GetStartingSpellLocation());
-	Info.CurrentDirection = FVector(FMath::FRandRange(-1,1), FMath::FRandRange(-1, 1), 0);
-	//Info.CurrentDirection = FVector(1,0, 0);
-	Info.CurrentDirection.Normalize();
-	Info.IsActive = true;
+	SpellInstances.Last().ISMIndex = ISMComp->AddInstance(SpellInstances.Last().Transform);
 
-	Info.ISMIndex = ISMComp->AddInstance(Info.Transform);
-	SpellInstances.Add(Info);
-	return Info.ISMIndex;
+	return SpellInstances.Last().ISMIndex;
 }
 
 void ABaseSpellManager::SetVFXDataTable()
@@ -242,7 +233,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 
-	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 1.f, true);
+	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.5f, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::SPLIT);
@@ -257,7 +248,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 
 void ABaseSpellManager::DebugValues()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
+	GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
 }
 
 void ABaseSpellManager::MarkAllSpellsForDestruction()
@@ -293,8 +284,12 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 {
 	
 	//FVector Vec = ICombatInterface::Execute_GetSpellCastLocation(Caster);
+	if (!Caster) return FVector();
+
 	FVector Vec = Caster->GetActorLocation();
+
 	Vec.Z += 100.f;
+
 	if (CurrentSpellInfo.CastType == CastType::STORM)
 	{
 		Vec.Z += 1000.f;
@@ -372,17 +367,6 @@ void ABaseSpellManager::UpdateIsTargetlessSpell()
 	}
 }
 
-UClass* ABaseSpellManager::GetSpellClassForSpawning()
-{
-	if (CurrentSpellInfo.CastType == CastType::PROJECTILE) return ASpellProjectile::StaticClass(); 
-	if (CurrentSpellInfo.CastType == CastType::FLICK) return ASpellFlick::StaticClass();
-	if (CurrentSpellInfo.CastType == CastType::STORM) return ASpellStorm::StaticClass();
-	if (CurrentSpellInfo.CastType == CastType::SHIELD) return ASpellShield::StaticClass();
-
-	
-	return nullptr;
-}
-
 void ABaseSpellManager::UpdateCastType(CastType NewCastType)
 {
 	MarkAllSpellsForDestruction();
@@ -447,26 +431,7 @@ void ABaseSpellManager::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*
 	}*/
 }
 
-/*
-UClass* ss = GetSpellClassForSpawning();
-if (!ss)
+void ABaseSpellManager::UpdateTarget(const int Index)
 {
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned Spell class us null. Need to set it in GetSpellClassForSpawning(). Shouldn't happen! UBaseSpellManager::CastSpell"));
-	return;
+
 }
-
-
-//bool IsCached;
-//AActor* SpellToCast = SpellPoolManager->GetAvailableActor(ss, IsCached);
-
-if (!SpellToCast)
-{
-	GEngine->AddOnScreenDebugMessage(-1, 5.f, FColor::Yellow, TEXT("Spell couldn't be spawned. Shouldn't happen! UBaseSpellManager::CastSpell"));
-	return;
-}
-
-
-ICombatInterface::Execute_SetSpellManager(SpellToCast, this);
-IPoolInterface::Execute_SetOrderIndex(SpellToCast, AdditonalInfo.OrderIndex);
-SpellToCast->SetActorLocation(AdditonalInfo.StartingLocation);
-*/

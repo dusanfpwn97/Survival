@@ -146,10 +146,11 @@ struct FSpellVFXInfo : public FTableRowBase
 
 };
 
-USTRUCT()
+USTRUCT(NotBlueprintable)
 struct FSpellRuntimeInfo
 {
 	GENERATED_BODY()
+public:
 
 	bool IsActive = false;
 	int ISMIndex = 0;
@@ -157,15 +158,21 @@ struct FSpellRuntimeInfo
 	FVector CurrentDirection;
 	float SpawnTime = 0.f;
 	FTransform Transform;
+
 	TArray<AActor*> CollidedActors;
-	FVector Velocity = FVector(0, 0, 0);
+	FVector Velocity = FVector(0.f, 0.f, 0.f);
+	bool HasGotInitialDirection = false;
+	AActor* Target = nullptr;
 
 	void Reset()
 	{
 		CollidedActors.Empty();
 		IsActive = false;
-		Transform.SetLocation(Transform.GetLocation() + FVector(0, 0, 4000));
-		Velocity = FVector(0,0,0);
+		Transform.SetLocation(FVector(0.f, 0.f, 4000.f));
+		Transform.SetRotation(FRotator(0, 0, 0).Quaternion());
+
+		Velocity = FVector(0.f,0.f,0.f);
+		HasGotInitialDirection = false;
 	}
 };
 

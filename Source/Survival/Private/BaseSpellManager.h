@@ -84,10 +84,14 @@ public:
 		void RemoveSpellModifier(SpellModifier NewSpellModifier);
 	UFUNCTION()
 		void DebugValues();
+	UFUNCTION()
+		virtual void UpdateTarget(const int Index);
 
-	AActor* IsColliding(const int Index, TArray<AActor*>& ActorsToCheck);
+	void CheckForCollisions();
 
-	void UpdateSpellLocations();
+	virtual void MoveSpells();
+
+	virtual void UpdateInstanceTransforms();
 
 	void StartCastSpellTimer(bool ShouldLoop);
 
@@ -97,6 +101,7 @@ public:
 
 	void OnInstanceCollided(int Index, AActor* Actor);
 
+	virtual FVector GetDirection(const int Index);
 protected:
 	virtual void BeginPlay() override;
 
@@ -113,8 +118,7 @@ protected:
 	UFUNCTION()
 		void UpdateIsTargetlessSpell();
 
-	UFUNCTION()
-		UClass* GetSpellClassForSpawning();
+
 private:
 	
 

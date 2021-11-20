@@ -25,7 +25,8 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		TArray<ABaseSpellManager*> SpellManagers;
 
-
+	UFUNCTION()
+		UClass* GetSpellClassForSpawning(CastType CastType);
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
