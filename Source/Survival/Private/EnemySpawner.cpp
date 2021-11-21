@@ -30,7 +30,7 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.35f, true);
+		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.1f, true);
 	}
 	
 }
@@ -91,7 +91,7 @@ void UEnemySpawner::SpawnEnemy()
 
 	if (!Enemy) GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("Enemy couldn't be spawned. Shouldn't happen! EnemySpawner.cpp -> SpawnEnemy()"));
 	FVector SpawnLoc = PlayerPawn->GetActorLocation();
-	SpawnLoc.Z = 90;
+	SpawnLoc.Z = 2.f;
 	Enemy->SetActorLocation(UHelperFunctions::GetRandomPointInCircle(SpawnLoc, 1500.f));
 	
 	ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);

@@ -5,6 +5,7 @@
 #include "BaseSpellManager.h"
 #include "ProjectileSpellManager.h"
 #include "FlickSpellManager.h"
+#include "StormSpellManager.h"
 
 // Sets default values for this component's properties
 USpellComponent::USpellComponent()
@@ -58,7 +59,7 @@ UClass* USpellComponent::GetSpellClassForSpawning(CastType CastType)
 {
 	if (CastType == CastType::PROJECTILE) return AProjectileSpellManager::StaticClass();
 	if (CastType == CastType::FLICK) return AFlickSpellManager::StaticClass();
-	//if (CastType == CastType::STORM) return ASpellStorm::StaticClass();
+	if (CastType == CastType::STORM) return AStormSpellManager::StaticClass();
 	//if (CastType == CastType::SHIELD) return ASpellShield::StaticClass();
 
 

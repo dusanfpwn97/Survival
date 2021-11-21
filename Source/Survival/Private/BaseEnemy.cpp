@@ -87,17 +87,12 @@ void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell)
 
 	ReceiveDamage(Spell);
 }
-
+/*
 void ABaseEnemy::OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult)
 {
 		//TODO Replace
 }
-
-void ABaseEnemy::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex)
-{
-
-}
-
+*/
 void ABaseEnemy::ClearAllTimers()
 {
 	UWorld* World = GetWorld();
@@ -136,16 +131,21 @@ void ABaseEnemy::StartRunning()
 
 void ABaseEnemy::SetupComponents()
 {
-	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
-	RootComponent = MainCollider;
+	//MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
+	//RootComponent = MainCollider;
 	
-	MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
-	MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
+	//MainCollider->OnComponentBeginOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapBegin);
+	//MainCollider->OnComponentEndOverlap.AddDynamic(this, &ABaseEnemy::OnOverlapEnd);
+	/*
 	MainCollider->SetCanEverAffectNavigation(false);
-
+	MainCollider->SetGenerateOverlapEvents(false);
+	MainCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	*/
 	SkeletalMesh = CreateDefaultSubobject<USkeletalMeshComponent>(FName(TEXT("SkeletalMesh")));
-	SkeletalMesh->SetupAttachment(RootComponent);
+	RootComponent = SkeletalMesh;
+	//SkeletalMesh->SetupAttachment(RootComponent);
 	SkeletalMesh->SetGenerateOverlapEvents(false);
+	SkeletalMesh->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	SkeletalMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	SkeletalMesh->bEnableUpdateRateOptimizations = true;
 	//SkeletalMesh->bDisplayDebugUpdateRateOptimizations = true;
@@ -156,13 +156,16 @@ void ABaseEnemy::SetupComponents()
 	SkeletalMesh->bEnableLineCheckWithBounds = false;
 	SkeletalMesh->bEnablePerPolyCollision = false;
 	SkeletalMesh->SetCanEverAffectNavigation(false);
+	SkeletalMesh->VisibilityBasedAnimTickOption = EVisibilityBasedAnimTickOption::OnlyTickPoseWhenRendered;
+	SkeletalMesh->bSkipBoundsUpdateWhenInterpolating = true;
+	SkeletalMesh->bSkipKinematicUpdateWhenInterpolating = true;
 
 }
 
 void ABaseEnemy::Start_Implementation()
 {
 	IsAlive = true;
-
+	SkeletalMesh->SetComponentTickEnabled(true);
 	SetActorTickEnabled(true);
 	SetActorHiddenInGame(false);
 	ClearAllTimers();
@@ -177,6 +180,7 @@ void ABaseEnemy::Reset_Implementation()
 
 	SetActorTickEnabled(false);
 	SetActorHiddenInGame(true);
+	SkeletalMesh->SetComponentTickEnabled(false);
 
 	UWorld* World = GetWorld();
 	{
@@ -252,7 +256,7 @@ void ABaseEnemy::MoveTowardsTarget()
 	for (int i = -2; i < 3; i++)
 	{
 		FRotator TempRot = (Direction.Rotation() + FRotator(0.f, i * -45.f, 0.f));
-		FVector End = Start + TempRot.Vector() * MainCollider->GetUnscaledCapsuleRadius()*2.5;
+		FVector End = Start + TempRot.Vector() * 50*2.5;
 
 		World->LineTraceSingleByObjectType(Hits, Start, End, ObjectQueryParams, Params);
 		//DrawDebugLine(World, Start, End, FColor::Green, false, 0.f);
@@ -352,12 +356,12 @@ USkeletalMeshComponent* ABaseEnemy::GetSkeletalMesh()
 
 void ABaseEnemy::RemoveCollision()
 {
-	MainCollider->SetGenerateOverlapEvents(false);
-	MainCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
+	//MainCollider->SetGenerateOverlapEvents(false);
+	//MainCollider->SetCollisionProfileName(FName(TEXT("NoCollision")));
 }
 
 void ABaseEnemy::SetupCollision()
 {
-	MainCollider->SetGenerateOverlapEvents(true);
-	MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
+	//MainCollider->SetGenerateOverlapEvents(true);
+	//MainCollider->SetCollisionProfileName(FName(TEXT("Enemy")));
 }

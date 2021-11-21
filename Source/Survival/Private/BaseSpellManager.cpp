@@ -32,8 +32,8 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(TEXT("ISMComp")));
 	RootComponent = ISMComp;
 	ISMComp->SetGenerateOverlapEvents(false);
-	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
+	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCanEverAffectNavigation(false);
 	ISMComp->UpdateBounds();
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
@@ -63,7 +63,7 @@ void ABaseSpellManager::CastSpellLoop()
 {
 	FSpellRuntimeInfo Info;
 
-	if (CurrentSpellInfo.CastType == CastType::PROJECTILE)
+	if (CurrentSpellInfo.CastType == CastType::PROJECTILE || CurrentSpellInfo.CastType == CastType::STORM)
 	{
 		if(SpellModifiers.Contains(SpellModifier::SPLIT))
 		{
@@ -142,18 +142,22 @@ FVector ABaseSpellManager::UpdateDirection(const int Index)
 
 void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 {
-	if (Actor != Caster && Actor != this && !SpellInstances[Index].CollidedActors.Contains(Actor))
-	{
-		if (Actor->Implements<UCombatInterface>())
-		{
-			ICombatInterface::Execute_OnCollidedWithSpell(Actor, this);
-		}
-		UWorld* World = GetWorld();
-		if (!World) return;
+	UWorld* World = GetWorld();
+	if (!World) return;
 
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
-		ResetInstance(Index);
+	if (Actor)
+	{
+		if (Actor != Caster && Actor != this && !SpellInstances[Index].CollidedActors.Contains(Actor))
+		{
+			if (Actor->Implements<UCombatInterface>())
+			{
+				ICombatInterface::Execute_OnCollidedWithSpell(Actor, this);
+			}
+		}
 	}
+	
+	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
+	ResetInstance(Index);
 }
 
 void ABaseSpellManager::ResetInstance(const int Index)
@@ -176,9 +180,9 @@ void ABaseSpellManager::CheckForCollisions()
 			AActor* TempActor = ActorsToCheck[i];
 			if (TempActor != this/* && !CollidedActors.Contains(Actor) */&& TempActor != Caster && TempActor)
 			{
-				float Dist = FVector::Dist(SpellInstances[j].Transform.GetLocation(), TempActor->GetActorLocation());
+				float Dist = FVector::Dist(SpellInstances[j].Transform.GetLocation(), TempActor->GetActorLocation() + FVector(0.f,0.f, 100.f));
 
-				if (Dist < 80)
+				if (Dist < 70)
 				{
 					OnInstanceCollided(j, TempActor);
 				}
@@ -294,7 +298,9 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 
 	if (CurrentSpellInfo.CastType == CastType::STORM)
 	{
-		Vec.Z += 1000.f;
+		Vec.Z += 2000.f;
+
+		Vec += Caster->GetActorForwardVector() * 500;
 		Vec.X += FMath::FRandRange(-600.f, 600.f);
 		Vec.Y += FMath::FRandRange(-600.f, 600.f);
 	}

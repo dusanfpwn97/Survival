@@ -91,7 +91,7 @@ void AFakeShadowDistributer::UpdateShadowsLocation()
 				else
 				{
 					Transform.SetScale3D(FVector(1, 1, 1));
-					ShadowSocketPosition.Z = 3; // Set shadow to be a bit off the ground
+					ShadowSocketPosition.Z = 2; // Set shadow to be a bit off the ground
 				}
 				
 			}
