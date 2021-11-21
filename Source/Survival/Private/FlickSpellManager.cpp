@@ -77,10 +77,10 @@ void AFlickSpellManager::UpdateInstanceTransforms()
 		if (SpellInstances[i].IsActive)
 		{
 			UpdateDirection(i);
-			SpellInstances[i].Velocity = (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 1.06) * World->DeltaTimeSeconds;
+			SpellInstances[i].Velocity = (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 1.06);
 			//SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
 			SpellInstances[i].Transform.SetRotation(SpellInstances[i].Velocity.Rotation().Quaternion());
-			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity);
+			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity * World->DeltaTimeSeconds);
 		}
 	}
 }

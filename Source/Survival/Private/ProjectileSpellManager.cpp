@@ -20,7 +20,7 @@ FVector AProjectileSpellManager::UpdateDirection(const int Index)
 	SpellInstances[Index].CurrentDirection += GetDirectionForSplit(Index);
 	SpellInstances[Index].CurrentDirection.Normalize();
 	SpellInstances[Index].HasGotInitialDirection = true;
-
+	SpellInstances[Index].Transform.SetRotation(SpellInstances[Index].CurrentDirection.Rotation().Quaternion());
 	return SpellInstances[Index].CurrentDirection;
 }
 
@@ -69,9 +69,9 @@ void AProjectileSpellManager::UpdateInstanceTransforms()
 		if (SpellInstances[i].IsActive)
 		{
 			UpdateDirection(i);
-			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 0.06) * World->DeltaTimeSeconds;
-			SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
-			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity);
+			SpellInstances[i].Velocity += (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 0.06);
+			SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(1200.f);
+			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity * World->DeltaTimeSeconds);
 		}
 	}
 }

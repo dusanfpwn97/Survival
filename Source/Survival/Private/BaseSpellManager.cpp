@@ -44,9 +44,9 @@ ABaseSpellManager::ABaseSpellManager()
 // Called when the game starts
 void ABaseSpellManager::BeginPlay()
 {
-	ISMComp->UpdateBounds();
+
 	Super::BeginPlay();
-	ISMComp->UpdateBounds();
+
 }
 
 void ABaseSpellManager::Tick(float DeltaTime)

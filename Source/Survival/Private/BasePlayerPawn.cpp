@@ -39,21 +39,21 @@ void ABasePlayerPawn::BeginPlay()
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! CombatComponent.cpp -> BeginPlay"));
 
 	FSpellInfo Info;
-	Info.Element = Element::ELECTRICITY;
+	Info.Element = Element::AIR;
 	Info.CastType = CastType::FLICK;
-	Info.Cooldown = 0.5f;
-	Info.Speed = 500.f;
+	Info.Cooldown = 0.35f;
+	Info.Speed = 1000.f;
 	Info.Radius = 20.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	SpellComponent->AddNewSpell(Info);
+	//SpellComponent->AddNewSpell(Info);
 
-	Info.Element = Element::VOID;
+	Info.Element = Element::FIRE;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.3f;
-	Info.Speed = 1200.f;
+	Info.Cooldown = 0.55f;
+	Info.Speed = 990.f;
 	Info.Radius = 50.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	//SpellComponent->AddNewSpell(Info);
+	SpellComponent->AddNewSpell(Info);
 
 
 	Info.Element = Element::FIRE;

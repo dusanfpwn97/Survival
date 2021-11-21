@@ -31,7 +31,6 @@ enum class Element : uint8
 	WATER,
 	AIR,
 	ELECTRICITY,
-	POISON,
 	VOID,
 	EARTH,
 	ICE

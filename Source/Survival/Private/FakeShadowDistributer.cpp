@@ -18,6 +18,7 @@ AFakeShadowDistributer::AFakeShadowDistributer()
 	ISM_Comp->SetCollisionEnabled(ECollisionEnabled::NoCollision);
 	ISM_Comp->SetGenerateOverlapEvents(false);
 	ISM_Comp->SetCollisionProfileName(FName("None"));
+	ISM_Comp->UpdateBounds();
 }
 
 // Called when the game starts or when spawned
@@ -85,7 +86,7 @@ void AFakeShadowDistributer::UpdateShadowsLocation()
 				{
 					//IndexesToHide.Add(i);
 					Transform.SetScale3D(FVector(0.01, 0.01, 0.01));
-					ShadowSocketPosition.Z = 1000; // Set shadow to be a bit off the ground
+					ShadowSocketPosition.Z = 5000; // Set shadow to be a bit off the ground
 				}
 				else
 				{

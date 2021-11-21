@@ -84,7 +84,6 @@ FString USpellFunctionLibrary::GetElementName(Element Element)
 	if (Element == Element::ELECTRICITY) return "Electricity";
 	if (Element == Element::ICE) return "Ice";
 	if (Element == Element::NO_ELEMENT) return "No Element";
-	if (Element == Element::POISON) return "Poison";
 	if (Element == Element::WATER) return "Water";
 	if (Element == Element::AIR) return "Air";
 
