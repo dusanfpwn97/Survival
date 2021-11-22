@@ -33,6 +33,8 @@ public:
 	UFUNCTION()
 		void SpawnEnemy();
 
+		void DebugValues();
+		FTimerHandle DebugTimerHandle;
 
 protected:
 	// Called when the game starts

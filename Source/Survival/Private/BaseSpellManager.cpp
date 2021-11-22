@@ -160,6 +160,7 @@ void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 	ResetInstance(Index);
 }
 
+
 void ABaseSpellManager::ResetInstance(const int Index)
 {
 	SpellInstances[Index].Reset();
@@ -172,19 +173,23 @@ void ABaseSpellManager::CheckForCollisions()
 	if (!Caster) return;
 	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
 	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
-
+	
 	for (int j = 0; j < SpellInstances.Num(); j++)
 	{
 		for (int i = 0; i < ActorsToCheck.Num(); i++)
 		{
-			AActor* TempActor = ActorsToCheck[i];
-			if (TempActor != this/* && !CollidedActors.Contains(Actor) */&& TempActor != Caster && TempActor)
+			const FVector SpellLoc = SpellInstances[j].Transform.GetLocation();
+			if (SpellLoc.Z < 150.f) // Optimisation for storm type
 			{
-				float Dist = FVector::Dist(SpellInstances[j].Transform.GetLocation(), TempActor->GetActorLocation() + FVector(0.f,0.f, 100.f));
-
-				if (Dist < 70)
+				AActor* TempActor = ActorsToCheck[i];
+				if (TempActor != this && TempActor != Caster && TempActor)// && !CollidedActors.Contains(Actor) 
 				{
-					OnInstanceCollided(j, TempActor);
+					float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
+
+					if (Dist < 70)
+					{
+						OnInstanceCollided(j, TempActor);
+					}
 				}
 			}
 		}

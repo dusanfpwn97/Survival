@@ -30,7 +30,8 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		GetWorld()->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.1f, true);
+		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.03f, true);
+		World->GetTimerManager().SetTimer(DebugTimerHandle, this, &UEnemySpawner::DebugValues, 0.5f, true);
 	}
 	
 }
@@ -105,6 +106,11 @@ void UEnemySpawner::SpawnEnemy()
 			FakeShadowDistributer->AssignNewShadow(Enemy, FVector(0, 0, 0), EnemyActor->GetSkeletalMesh(), FName("ShadowSocket"));
 		}
 	}
+}
+
+void UEnemySpawner::DebugValues()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Yellow, FString::Printf(TEXT("Spawned Enemies: %i"), EnemySpawnPoolManager->AllSpawnedActors.Num()));
 }
 
 void UEnemySpawner::UpdatePlayerPawn()
