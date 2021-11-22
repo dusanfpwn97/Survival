@@ -14,6 +14,7 @@ class UNiagaraSystem;
 class UDataTable;
 class USpellVFXComponent;
 class UInstancedStaticMeshComponent;
+class UMultithreadCalculator;
 
 
 
@@ -40,6 +41,8 @@ public:
 		FTimerHandle DebugTimerHandle;
 	UPROPERTY()
 		UInstancedStaticMeshComponent* ISMComp;
+	UPROPERTY()
+		UMultithreadCalculator* MultithreadCalculatorComponent;
 	UPROPERTY()
 		UPoolManager* SpellPoolManager;
 	UPROPERTY()

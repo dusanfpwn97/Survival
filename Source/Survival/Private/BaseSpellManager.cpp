@@ -21,6 +21,7 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
+#include "MultithreadCalculator.h"
 
 // Sets default values for this component's properties
 ABaseSpellManager::ABaseSpellManager()
@@ -36,7 +37,10 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCanEverAffectNavigation(false);
 	ISMComp->UpdateBounds();
+
 	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
+
+	MultithreadCalculatorComponent = CreateDefaultSubobject<UMultithreadCalculator>(FName(TEXT("MultithreadCalculatorComponent")));
 	SetVFXDataTable();
 
 }
@@ -173,7 +177,67 @@ void ABaseSpellManager::CheckForCollisions()
 	if (!Caster) return;
 	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
 	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
-	
+
+	/*
+	if (MultithreadCalculatorComponent && ActorsToCheck.Num() > 0 && SpellInstances.Num() > 0)
+	{
+		TMap<int32, int32> CIndices = MultithreadCalculatorComponent->GetCalcData();
+
+		if (CIndices.Num() > 0)
+		{
+			TArray<int32> ss;
+			CIndices.GetKeys(ss);
+
+			if (ss.Num() > 0)
+			{
+				for (int32 spellindex : ss)
+				{
+					int32 TempActorIndex = CIndices.FindRef(spellindex);
+					if (ActorsToCheck.Num() > TempActorIndex)
+					{
+						if (ActorsToCheck[TempActorIndex])
+						{
+							OnInstanceCollided(spellindex, ActorsToCheck[TempActorIndex]);
+						}
+					}
+
+				}
+			}
+		}
+	}
+	*/
+	/*
+	if (MultithreadCalculatorComponent && ActorsToCheck.Num() > 0 && SpellInstances.Num() > 0)
+	{
+		TMap<int32, int32> CIndices = MultithreadCalculatorComponent->GetCalcData();
+
+		if (CIndices.Num() > 0)
+		{
+			TArray<int32> ss;
+			CIndices.GetKeys(ss);
+
+			if (ss.Num() > 0)
+			{
+				for (int32 spellindex : ss)
+				{
+					int32 TempActorIndex = CIndices.FindRef(spellindex);
+					if (ActorsToCheck.Num() > TempActorIndex)
+					{
+						if (ActorsToCheck[TempActorIndex])
+						{
+							OnInstanceCollided(spellindex, ActorsToCheck[TempActorIndex]);
+						}
+					}
+
+				}
+			}
+		}
+	}
+	*/
+
+
+	//Single threaded
+	/*
 	for (int j = 0; j < SpellInstances.Num(); j++)
 	{
 		for (int i = 0; i < ActorsToCheck.Num(); i++)
@@ -193,7 +257,7 @@ void ABaseSpellManager::CheckForCollisions()
 				}
 			}
 		}
-	}
+	}*/
 }
 
 int ABaseSpellManager::GetAvailableSpellInstanceIndex()
@@ -246,7 +310,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 
-	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.5f, true);
+	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.03f, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::SPLIT);
@@ -261,7 +325,54 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 
 void ABaseSpellManager::DebugValues()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
+	GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
+	
+	if (!Caster) return;
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+
+	/*
+	if (MultithreadCalculatorComponent)
+	{
+		TArray<FVector> SpellLocs;
+		TArray<FVector> EnemyLocs;
+		for (int j = 0; j < SpellInstances.Num(); j++)
+		{
+			SpellLocs.Add(SpellInstances[j].Transform.GetLocation());
+		}
+		for (int j = 0; j < ActorsToCheck.Num(); j++)
+		{
+			EnemyLocs.Add(ActorsToCheck[j]->GetActorLocation());
+		}
+
+		if (SpellLocs.Num() > 0 && EnemyLocs.Num() > 0)
+		{
+			MultithreadCalculatorComponent->InitCalculations(SpellLocs, EnemyLocs);
+		}
+	}
+	*/
+
+	
+	for (int j = 0; j < SpellInstances.Num(); j++)
+	{
+		for (int i = 0; i < ActorsToCheck.Num(); i++)
+		{
+			const FVector SpellLoc = SpellInstances[j].Transform.GetLocation();
+			if (SpellLoc.Z < 150.f) // Optimisation for storm type
+			{
+				AActor* TempActor = ActorsToCheck[i];
+				if (TempActor != this && TempActor != Caster && TempActor)// && !CollidedActors.Contains(Actor) 
+				{
+					float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
+
+					if (Dist < 70)
+					{
+						OnInstanceCollided(j, TempActor);
+					}
+				}
+			}
+		}
+	}
 }
 
 void ABaseSpellManager::MarkAllSpellsForDestruction()

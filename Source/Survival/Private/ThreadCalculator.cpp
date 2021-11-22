@@ -6,11 +6,12 @@
 
 
 // Sets default values
-FThreadCalculator::FThreadCalculator(int32 _CalculationNum, UMultithreadCalculator* CalculatorComponent)
+FThreadCalculator::FThreadCalculator(TArray<FVector> _SpellLocations, TArray<FVector> _EnemyLocations, UMultithreadCalculator* CalculatorComponent)
 {
-	if (_CalculationNum > 0 && CalculatorComponent)
+	if (_SpellLocations.Num() > 0 && CalculatorComponent && _EnemyLocations.Num() > 0)
 	{
-		Calculations = _CalculationNum;
+		SpellLocations = _SpellLocations;
+		EnemyLocations = _EnemyLocations;
 		CurrentMultithreadCalculator = CalculatorComponent;
 	}
 }
@@ -18,17 +19,51 @@ FThreadCalculator::FThreadCalculator(int32 _CalculationNum, UMultithreadCalculat
 bool FThreadCalculator::Init()
 {
 	bStopThread = false;
-	CalcCount = 0;
 
 	return true;
 }
 
 uint32 FThreadCalculator::Run()
 {
+	TArray<int32> CollidedIndexes;
+
 	while (!bStopThread)
 	{
+		if (CurrentMultithreadCalculator)
+		{
+			//CurrentCalculation.Empty();
+			for (int i = 0; i < SpellLocations.Num(); i++)
+			{
+				for (int j = 0; j < EnemyLocations.Num(); j++)
+				{
+					const FVector SpellLoc = SpellLocations[i];
+					if (SpellLoc.Z < 150.f) // Optimisation for storm type
+					{
+						float Dist = FVector::Dist(SpellLoc, EnemyLocations[j] + FVector(0.f, 0.f, 100.f));
+
+						if (Dist < 80)
+						{
+							//OnInstanceCollided(i, j);
+							CurrentCalculation.Add(i, j);
+							CurrentMultithreadCalculator->ThreadCalcQueue.Enqueue(CurrentCalculation);
+
+						}
+					}
+				}
+			}
+			CurrentCalculation.Empty();
+		}
+
+		bStopThread = true;
+
+		if (CurrentMultithreadCalculator)
+		{
+			//CurrentMultithreadCalculator->KillThread();
+		}
+		/*
 		if (CalcCount < Calculations && CurrentMultithreadCalculator)
 		{
+
 			CurrentCalculation += FMath::RandRange(20, 300);
 			CurrentCalculation *= FMath::RandRange(2, 3);
 			CurrentCalculation -= FMath::RandRange(10, 50);
@@ -40,7 +75,7 @@ uint32 FThreadCalculator::Run()
 		else
 		{
 			bStopThread = true;
-		}
+		}*/
 	}
 
 	return 0;

@@ -19,22 +19,16 @@ void UMultithreadCalculator::EndPlay(EEndPlayReason::Type EndplayReason)
 {
 	Super::EndPlay(EndplayReason);
 
-	if (CurrentRunningThread && CalcThread)
-	{
-		CurrentRunningThread->Suspend(true);
-		CalcThread->bStopThread = true;
-		CurrentRunningThread->Suspend(false);
-		CurrentRunningThread->Kill(false);
-		CurrentRunningThread->WaitForCompletion();
-		delete CalcThread;
-	}
+	KillThread();
 }
 
-void UMultithreadCalculator::InitCalculations(int32 _Calculations)
+void UMultithreadCalculator::InitCalculations(TArray<FVector> _SpellLocations, TArray<FVector> _EnemyLocations)
 {
-	if (_Calculations > 0)
+
+	if (_SpellLocations.Num() > 0 && _EnemyLocations.Num() > 0)
 	{
-		CalcThread = new FThreadCalculator(_Calculations, this);
+		KillThread();
+		CalcThread = new FThreadCalculator(_SpellLocations, _EnemyLocations, this);
 		CurrentRunningThread = FRunnableThread::Create(CalcThread, TEXT("Calculation Thread"));
 	}
 	else
@@ -56,17 +50,30 @@ void UMultithreadCalculator::BeginPlay()
 	}
 }
 
-
-
-void UMultithreadCalculator::PrintCalcData()
+TMap<int32, int32> UMultithreadCalculator::GetCalcData()
 {
-	if (!ThreadCalcQueue.IsEmpty() && ThreadCalcQueue.Dequeue(ProcessedCalculation))
+	if (!ThreadCalcQueue.IsEmpty() && ThreadCalcQueue.Dequeue(ProcessedCalculationCollisions))
 	{
-		UE_LOG(LogTemp, Warning, TEXT("Processed Calculation: %d"), ProcessedCalculation)
+		return ProcessedCalculationCollisions;
 	}
+
+	return TMap<int32, int32>();
 }
 
 void UMultithreadCalculator::DebugText()
 {
-	PrintCalcData();
+	//PrintCalcData();
+}
+
+void UMultithreadCalculator::KillThread()
+{
+	if (CurrentRunningThread && CalcThread)
+	{
+		CurrentRunningThread->Suspend(true);
+		CalcThread->bStopThread = true;
+		CurrentRunningThread->Suspend(false);
+		CurrentRunningThread->Kill(false);
+		CurrentRunningThread->WaitForCompletion();
+		delete CalcThread;
+	}
 }

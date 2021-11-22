@@ -9,13 +9,12 @@ class FRunnableThread;
 class UMultithreadCalculator;
 
 
-
 class FThreadCalculator : public FRunnable
 {
 
 public:	
 	// Sets default values for this actor's properties
-	FThreadCalculator(int32 _CalculationNum, UMultithreadCalculator* CalculatorComponent);
+	FThreadCalculator(TArray<FVector> _SpellLocations, TArray<FVector> _EnemyLocations, UMultithreadCalculator* CalculatorComponent);
 
 	virtual bool Init();
 
@@ -23,13 +22,16 @@ public:
 	virtual void Stop();
 
 	bool bStopThread = true;
+
+
 private:
-
-	int32 Calculations;
-
-	int32 CalcCount;
 
 	UMultithreadCalculator* CurrentMultithreadCalculator;
 
-	int32 CurrentCalculation;
+	TMap<int32, int32> CurrentCalculation;
+
+	TArray<FVector> SpellLocations;
+	TArray<FVector> EnemyLocations;
+
+
 };

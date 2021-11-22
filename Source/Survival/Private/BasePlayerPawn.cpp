@@ -49,7 +49,7 @@ void ABasePlayerPawn::BeginPlay()
 
 	Info.Element = Element::ELECTRICITY;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.07f;
+	Info.Cooldown = 0.04f;
 	Info.Speed = 990.f;
 	Info.Radius = 50.f;
 	Info.TargetMode = TargetMode::CLOSEST;
@@ -58,7 +58,7 @@ void ABasePlayerPawn::BeginPlay()
 
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::STORM;
-	Info.Cooldown = 0.09f;
+	Info.Cooldown = 0.06f;
 	Info.Speed = 1400.f;
 	Info.Radius = 30.f;
 	Info.TargetMode = TargetMode::CLOSEST;

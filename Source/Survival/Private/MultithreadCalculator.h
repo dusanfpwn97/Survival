@@ -19,20 +19,21 @@ public:
 	// Sets default values for this component's properties
 	UMultithreadCalculator();
 
-	TQueue<int32> ThreadCalcQueue;
+	TQueue<TMap<int32, int32>> ThreadCalcQueue;
 
 	virtual void EndPlay(EEndPlayReason::Type EndplayReason) override;
 
-	UFUNCTION(BlueprintCallable)
-	void InitCalculations(int32 _Calculations);
+	void InitCalculations(TArray<FVector> _SpellLocations, TArray<FVector> _EnemyLocations);
 
+	TMap<int32, int32> GetCalcData();
+
+	void KillThread();
 
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	void PrintCalcData();
-	int32 ProcessedCalculation;
+	TMap<int32, int32> ProcessedCalculationCollisions;
 
 	class FThreadCalculator* CalcThread = nullptr;
 
