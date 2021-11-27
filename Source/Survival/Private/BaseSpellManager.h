@@ -71,7 +71,7 @@ public:
 	UFUNCTION()
 		virtual void UpdateTarget(const int Index);
 
-	void CheckForCollisions();
+	virtual void CheckForCollisions();
 
 	void StartCastSpellTimer(bool ShouldLoop);
 

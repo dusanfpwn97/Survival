@@ -19,5 +19,6 @@ public:
 
 	virtual void UpdateInstanceTransforms() override;
 
-	
+	virtual void CheckForCollisions() override;
+
 };

@@ -2,10 +2,11 @@
 
 
 #include "NovaSpellManager.h"
+#include "CombatInterface.h"
 
 ANovaSpellManager::ANovaSpellManager()
 {
-	SpellLifetime = 0.25f;
+	SpellLifetime = 4.f;
 }
 
 void ANovaSpellManager::Tick(float DeltaTime)
@@ -17,6 +18,35 @@ void ANovaSpellManager::Tick(float DeltaTime)
 
 }
 
+void ANovaSpellManager::CheckForCollisions()
+{
+	// TODO check how much time this takes
+	if (!Caster) return;
+
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+
+	//Single threaded
+
+	for (int j = 0; j < SpellInstances.Num(); j++)
+	{
+		for (int i = 0; i < ActorsToCheck.Num(); i++)
+		{
+			const FVector SpellLoc = SpellInstances[j].Transform.GetLocation();
+
+			AActor* TempActor = ActorsToCheck[i];
+			if (TempActor != this && TempActor != Caster && TempActor)// && !CollidedActors.Contains(Actor) 
+			{
+				float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
+
+				if (Dist < CurrentSpellInfo.Radius)
+				{
+					CollideInstance(j, TempActor);
+				}
+			}
+		}
+	}
+}
 
 void ANovaSpellManager::UpdateInstanceTransforms()
 {
@@ -28,11 +58,21 @@ void ANovaSpellManager::UpdateInstanceTransforms()
 	{
 		if (SpellInstances[i].IsActive)
 		{
-			FVector PrevScale = SpellInstances[i].Transform.GetScale3D();
-			PrevScale.X += World->GetDeltaSeconds() * 20;
-			PrevScale.Y += World->GetDeltaSeconds() * 20;
-			PrevScale.Z += World->GetDeltaSeconds() * 20;
-			SpellInstances[i].Transform.SetScale3D(PrevScale);
-		}
+			if (SpellInstances[i].CurrentRadius < CurrentSpellInfo.Radius) // max radius
+			{
+				SpellInstances[i].CurrentRadius += World->GetDeltaSeconds() * 1100;
+
+				float Diameter = FMath::Sqrt(SpellInstances[i].CurrentRadius / 3.14f);
+
+				GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::Printf(TEXT("%s"), *FString::SanitizeFloat(SpellInstances[i].CurrentRadius)));
+
+				SpellInstances[i].Transform.SetScale3D(FVector(Diameter, Diameter, Diameter));
+			}
+
+			else
+			{
+				ResetInstance(i);
+			}
+		}	
 	}
 }

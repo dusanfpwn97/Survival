@@ -155,7 +155,7 @@ public:
 	FVector CurrentDirection;
 	float SpawnTime = 0.f;
 	FTransform Transform;
-
+	float CurrentRadius = 0.f;
 	TArray<AActor*> CollidedActors;
 	FVector Velocity = FVector(0.f, 0.f, 0.f);
 	bool HasGotInitialDirection = false;
@@ -172,9 +172,10 @@ public:
 		Target = nullptr;
 		Velocity = FVector(0.f,0.f,0.f);
 		HasGotInitialDirection = false;
-
+		CurrentRadius = 0.f;
 		SpawnTime = 0.f;
 	}
+
 };
 
 class SURVIVAL_API SpellDatatypes

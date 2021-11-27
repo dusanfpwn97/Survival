@@ -92,8 +92,17 @@ void ABaseSpellManager::CastSpell(FSpellRuntimeInfo SpellRuntimeInfo)
 	SpellInstances[InstanceIndex].IsActive = true;
 	SpellInstances[InstanceIndex].Transform.SetLocation(GetStartingSpellLocation());
 	SpellInstances[InstanceIndex].SpawnTime = World->TimeSeconds;
-	//UpdateDirection(InstanceIndex);
-	//SpellInstances[InstanceIndex].CurrentDirection = GetDirection(InstanceIndex);
+
+	if (CurrentSpellInfo.CastType != CastType::NOVA)
+	{
+		SpellInstances[InstanceIndex].CurrentRadius = CurrentSpellInfo.Radius;
+	}
+	else
+	{
+		SpellInstances[InstanceIndex].CurrentRadius = 10.f;
+		SpellInstances[InstanceIndex].Transform.SetScale3D(FVector(0.1f, 0.1f, 0.1f));
+	}
+
 	UpdateTarget(InstanceIndex);
 	//GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Green, FString::Printf(TEXT("%d"), SpellInstances[InstanceIndex].CurrentDirection.X));
 	ISMComp->UpdateInstanceTransform(InstanceIndex, SpellInstances[InstanceIndex].Transform, true, true, true);
@@ -231,7 +240,7 @@ void ABaseSpellManager::CheckForCollisions()
 
 
 	//Single threaded
-	bool HasCollidedAtLeastOnce = false;
+
 	for (int j = 0; j < SpellInstances.Num(); j++)
 	{
 		for (int i = 0; i < ActorsToCheck.Num(); i++)
@@ -246,13 +255,10 @@ void ABaseSpellManager::CheckForCollisions()
 
 					if (Dist < CurrentSpellInfo.Radius)
 					{
-						HasCollidedAtLeastOnce = true;
+
 						CollideInstance(j, TempActor);
-						if (CurrentSpellInfo.CastType != CastType::NOVA)
-						{
-							OnSpellFinished(j);
-							goto EndCurrentLoop;
-						}
+						OnSpellFinished(j);
+						goto EndCurrentLoop;
 					}
 				}
 			}

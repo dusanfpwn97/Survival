@@ -74,7 +74,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.CastType = CastType::NOVA;
 	Info.Cooldown = 1.21f;
 	Info.Speed = 1000.f;
-	Info.Radius = 720.f;
+	Info.Radius = 620.f;
 	Info.TargetMode = TargetMode::NONE;
 	SpellComponent->AddNewSpell(Info);
 
