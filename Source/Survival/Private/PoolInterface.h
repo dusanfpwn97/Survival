@@ -4,9 +4,11 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
+
 #include "PoolInterface.generated.h"
 
-class UPoolManager;
+
+
 // This class does not need to be modified.
 UINTERFACE(MinimalAPI)
 class UPoolInterface : public UInterface
@@ -24,29 +26,14 @@ class IPoolInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	UFUNCTION(BlueprintNativeEvent)
-		void Start();
-	UFUNCTION()
-		virtual void Start_Implementation();
+		virtual void Start();
 
-	UFUNCTION(BlueprintNativeEvent)
-		void Reset();
-	UFUNCTION()
-		virtual void Reset_Implementation();
+		virtual void Reset();
 
-	UFUNCTION(BlueprintNativeEvent)
-		void ReleaseToPool(AActor* Actor);
-	UFUNCTION()
-		virtual void ReleaseToPool_Implementation(AActor* Actor);
+		virtual void ReleaseToPool(AActor* Actor);
 
-	UFUNCTION(BlueprintNativeEvent)
-		void SetSpawner(UObject* Object);
-	UFUNCTION()
-		virtual void SetSpawner_Implementation(UObject* Object);
+		virtual void SetSpawner(UObject* Object);
 
-	UFUNCTION(BlueprintNativeEvent)
-		void SetOrderIndex(int NewOrderIndex);
-	UFUNCTION()
-		virtual void SetOrderIndex_Implementation(int NewOrderIndex);
+		virtual void SetOrderIndex(int NewOrderIndex);
 
 };

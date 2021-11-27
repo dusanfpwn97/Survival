@@ -4,7 +4,6 @@
 #include "SpellVFXComponent.h"
 #include "NiagaraSystem.h"
 #include "NiagaraComponent.h"
-#include "BaseSpell.h"
 #include "BaseSpellManager.h"
 #include "UObject/ConstructorHelpers.h"
 #include "HelperFunctions.h"
@@ -45,10 +44,9 @@ void USpellVFXComponent::TickComponent(float DeltaTime, ELevelTick TickType, FAc
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
-	if (SpellOwner)
-	{
-		MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection), false);
-	}
+
+	//MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection), false);
+
 }
 
 void USpellVFXComponent::StartMainVFX()
@@ -84,7 +82,7 @@ void USpellVFXComponent::StartHitVFX()
 
 	if (HitVFX)
 	{
-		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitVFX, SpellOwner->GetActorLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
+		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitVFX, SpellOwner->GetActorLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
 	}
 
 	// Print helper error message
@@ -101,23 +99,20 @@ void USpellVFXComponent::StartHitVFX()
 
 }
 
-void USpellVFXComponent::SetupVFX(ABaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner)
+void USpellVFXComponent::SetupVFX(ABaseSpellManager* NewSpellManager)
 {
 	
 	SpellManagerOwner = NewSpellManager;
-	SpellOwner = NewSpellOwner;
 
 	if (MainVFX != nullptr)
 	{
 		FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
 		EAttachmentRule ARule = EAttachmentRule::SnapToTarget;
 		Rules.RotationRule = ARule;
-		MainVFX->AttachToComponent(NewSpellOwner->GetRootComponent(), Rules);
+		//MainVFX->AttachToComponent(NewSpellOwner->GetRootComponent(), Rules);
 
 		MainVFX->SetAsset(GetNiagaraSystem(SpellFXType::MAIN));
 	}
-	
-	
 }
 
 void USpellVFXComponent::Hibernate()
@@ -134,6 +129,7 @@ void USpellVFXComponent::WakeUp()
 		SetComponentTickEnabled(true);
 		if(MainVFX) MainVFX->SetComponentTickEnabled(true);
 	}
+
 	MainVFX->SetVisibility(true);
 }
 

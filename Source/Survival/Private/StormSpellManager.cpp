@@ -8,6 +8,15 @@ AStormSpellManager::AStormSpellManager()
 
 }
 
+void AStormSpellManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	MoveSpells();
+	CheckForCollisions();
+
+}
+
 FVector AStormSpellManager::UpdateDirection(const int Index)
 {
 	if (SpellInstances[Index].HasGotInitialDirection) return SpellInstances[Index].CurrentDirection;
@@ -43,7 +52,7 @@ void AStormSpellManager::UpdateInstanceTransforms()
 			
 			if (SpellInstances[i].Transform.GetLocation().Z <= 0)
 			{
-				OnInstanceCollided(i, nullptr);
+				CollideInstance(i, nullptr);
 			}
 		}
 	}

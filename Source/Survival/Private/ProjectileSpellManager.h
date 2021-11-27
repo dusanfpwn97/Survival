@@ -14,7 +14,9 @@ class AProjectileSpellManager : public ABaseSpellManager
 {
 	GENERATED_BODY()
 public:
+
 	AProjectileSpellManager();
+	virtual void Tick(float DeltaTime) override;
 
 	virtual FVector UpdateDirection(const int Index) override;
 

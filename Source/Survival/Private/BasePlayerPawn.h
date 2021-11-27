@@ -38,7 +38,7 @@ public:
 	//
 
 	UFUNCTION()
-		virtual FVector GetSpellCastLocation_Implementation() override;
+		virtual FVector GetSpellCastLocation() override;
 	//UFUNCTION()
 		virtual TArray<AActor*> GetAliveEnemies() override;
 	//UFUNCTION()

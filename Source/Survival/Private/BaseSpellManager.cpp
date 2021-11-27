@@ -2,7 +2,6 @@
 
 
 #include "BaseSpellManager.h"
-#include "BaseSpell.h"
 #include "Kismet/GameplayStatics.h"
 #include "CombatInterface.h"
 #include "PoolManager.h"
@@ -13,15 +12,11 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "UObject/ConstructorHelpers.h"
 #include "SpellFunctionLibrary.h"
-#include "SpellProjectile.h"
-#include "SpellFlick.h"
-#include "SpellStorm.h"
-#include "SpellShield.h"
 #include "SpellVFXComponent.h"
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
-#include "MultithreadCalculator.h"
+//#include "MultithreadCalculator.h"
 
 // Sets default values for this component's properties
 ABaseSpellManager::ABaseSpellManager()
@@ -38,9 +33,9 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetCanEverAffectNavigation(false);
 	ISMComp->UpdateBounds();
 
-	SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
+	//SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 
-	MultithreadCalculatorComponent = CreateDefaultSubobject<UMultithreadCalculator>(FName(TEXT("MultithreadCalculatorComponent")));
+	//MultithreadCalculatorComponent = CreateDefaultSubobject<UMultithreadCalculator>(FName(TEXT("MultithreadCalculatorComponent")));
 	SetVFXDataTable();
 
 }
@@ -48,18 +43,12 @@ ABaseSpellManager::ABaseSpellManager()
 // Called when the game starts
 void ABaseSpellManager::BeginPlay()
 {
-
 	Super::BeginPlay();
-
 }
 
 void ABaseSpellManager::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
-	MoveSpells();
-	CheckForCollisions();
-	// ...
 
 }
 
@@ -123,11 +112,6 @@ void ABaseSpellManager::MoveSpells()
 		if (SpellInstances[i].IsActive)
 		{
 			ISMComp->UpdateInstanceTransform(i, SpellInstances[i].Transform, true, false, true);
-
-			if (World->TimeSeconds - SpellInstances[i].SpawnTime > 9.3f)// TODO optimize Doesnt need to be called every frame
-			{
-				ResetInstance(i); 
-			}
 		}
 	}
 
@@ -144,10 +128,12 @@ FVector ABaseSpellManager::UpdateDirection(const int Index)
 	return FVector();
 }
 
-void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
+void ABaseSpellManager::CollideInstance(int Index, AActor* Actor)
 {
 	UWorld* World = GetWorld();
 	if (!World) return;
+
+	if (SpellInstances[Index].CollidedActors.Num() > 0 && CurrentSpellInfo.CastType != CastType::NOVA) return;
 
 	if (Actor)
 	{
@@ -155,15 +141,23 @@ void ABaseSpellManager::OnInstanceCollided(int Index, AActor* Actor)
 		{
 			if (Actor->Implements<UCombatInterface>())
 			{
-				ICombatInterface::Execute_OnCollidedWithSpell(Actor, this);
+				ICombatInterface* TempInterface = Cast<ICombatInterface>(Actor);
+				TempInterface->OnCollidedWithSpell(this);
+
+				SpellInstances[Index].CollidedActors.Add(Actor);
+
 			}
 		}
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
-	ResetInstance(Index);
-}
+	
+	if (CurrentSpellInfo.CastType != CastType::NOVA)
+	{
+		ResetInstance(Index);
+	}
 
+}
 
 void ABaseSpellManager::ResetInstance(const int Index)
 {
@@ -237,7 +231,7 @@ void ABaseSpellManager::CheckForCollisions()
 
 
 	//Single threaded
-	/*
+	bool HasCollidedAtLeastOnce = false;
 	for (int j = 0; j < SpellInstances.Num(); j++)
 	{
 		for (int i = 0; i < ActorsToCheck.Num(); i++)
@@ -250,14 +244,22 @@ void ABaseSpellManager::CheckForCollisions()
 				{
 					float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-					if (Dist < 70)
+					if (Dist < CurrentSpellInfo.Radius)
 					{
-						OnInstanceCollided(j, TempActor);
+						HasCollidedAtLeastOnce = true;
+						CollideInstance(j, TempActor);
+						if (CurrentSpellInfo.CastType != CastType::NOVA)
+						{
+							OnSpellFinished(j);
+							goto EndCurrentLoop;
+						}
 					}
 				}
 			}
 		}
-	}*/
+
+		EndCurrentLoop: ;
+	}
 }
 
 int ABaseSpellManager::GetAvailableSpellInstanceIndex()
@@ -305,12 +307,15 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo = NewSpellInfo;
-	UpdateIsTargetlessSpell();
 	UWorld* World = GetWorld();
 	if (!World) return;
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 
 	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.03f, true);
+
+	// Set random watchdog update time to offset potential syncing of a lot of spells (performance improvement because lot of for loops).
+	float TempWatchdogUpdateTime = FMath::FRandRange(0.2f, 0.3f); // TODO low priority: find optimal time for a lot of spells
+	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::SpellLifetimeCheck, TempWatchdogUpdateTime, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::SPLIT);
@@ -325,13 +330,13 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 
 void ABaseSpellManager::DebugValues()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
-	
+	//GEngine->AddOnScreenDebugMessage(-1, 0.05f, FColor::Yellow, FString::Printf(TEXT("Spell num: %i"), SpellInstances.Num()));
+	/*
 	if (!Caster) return;
 	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
 	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
 
-	/*
+	
 	if (MultithreadCalculatorComponent)
 	{
 		TArray<FVector> SpellLocs;
@@ -352,45 +357,15 @@ void ABaseSpellManager::DebugValues()
 	}
 	*/
 
-	
-	for (int j = 0; j < SpellInstances.Num(); j++)
-	{
-		for (int i = 0; i < ActorsToCheck.Num(); i++)
-		{
-			const FVector SpellLoc = SpellInstances[j].Transform.GetLocation();
-			if (SpellLoc.Z < 150.f) // Optimisation for storm type
-			{
-				AActor* TempActor = ActorsToCheck[i];
-				if (TempActor != this && TempActor != Caster && TempActor)// && !CollidedActors.Contains(Actor) 
-				{
-					float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-					if (Dist < 70)
-					{
-						OnInstanceCollided(j, TempActor);
-					}
-				}
-			}
-		}
-	}
 }
 
 void ABaseSpellManager::MarkAllSpellsForDestruction()
 {
-	TArray<AActor*> SpawnedActors = SpellPoolManager->AllSpawnedActors;
-	while (SpawnedActors.Num() != 0)
+	for (FSpellRuntimeInfo SpellInstance : SpellInstances)
 	{
-		if (SpawnedActors.Last())
-		{
-			ABaseSpell* Spell = Cast<ABaseSpell>(SpawnedActors.Last());
-			if (Spell)
-			{
-				Spell->IsMarkedForDestruction = true;
-				SpawnedActors.RemoveAt(SpawnedActors.Num() - 1);
-			}
-		}
+		SpellInstance.Reset();
 	}
-	SpellPoolManager->AllSpawnedActors.Empty();
 }
 
 void ABaseSpellManager::DestroySpellManager()
@@ -420,6 +395,11 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 		Vec.X += FMath::FRandRange(-600.f, 600.f);
 		Vec.Y += FMath::FRandRange(-600.f, 600.f);
 	}
+
+	if (CurrentSpellInfo.CastType == CastType::NOVA)
+	{
+		Vec.Z = 50.f;
+	}
 	
 	return Vec;
 }
@@ -427,7 +407,6 @@ FVector ABaseSpellManager::GetStartingSpellLocation()
 void ABaseSpellManager::AddSpellModifier(SpellModifier NewSpellModifier)
 {
 	if(USpellFunctionLibrary::IsSpellModifierCompatible(NewSpellModifier, CurrentSpellInfo.CastType) && NewSpellModifier != SpellModifier::NO_MODIFIER)
-		
 	{
 		SpellModifiers.Add(NewSpellModifier);
 	}
@@ -447,7 +426,7 @@ void ABaseSpellManager::StartCastSpellTimer(bool ShouldLoop)
 	GetWorld()->GetTimerManager().SetTimer(MainSpellCastTimerHandle, this, &ABaseSpellManager::CastSpellLoop, CurrentSpellInfo.Cooldown, ShouldLoop);
 }
  
-void ABaseSpellManager::OnSpellFinished(ABaseSpell* FinishedSpell)
+void ABaseSpellManager::OnSpellFinished(const int32 Index)
 {
 	if (IsSingleCastSpell())
 	{
@@ -457,18 +436,8 @@ void ABaseSpellManager::OnSpellFinished(ABaseSpell* FinishedSpell)
 
 bool ABaseSpellManager::IsSingleCastSpell()
 {
-	if (CurrentSpellInfo.CastType == CastType::NOVA || CurrentSpellInfo.CastType == CastType::SHIELD) return true;
+	if (CurrentSpellInfo.CastType == CastType::SHIELD) return true;
 	else return false;
-}
-
-void ABaseSpellManager::UpdateSpellClass()
-{
-	SpellClassToSpawn = CurrentSpellInfo.SpellClass.LoadSynchronous();
-	if (!SpellClassToSpawn)
-	{
-			GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Spell class is null! BaseSpellManager.Cpp -> CastSpell"));
-			return;
-	}
 }
 
 AActor* ABaseSpellManager::GetCaster() const
@@ -476,26 +445,10 @@ AActor* ABaseSpellManager::GetCaster() const
 	return Caster;
 }
 
-bool ABaseSpellManager::GetIsStaticLocationSpell() const
-{
-	return IsTargetlessSpell;
-}
-
-void ABaseSpellManager::UpdateIsTargetlessSpell()
-{
-	IsTargetlessSpell = false;
-	TArray<CastType> Temp = USpellFunctionLibrary::GetAllTargetlessCastTypes();
-	if (Temp.Contains(CurrentSpellInfo.CastType))
-	{
-		IsTargetlessSpell = true;
-	}
-}
-
 void ABaseSpellManager::UpdateCastType(CastType NewCastType)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo.CastType = NewCastType;
-	UpdateIsTargetlessSpell();
 }
 
 void ABaseSpellManager::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat)
@@ -558,4 +511,32 @@ void ABaseSpellManager::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*
 void ABaseSpellManager::UpdateTarget(const int Index)
 {
 
+}
+
+void ABaseSpellManager::SpellLifetimeCheck()
+{
+	UWorld* World = GetWorld();
+	if (!World) return;
+
+	for (int i = 0; i < SpellInstances.Num(); i++)
+	{
+		if (SpellInstances[i].IsActive)
+		{
+			if (World->TimeSeconds - SpellInstances[i].SpawnTime > SpellLifetime)
+			{
+				if (Caster && CurrentSpellInfo.CastType != CastType::NOVA) // TODO if spells are cast by someone other than player, it will dissapear when it's not desired
+				{
+					// if the spell is far away reset it (optimisation)
+					if (FVector::Dist(SpellInstances[i].Transform.GetLocation(), Caster->GetActorLocation()) > 3000.f)
+					{
+						ResetInstance(i);
+					}
+				}
+				else
+				{
+					ResetInstance(i);
+				}
+			}
+		}
+	}
 }

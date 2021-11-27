@@ -2,30 +2,24 @@
 
 
 #include "CombatInterface.h"
-#include "BaseSpell.h"
 #include "BaseEnemy.h"
 #include "BaseSpellManager.h"
 
 // Add default functionality here for any ICombatInterface functions that are not pure virtual.
 
-void ICombatInterface::OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell)
+void ICombatInterface::OnCollidedWithSpell(ABaseSpellManager* Spell)
 {
 
 }
 
-void ICombatInterface::SetTarget_Implementation(AActor* TargetActor)
+void ICombatInterface::SetTarget(AActor* TargetActor)
 {
 	
 }
 
-FVector ICombatInterface::GetSpellCastLocation_Implementation()
+FVector ICombatInterface::GetSpellCastLocation()
 {
 	return FVector();
-}
-
-void ICombatInterface::SetSpellManager_Implementation(ABaseSpellManager* SpellManager)
-{
-
 }
 
 TArray<AActor*> ICombatInterface::GetAliveEnemies()

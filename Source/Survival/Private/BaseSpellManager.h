@@ -7,7 +7,6 @@
 #include "SpellDatatypes.h"
 #include "BaseSpellManager.generated.h"
 
-class ABaseSpell;
 class UPoolManager;
 class ABasePlayerPawn;
 class UNiagaraSystem;
@@ -15,8 +14,6 @@ class UDataTable;
 class USpellVFXComponent;
 class UInstancedStaticMeshComponent;
 class UMultithreadCalculator;
-
-
 
 UCLASS()
 class ABaseSpellManager : public AActor
@@ -36,43 +33,25 @@ public:
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		FSpellInfo CurrentSpellInfo;
 	UPROPERTY()
-		FTimerHandle MainSpellCastTimerHandle;
-	UPROPERTY()
-		FTimerHandle DebugTimerHandle;
-	UPROPERTY()
 		UInstancedStaticMeshComponent* ISMComp;
-	UPROPERTY()
-		UMultithreadCalculator* MultithreadCalculatorComponent;
-	UPROPERTY()
-		UPoolManager* SpellPoolManager;
+	//UPROPERTY()
+	//	UMultithreadCalculator* MultithreadCalculatorComponent;
+	//UPROPERTY()
+		//UPoolManager* SpellPoolManager;
 	UPROPERTY()
 		TArray<SpellModifier> SpellModifiers;
 	UPROPERTY()
 		AActor* Caster;
 	UPROPERTY()
-		UClass* SpellClassToSpawn;
-	UPROPERTY()
 		TArray<FSpellRuntimeInfo> SpellInstances;
 	UPROPERTY()
 		UNiagaraSystem* HitNS;
-	UFUNCTION()
-		bool GetIsStaticLocationSpell() const;
 	UPROPERTY()
 		UDataTable* VFX_DataTable;
-	UFUNCTION()
-		void SetVFXDataTable();
-	UFUNCTION()
-		void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
-	//
-	UFUNCTION()
-		void CastSpell(FSpellRuntimeInfo AdditonalInfo);
 
 	UFUNCTION()
 		void ResetInstance(const int Index);
-	UFUNCTION()
-		int GetAvailableSpellInstanceIndex();
-	UFUNCTION()
-		void CastSpellLoop();
+	
 	UFUNCTION()
 		void InitSpellManager(FSpellInfo NewSpellInfo);
 	UFUNCTION()
@@ -81,7 +60,7 @@ public:
 		void UpdateCastType(CastType NewCastType);
 	UFUNCTION()
 		void UpdateSpellModifier(SpellModifier NewSpellModifier);
-	UFUNCTION()
+
 		FVector GetStartingSpellLocation();
 	UFUNCTION()
 		void AddSpellModifier(SpellModifier NewSpellModifier);
@@ -94,37 +73,47 @@ public:
 
 	void CheckForCollisions();
 
+	void StartCastSpellTimer(bool ShouldLoop);
+
+	bool IsSingleCastSpell();
+
+	void CollideInstance(int Index, AActor* Actor);
+
+
+protected:
+	virtual void BeginPlay() override;
+
+	void MarkAllSpellsForDestruction();
+	
+	//Timers
+	UPROPERTY()
+		FTimerHandle MainSpellCastTimerHandle;
+	UPROPERTY()
+		FTimerHandle DebugTimerHandle;
+	UPROPERTY()
+		FTimerHandle WatchdogTimer;
+
+	virtual FVector UpdateDirection(const int Index);
+
+	void OnSpellFinished(const int32 Index);
+
 	virtual void MoveSpells();
 
 	virtual void UpdateInstanceTransforms();
 
-	void StartCastSpellTimer(bool ShouldLoop);
-
-	void OnSpellFinished(ABaseSpell* FinishedSpell);
-
-	bool IsSingleCastSpell();
-
-	void OnInstanceCollided(int Index, AActor* Actor);
-
-	virtual FVector UpdateDirection(const int Index);
-protected:
-	virtual void BeginPlay() override;
+	void SetVFXDataTable();
 
 	UFUNCTION()
-		void UpdateSpellClass();
-
+	void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
+	//
 	UFUNCTION()
-		void MarkAllSpellsForDestruction();
-	
-	UPROPERTY()
-		bool IsTargetlessSpell = false;
+		void CastSpell(FSpellRuntimeInfo AdditonalInfo);
 
+	int GetAvailableSpellInstanceIndex();
 
-	UFUNCTION()
-		void UpdateIsTargetlessSpell();
+	void CastSpellLoop();
 
+	void SpellLifetimeCheck();
 
-private:
-	
-
+	float SpellLifetime = 10.f;
 };

@@ -9,6 +9,16 @@ AFlickSpellManager::AFlickSpellManager()
 
 }
 
+void AFlickSpellManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	MoveSpells();
+	CheckForCollisions();
+	// ...
+
+}
+
 FVector AFlickSpellManager::UpdateDirection(const int Index)
 {
 	AActor* Target = SpellInstances[Index].Target;

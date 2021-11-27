@@ -16,6 +16,7 @@ class UEnemySpawner;
 class USkeletalMeshComponent;
 class UAnimSequence;
 class ABaseSpellManager;
+class UPoolManager;
 
 
 USTRUCT(BlueprintType)
@@ -57,15 +58,15 @@ public:
 	//	void OnOverlapBegin(UPrimitiveComponent* OverlappedComp, AActor* OtherActor, UPrimitiveComponent* OtherComp, int32 OtherBodyIndex, bool bFromSweep, const FHitResult& SweepResult);
 
 	UFUNCTION()
-		void OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell) override;
+		virtual void OnCollidedWithSpell(ABaseSpellManager* Spell) override;
 	UFUNCTION()
-		virtual void Start_Implementation() override;
+		virtual void Start() override;
 	UFUNCTION()
-		virtual void Reset_Implementation() override;
+		virtual void Reset() override;
 	UFUNCTION()
-		virtual void SetSpawner_Implementation(UObject* Object) override;
+		virtual void SetSpawner(UObject* Object) override;
 	UFUNCTION()
-		virtual void SetTarget_Implementation(AActor* TargetActor) override;
+		virtual void SetTarget(AActor* TargetActor) override;
 	UFUNCTION()
 		virtual bool GetIsAlive() override;
 	UFUNCTION()
@@ -109,7 +110,7 @@ protected:
 	UPROPERTY()
 		FRotator LastRotation = FRotator::ZeroRotator;
 	UPROPERTY()
-		UObject* CurrentPoolManager;
+		UPoolManager* CurrentPoolManager;
 	UPROPERTY()
 		bool CanMove = false;
 

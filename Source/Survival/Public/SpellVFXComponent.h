@@ -10,7 +10,6 @@
 
 class UNiagaraSystem;
 class UNiagaraComponent;
-class ABaseSpell;
 class ABaseSpellManager;
  
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
@@ -26,8 +25,6 @@ public:
 		UNiagaraComponent* MainVFX;
 	UPROPERTY()
 		UNiagaraSystem* HitVFX;
-	UPROPERTY()
-		ABaseSpell* SpellOwner;
 	UPROPERTY()
 		ABaseSpellManager* SpellManagerOwner;
 
@@ -55,7 +52,7 @@ public:
 	UFUNCTION()
 	void StartHitVFX();
 	UFUNCTION()
-	void SetupVFX(ABaseSpellManager* NewSpellManager, ABaseSpell* NewSpellOwner);
+	void SetupVFX(ABaseSpellManager* NewSpellManager);
 	UFUNCTION()
 	void Hibernate();
 	

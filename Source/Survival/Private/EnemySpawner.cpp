@@ -30,7 +30,7 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.02f, true);
+		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.3f, true);
 		World->GetTimerManager().SetTimer(DebugTimerHandle, this, &UEnemySpawner::DebugValues, 0.5f, true);
 	}
 	
@@ -95,7 +95,8 @@ void UEnemySpawner::SpawnEnemy()
 	SpawnLoc.Z = 2.f;
 	Enemy->SetActorLocation(UHelperFunctions::GetRandomPointInCircle(SpawnLoc, 1500.f));
 	
-	ICombatInterface::Execute_SetTarget(Enemy, PlayerPawn);
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(Enemy);
+	TempInterface->SetTarget(PlayerPawn);
 	spawnnum++;
 
 	if (FakeShadowDistributer && !IsCached)
@@ -110,7 +111,7 @@ void UEnemySpawner::SpawnEnemy()
 
 void UEnemySpawner::DebugValues()
 {
-	GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Yellow, FString::Printf(TEXT("Spawned Enemies: %i"), EnemySpawnPoolManager->AllSpawnedActors.Num()));
+	//GEngine->AddOnScreenDebugMessage(-1, 0.5f, FColor::Yellow, FString::Printf(TEXT("Spawned Enemies: %i"), EnemySpawnPoolManager->AllSpawnedActors.Num()));
 }
 
 void UEnemySpawner::UpdatePlayerPawn()

@@ -49,7 +49,11 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass, bool &Is
 			IsCached = true;
 			//PooledActorsTemp.Actors.RemoveAt(PooledActorsTemp.Actors.Num() - 1);
 			PooledActorsMap.Emplace(ActorToGet->GetClass(), PooledActorsTemp);
-			IPoolInterface::Execute_Start(ActorToGet);
+			if (ActorToGet->Implements<UPoolInterface>())
+			{
+				IPoolInterface* TempInterface = Cast<IPoolInterface>(ActorToGet);
+				TempInterface->Start();
+			}
 
 			return ActorToGet;
 		}
@@ -65,8 +69,18 @@ AActor* UPoolManager::GetAvailableActor(TSubclassOf<AActor> ActorClass, bool &Is
 
 			ActorToGet = World->SpawnActor<AActor>(ActorClass, Transform, Params);
 			AllSpawnedActors.Add(ActorToGet);
-			IPoolInterface::Execute_Start(ActorToGet);
-			IPoolInterface::Execute_SetSpawner(ActorToGet, this);
+
+			if (ActorToGet->Implements<UPoolInterface>())
+			{
+				IPoolInterface* TempInterface = Cast<IPoolInterface>(ActorToGet);
+				TempInterface->Start();
+				TempInterface->SetSpawner(this);
+			}
+			else
+			{
+				GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Attempted to spawn actor from pool that does not implement pool interface")));
+			}
+
 			IsCached = false;
 			return ActorToGet;
 		}

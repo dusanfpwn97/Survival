@@ -6,7 +6,6 @@
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
-#include "BaseSpell.h"
 #include "BaseSpellManager.h"
 //#include "CombatComponent.h"
 #include "HelperFunctions.h"
@@ -43,34 +42,41 @@ void ABasePlayerPawn::BeginPlay()
 	Info.CastType = CastType::FLICK;
 	Info.Cooldown = 0.35f;
 	Info.Speed = 1000.f;
-	Info.Radius = 20.f;
+	Info.Radius = 60.f;
 	Info.TargetMode = TargetMode::CLOSEST;
 	//SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::ELECTRICITY;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.04f;
+	Info.Cooldown = 0.3f;
 	Info.Speed = 990.f;
-	Info.Radius = 50.f;
+	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	SpellComponent->AddNewSpell(Info);
-
+	//SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::STORM;
-	Info.Cooldown = 0.06f;
+	Info.Cooldown = 0.6f;
 	Info.Speed = 1400.f;
 	Info.Radius = 30.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	SpellComponent->AddNewSpell(Info);
+	//SpellComponent->AddNewSpell(Info);
 	 
 	Info.Element = Element::ICE;
 	Info.CastType = CastType::SHIELD;
 	Info.Cooldown = 2.11f;
 	Info.Speed = 1000.f;
-	Info.Radius = 70.f;
+	Info.Radius = 120.f;
 	Info.TargetMode = TargetMode::NONE;
-	//SpellComponent->AddNewSpell(Info);
+//	SpellComponent->AddNewSpell(Info);
+
+	Info.Element = Element::FIRE;
+	Info.CastType = CastType::NOVA;
+	Info.Cooldown = 1.21f;
+	Info.Speed = 1000.f;
+	Info.Radius = 720.f;
+	Info.TargetMode = TargetMode::NONE;
+	SpellComponent->AddNewSpell(Info);
 
 
 }
@@ -132,10 +138,9 @@ void ABasePlayerPawn::SetupComponents()
 
 	SpellComponent = CreateDefaultSubobject<USpellComponent>(FName(TEXT("SpellComponent")));
 
-	//CombatComponent = CreateDefaultSubobject<UCombatComponent>(FName(TEXT("CombatComponent")));
 }
 
-FVector ABasePlayerPawn::GetSpellCastLocation_Implementation()
+FVector ABasePlayerPawn::GetSpellCastLocation()
 {
 	return SpellLocationTemp->GetComponentLocation();
 }

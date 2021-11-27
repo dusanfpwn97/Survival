@@ -8,6 +8,16 @@ AProjectileSpellManager::AProjectileSpellManager()
 
 }
 
+void AProjectileSpellManager::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+
+	MoveSpells();
+	CheckForCollisions();
+	// ...
+
+}
+
 FVector AProjectileSpellManager::UpdateDirection(const int Index)
 {
 	//return FVector(1, 0, 0);

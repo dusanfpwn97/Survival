@@ -5,22 +5,22 @@
 
 // Add default functionality here for any IPoolInterface functions that are not pure virtual.
 
-void IPoolInterface::Start_Implementation()
+void IPoolInterface::Start()
 {
 }
 
-void IPoolInterface::Reset_Implementation()
+void IPoolInterface::Reset()
 {
 }
 
-void IPoolInterface::ReleaseToPool_Implementation(AActor* Actor)
+void IPoolInterface::ReleaseToPool(AActor* Actor)
 {
 }
 
-void IPoolInterface::SetSpawner_Implementation(UObject* Actor)
+void IPoolInterface::SetSpawner(UObject* Actor)
 {
 }
 
-void IPoolInterface::SetOrderIndex_Implementation(int NewOrderIndex)
+void IPoolInterface::SetOrderIndex(int NewOrderIndex)
 {
 }

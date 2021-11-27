@@ -16,12 +16,12 @@ class AStormSpellManager : public ABaseSpellManager
 public:
 
 	AStormSpellManager();
+	virtual void Tick(float DeltaTime) override;
 
 	virtual FVector UpdateDirection(const int Index) override;
 
 	virtual void UpdateInstanceTransforms() override;
 
 	FVector GetDirectionOffsetForSplit(const int Index);
-
 
 };

@@ -26,10 +26,9 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
-		AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass, bool& IsCached);
-	UFUNCTION()
-		void ReleaseToPool_Implementation(AActor* Actor);
+	AActor* GetAvailableActor(TSubclassOf<AActor> ActorClass, bool& IsCached);
+
+	void ReleaseToPool_Implementation(AActor* Actor);
 
 	UPROPERTY()
 		TMap<TSubclassOf<AActor>, FPooledActors> PooledActorsMap;

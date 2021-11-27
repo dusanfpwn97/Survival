@@ -6,7 +6,7 @@
 #include "Engine/DataTable.h"
 #include "SpellDatatypes.generated.h"
 
-class ABaseSpell;
+
 class UNiagaraSystem;
 class UStaticMesh;
 class UMaterialInterface;
@@ -71,8 +71,6 @@ struct FSpellInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		TSoftClassPtr<ABaseSpell> SpellClass;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		FText Name;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -169,9 +167,13 @@ public:
 		IsActive = false;
 		Transform.SetLocation(FVector(0.f, 0.f, 4000.f));
 		Transform.SetRotation(FRotator(0, 0, 0).Quaternion());
+		Transform.SetScale3D(FVector(1.f, 1.f, 1.f));
+
 		Target = nullptr;
 		Velocity = FVector(0.f,0.f,0.f);
 		HasGotInitialDirection = false;
+
+		SpawnTime = 0.f;
 	}
 };
 

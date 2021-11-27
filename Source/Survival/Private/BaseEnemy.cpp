@@ -2,7 +2,6 @@
 
 
 #include "BaseEnemy.h"
-#include "BaseSpell.h"
 #include "Components/CapsuleComponent.h"
 #include "Components/SkeletalMeshComponent.h"
 #include "Engine/World.h"
@@ -13,6 +12,7 @@
 #include "Engine/EngineTypes.h"
 #include "Components/SkinnedMeshComponent.h"
 #include "Engine/DataTable.h"
+#include "PoolManager.h"
 
 
 
@@ -77,7 +77,7 @@ void ABaseEnemy::ReceiveDamage(ABaseSpellManager* SpellManager)
 	}
 }
 
-void ABaseEnemy::OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell)
+void ABaseEnemy::OnCollidedWithSpell(ABaseSpellManager* Spell)
 {
 	if (!Spell)
 	{
@@ -162,7 +162,7 @@ void ABaseEnemy::SetupComponents()
 
 }
 
-void ABaseEnemy::Start_Implementation()
+void ABaseEnemy::Start()
 {
 	IsAlive = true;
 	SkeletalMesh->SetComponentTickEnabled(true);
@@ -174,7 +174,7 @@ void ABaseEnemy::Start_Implementation()
 
 }
 
-void ABaseEnemy::Reset_Implementation()
+void ABaseEnemy::Reset()
 {
 	IsAlive = false;
 
@@ -188,7 +188,7 @@ void ABaseEnemy::Reset_Implementation()
 	}
 	if (CurrentPoolManager)
 	{
-		IPoolInterface::Execute_ReleaseToPool(CurrentPoolManager, this);
+		CurrentPoolManager->ReleaseToPool(this);
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> Reset implementation"));
 	
@@ -204,17 +204,18 @@ void ABaseEnemy::Reset_Implementation()
 	}
 }
 
-void ABaseEnemy::SetSpawner_Implementation(UObject* Object)
+void ABaseEnemy::SetSpawner(UObject* Object)
 {
 	if (!Object)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spawner not valid! Should not happen. BaseEnemy.cpp -> SetSpawner_Implementation"));
 		return;
 	}
-	CurrentPoolManager = Object;
+
+	CurrentPoolManager = Cast<UPoolManager>(Object);
 }
 
-void ABaseEnemy::SetTarget_Implementation(AActor* TargetActor)
+void ABaseEnemy::SetTarget(AActor* TargetActor)
 {
 	Target = TargetActor;
 }
@@ -246,9 +247,6 @@ void ABaseEnemy::MoveTowardsTarget()
 	
 	TArray<AActor*> HitActors;
 	
-
-
-	
 	LastRotation = FMath::RInterpTo(LastRotation, (Direction.Rotation() + FRotator(0.f, -90.f, 0.f)), World->GetDeltaSeconds(), 6.f);
 	SetActorRotation(LastRotation, ETeleportType::None);
 
@@ -264,7 +262,6 @@ void ABaseEnemy::MoveTowardsTarget()
 		{
 			HitActors.Add(Hits.GetActor());
 
-			
 		}
 	}
 	if (HitActors.Num() > 0)
@@ -301,7 +298,7 @@ void ABaseEnemy::Die()
 	RemoveCollision();
 	CanMove = false;
 
-	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset_Implementation, 5.f, false);
+	GetWorld()->GetTimerManager().SetTimer(DestroyTimerHandle, this, &ABaseEnemy::Reset, 5.f, false);
 	GetWorld()->GetTimerManager().SetTimer(StartDecomposingTimerHandle, this, &ABaseEnemy::StartDecomposing, 3.5f, false);
 
 	

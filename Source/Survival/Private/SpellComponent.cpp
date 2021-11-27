@@ -6,6 +6,8 @@
 #include "ProjectileSpellManager.h"
 #include "FlickSpellManager.h"
 #include "StormSpellManager.h"
+#include "ShieldSpellManager.h"
+#include "NovaSpellManager.h"
 
 // Sets default values for this component's properties
 USpellComponent::USpellComponent()
@@ -48,9 +50,14 @@ void USpellComponent::AddNewSpell(FSpellInfo SpellInfo)
 	UClass* ClassToSpawn = GetSpellClassForSpawning(SpellInfo.CastType);
 	ABaseSpellManager* NewSpell = World->SpawnActor<ABaseSpellManager>(ClassToSpawn, TempTransform, Params);
 
-	SpellManagers.Add(NewSpell);
-	NewSpell->Caster = GetOwner();
-	NewSpell->InitSpellManager(SpellInfo);
+	if (NewSpell)
+	{
+		SpellManagers.Add(NewSpell);
+		NewSpell->Caster = GetOwner();
+		NewSpell->InitSpellManager(SpellInfo);
+	}
+	else GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("No spell mennager class available.USpellComponent::GetSpellClassForSpawning(CastType CastType)"));
+
 
 
 }
@@ -60,8 +67,10 @@ UClass* USpellComponent::GetSpellClassForSpawning(CastType CastType)
 	if (CastType == CastType::PROJECTILE) return AProjectileSpellManager::StaticClass();
 	if (CastType == CastType::FLICK) return AFlickSpellManager::StaticClass();
 	if (CastType == CastType::STORM) return AStormSpellManager::StaticClass();
-	//if (CastType == CastType::SHIELD) return ASpellShield::StaticClass();
+	if (CastType == CastType::SHIELD) return AShieldSpellManager::StaticClass();
+	if (CastType == CastType::NOVA) return ANovaSpellManager::StaticClass();
 
+	GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("No spell mennager class available.USpellComponent::GetSpellClassForSpawning(CastType CastType)"));
 
 	return nullptr;
 }

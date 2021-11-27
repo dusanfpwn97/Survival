@@ -7,12 +7,10 @@
 
 #include "CombatInterface.generated.h"
 
-class ABaseSpell;
-class ABaseEnemy;
 class ABaseSpellManager;
 
 // This class does not need to be modified.
-UINTERFACE(MinimalAPI, Blueprintable)
+UINTERFACE(MinimalAPI)
 class UCombatInterface : public UInterface
 {
 	GENERATED_BODY()
@@ -28,29 +26,18 @@ class SURVIVAL_API ICombatInterface
 		
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
-	UFUNCTION(BlueprintNativeEvent)
-		void OnCollidedWithSpell(ABaseSpellManager* Spell);
-	UFUNCTION()
-		virtual void OnCollidedWithSpell_Implementation(ABaseSpellManager* Spell);
 
-	UFUNCTION(BlueprintNativeEvent)
-		void SetTarget(AActor* TargetActor);
-	UFUNCTION()
-		virtual void SetTarget_Implementation(AActor* TargetActor);
+	virtual void OnCollidedWithSpell(ABaseSpellManager* Spell);
 
-	UFUNCTION(BlueprintNativeEvent)
-		FVector GetSpellCastLocation();
-	UFUNCTION()
-		virtual FVector GetSpellCastLocation_Implementation();
+	virtual void SetTarget(AActor* TargetActor);
 
-	UFUNCTION(BlueprintNativeEvent)
-		void SetSpellManager(ABaseSpellManager* SpellManager);
-	UFUNCTION()
-		virtual void SetSpellManager_Implementation(ABaseSpellManager* SpellManager);
+	virtual FVector GetSpellCastLocation();
 
-		virtual bool GetIsAlive();
-		virtual TArray<AActor*> GetAliveEnemies();
-		virtual AActor* GetClosestEnemy();
+	virtual bool GetIsAlive();
+
+	virtual TArray<AActor*> GetAliveEnemies();
+
+	virtual AActor* GetClosestEnemy();
 
 
 
