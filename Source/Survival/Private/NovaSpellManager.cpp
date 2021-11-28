@@ -39,7 +39,7 @@ void ANovaSpellManager::CheckForCollisions()
 			{
 				float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-				if (Dist < CurrentSpellInfo.Radius)
+				if (Dist < SpellInstances[j].CurrentRadius)
 				{
 					CollideInstance(j, TempActor);
 				}
@@ -62,7 +62,8 @@ void ANovaSpellManager::UpdateInstanceTransforms()
 			{
 				SpellInstances[i].CurrentRadius += World->GetDeltaSeconds() * 1100;
 
-				float Diameter = FMath::Sqrt(SpellInstances[i].CurrentRadius / 3.14f);
+				//float Diameter = FMath::Sqrt(SpellInstances[i].CurrentRadius / 3.14f);
+				float Diameter = SpellInstances[i].CurrentRadius / 50.f;
 
 				GEngine->AddOnScreenDebugMessage(-1, 0.f, FColor::Red, FString::Printf(TEXT("%s"), *FString::SanitizeFloat(SpellInstances[i].CurrentRadius)));
 
