@@ -39,6 +39,8 @@ public:
 
 	virtual AActor* GetClosestEnemy();
 
+	virtual TArray<AActor*> GetClosestEnemies(int32 NumOfEnemies);
+
 
 
 	/*

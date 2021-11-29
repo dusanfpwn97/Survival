@@ -18,12 +18,12 @@ void AProjectileSpellManager::Tick(float DeltaTime)
 
 }
 
-FVector AProjectileSpellManager::UpdateDirection(const int Index)
+void AProjectileSpellManager::UpdateDirection(const int Index)
 {
 	//return FVector(1, 0, 0);
 
-	if (SpellInstances[Index].HasGotInitialDirection) return SpellInstances[Index].CurrentDirection;
-	if (!Caster) return SpellInstances[Index].CurrentDirection;
+	if (SpellInstances[Index].HasGotInitialDirection) return;
+	if (!Caster) return;
 
 	SpellInstances[Index].CurrentDirection = Caster->GetActorForwardVector();
 
@@ -31,7 +31,6 @@ FVector AProjectileSpellManager::UpdateDirection(const int Index)
 	SpellInstances[Index].CurrentDirection.Normalize();
 	SpellInstances[Index].HasGotInitialDirection = true;
 	SpellInstances[Index].Transform.SetRotation(SpellInstances[Index].CurrentDirection.Rotation().Quaternion());
-	return SpellInstances[Index].CurrentDirection;
 }
 
 FVector AProjectileSpellManager::GetDirectionForSplit(const int Index)

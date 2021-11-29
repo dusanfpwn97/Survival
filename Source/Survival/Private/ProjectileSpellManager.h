@@ -18,7 +18,7 @@ public:
 	AProjectileSpellManager();
 	virtual void Tick(float DeltaTime) override;
 
-	virtual FVector UpdateDirection(const int Index) override;
+	virtual void UpdateDirection(const int Index) override;
 
 	FVector GetDirectionForSplit(const int Index);
 

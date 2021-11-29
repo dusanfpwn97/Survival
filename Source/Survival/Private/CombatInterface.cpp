@@ -36,3 +36,8 @@ AActor* ICombatInterface::GetClosestEnemy()
 {
 	return nullptr;
 }
+
+TArray<AActor*> ICombatInterface::GetClosestEnemies(int32 NumOfEnemies)
+{
+	return TArray<AActor*>();
+}

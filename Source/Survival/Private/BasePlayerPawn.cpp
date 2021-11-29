@@ -40,11 +40,11 @@ void ABasePlayerPawn::BeginPlay()
 	FSpellInfo Info;
 	Info.Element = Element::AIR;
 	Info.CastType = CastType::FLICK;
-	Info.Cooldown = 0.35f;
+	Info.Cooldown = 0.65f;
 	Info.Speed = 1000.f;
-	Info.Radius = 60.f;
+	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	//SpellComponent->AddNewSpell(Info);
+	SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::ELECTRICITY;
 	Info.CastType = CastType::PROJECTILE;
@@ -76,7 +76,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.Speed = 1000.f;
 	Info.Radius = 620.f;
 	Info.TargetMode = TargetMode::NONE;
-	SpellComponent->AddNewSpell(Info);
+	//SpellComponent->AddNewSpell(Info);
 
 
 }
@@ -162,4 +162,9 @@ TArray<AActor*> ABasePlayerPawn::GetAliveEnemies()
 AActor* ABasePlayerPawn::GetClosestEnemy()
 {
 	return UHelperFunctions::GetClosestActor(GetAliveEnemies(), GetActorLocation());
+}
+
+TArray<AActor*> ABasePlayerPawn::GetClosestEnemies(int32 NumOfEnemies)
+{
+	return UHelperFunctions::GetClosestActors(GetAliveEnemies(), GetActorLocation(), NumOfEnemies);
 }

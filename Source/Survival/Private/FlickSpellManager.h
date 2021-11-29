@@ -18,11 +18,11 @@ public:
 	AFlickSpellManager();
 	virtual void Tick(float DeltaTime) override;
 
-	virtual FVector UpdateDirection(const int Index) override;
+	virtual void UpdateDirection(const int Index) override;
 
 	virtual void UpdateInstanceTransforms() override;
 
-	virtual void UpdateTarget(const int Index) override;
-
 	FTimerHandle CheckTargetTimerHandle;
+
+	virtual void CastSpellLoop() override;
 };

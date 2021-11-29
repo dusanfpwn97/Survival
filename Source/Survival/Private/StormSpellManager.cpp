@@ -17,10 +17,10 @@ void AStormSpellManager::Tick(float DeltaTime)
 
 }
 
-FVector AStormSpellManager::UpdateDirection(const int Index)
+void AStormSpellManager::UpdateDirection(const int Index)
 {
-	if (SpellInstances[Index].HasGotInitialDirection) return SpellInstances[Index].CurrentDirection;
-	if (!Caster) return SpellInstances[Index].CurrentDirection;
+	if (SpellInstances[Index].HasGotInitialDirection) return;
+	if (!Caster) return;
 
 	SpellInstances[Index].CurrentDirection = FVector(FMath::FRandRange(-0.4f, 0.4f), FMath::FRandRange(-0.4f, 0.4f), -1.f);
 	//SpellInstances[Index].CurrentDirection = Caster->GetActorForwardVector()*-1;
@@ -33,7 +33,6 @@ FVector AStormSpellManager::UpdateDirection(const int Index)
 	SpellInstances[Index].CurrentDirection.Normalize();
 	SpellInstances[Index].HasGotInitialDirection = true;
 	SpellInstances[Index].Transform.SetRotation(SpellInstances[Index].CurrentDirection.Rotation().Quaternion());
-	return SpellInstances[Index].CurrentDirection;
 }
 
 void AStormSpellManager::UpdateInstanceTransforms()

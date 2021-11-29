@@ -9,16 +9,20 @@
 
 
 class ABaseSpellManager;
-UCLASS(BlueprintType)
-class SURVIVAL_API UHelperFunctions : public UBlueprintFunctionLibrary
+UCLASS()
+class SURVIVAL_API UHelperFunctions : public UObject
 {
 	GENERATED_BODY()
 public:
-	UFUNCTION()
-		static FVector GetRandomPointInCircle(FVector Center, float Radius);
-	UFUNCTION()
-		static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
-	UFUNCTION()
-		static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
+
+	static FVector GetRandomPointInCircle(FVector Center, float Radius);
+
+	static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
+
+	static TArray<AActor*> GetClosestActors(TArray<AActor*> Actors, FVector ReferenceLocation, int32 NumOfActors);
+
+	//static AActor* GetClosestActor(TArray<AActor*> Actors, FVector ReferenceLocation);
+
+	static TArray<AActor*> GetAllAliveActors(TArray<AActor*> ActorsToCheck);
 
 };

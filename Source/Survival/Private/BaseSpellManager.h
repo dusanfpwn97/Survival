@@ -26,8 +26,6 @@ public:
 
 	virtual void Tick(float DeltaTime) override;
 
-	UFUNCTION()
-		AActor* GetCaster() const;
 	UPROPERTY()
 		USpellVFXComponent* VFXComponent;
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
@@ -68,8 +66,10 @@ public:
 		void RemoveSpellModifier(SpellModifier NewSpellModifier);
 	UFUNCTION()
 		void DebugValues();
-	UFUNCTION()
-		virtual void UpdateTarget(const int Index);
+
+	virtual AActor* GetAppropriateTarget(const int32 Index, const int32 OrderIndex);
+
+	virtual TArray<AActor*> GetAppropriateTargets(const int32 NumOfTargets);
 
 	virtual void CheckForCollisions();
 
@@ -93,7 +93,7 @@ protected:
 	UPROPERTY()
 		FTimerHandle WatchdogTimer;
 
-	virtual FVector UpdateDirection(const int Index);
+	virtual void UpdateDirection(const int Index);
 
 	void OnSpellFinished(const int32 Index);
 
@@ -106,12 +106,12 @@ protected:
 	UFUNCTION()
 	void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
 	//
-	UFUNCTION()
-		void CastSpell(FSpellRuntimeInfo AdditonalInfo);
+
+	void CastSpell(FSpellRuntimeInfo AdditonalInfo);
 
 	int GetAvailableSpellInstanceIndex();
 
-	void CastSpellLoop();
+	virtual void CastSpellLoop();
 
 	void SpellLifetimeCheck();
 

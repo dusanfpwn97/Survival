@@ -44,6 +44,8 @@ public:
 	//UFUNCTION()
 		virtual AActor* GetClosestEnemy() override;
 
+		virtual TArray<AActor*> GetClosestEnemies(int32 NumOfEnemies) override;
+
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

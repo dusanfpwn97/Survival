@@ -133,10 +133,6 @@
 			]
 		},
 		{
-			"Name": "OnlineSubsystemGoogle",
-			"Enabled": true
-		},
-		{
 			"Name": "PerforceSourceControl",
 			"Enabled": false
 		},
@@ -356,6 +352,17 @@
 		{
 			"Name": "WmfMedia",
 			"Enabled": false
+		},
+		{
+			"Name": "OnlineSubsystemGooglePlay",
+			"Enabled": false,
+			"SupportedTargetPlatforms": [
+				"Android"
+			]
+		},
+		{
+			"Name": "OnlineSubsystemGoogle",
+			"Enabled": true
 		}
 	],
 	"TargetPlatforms": [

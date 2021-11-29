@@ -19,62 +19,68 @@ void AFlickSpellManager::Tick(float DeltaTime)
 
 }
 
-FVector AFlickSpellManager::UpdateDirection(const int Index)
+void AFlickSpellManager::UpdateDirection(const int Index)
 {
 	AActor* Target = SpellInstances[Index].Target;
+	
 	if (Target)
 	{
 		if (Target->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 		{
 			ICombatInterface* TempInterface = Cast<ICombatInterface>(Target);
 
-			if (TempInterface->GetIsAlive())
+			if (TempInterface)
 			{
-				SpellInstances[Index].CurrentDirection = Target->GetActorLocation() - SpellInstances[Index].Transform.GetLocation();
-				SpellInstances[Index].CurrentDirection.Normalize();
-				
-				return SpellInstances[Index].CurrentDirection;
-			}
-			else
-			{
-				SpellInstances[Index].Target = nullptr;
+				if (TempInterface->GetIsAlive())
+				{
+					SpellInstances[Index].CurrentDirection = Target->GetActorLocation() - SpellInstances[Index].Transform.GetLocation();
+					SpellInstances[Index].CurrentDirection.Normalize();
+					return;
+				}
+				else
+				{
+					SpellInstances[Index].Target = nullptr;
 
-				SpellInstances[Index].HasGotInitialDirection = true;
-				//FVector NewDirection = 
-				SpellInstances[Index].CurrentDirection.Z = 0; // 
-				SpellInstances[Index].CurrentDirection.Normalize();
-				return SpellInstances[Index].CurrentDirection;
+					SpellInstances[Index].HasGotInitialDirection = true;
+					//FVector NewDirection = 
+					SpellInstances[Index].CurrentDirection.Z = 0; // 
+					SpellInstances[Index].CurrentDirection.Normalize();
+
+					return;
+				}
 			}
+
 		}
 		else
 		{
 			// TODO if not enemy do something
-			return SpellInstances[Index].CurrentDirection;
+			
 		}
 
 	}
 
 	else
 	{
-		if (SpellInstances[Index].HasGotInitialDirection) return SpellInstances[Index].CurrentDirection;
-
 		if (SpellInstances[Index].CurrentDirection.IsNearlyZero(0.01))
 		{
-
 			if (Caster)
 			{
 				SpellInstances[Index].HasGotInitialDirection = true;
 
 				SpellInstances[Index].CurrentDirection = Caster->GetActorForwardVector();
+
+				return;
+			}
+			else
+			{
+				SpellInstances[Index].HasGotInitialDirection = true;
+
+				SpellInstances[Index].CurrentDirection = FVector(1.f, 0.f, 0.f);
+
+				return;
 			}
 		}
-		else
-		{
-			return SpellInstances[Index].CurrentDirection;
-		}
-
 	}
-	return SpellInstances[Index].CurrentDirection;
 }
 
 void AFlickSpellManager::UpdateInstanceTransforms()
@@ -90,32 +96,56 @@ void AFlickSpellManager::UpdateInstanceTransforms()
 			SpellInstances[i].Velocity = (SpellInstances[i].CurrentDirection * CurrentSpellInfo.Speed * 1.06);
 			//SpellInstances[i].Velocity = SpellInstances[i].Velocity.GetClampedToMaxSize(10.f);
 			SpellInstances[i].Transform.SetRotation(SpellInstances[i].Velocity.Rotation().Quaternion());
-			SpellInstances[i].Transform.SetLocation(SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity * World->DeltaTimeSeconds);
+			FVector NewLoc = SpellInstances[i].Transform.GetLocation() += SpellInstances[i].Velocity * World->DeltaTimeSeconds;
+			NewLoc.Z = 100;
+			SpellInstances[i].Transform.SetLocation(NewLoc);
 		}
 	}
 }
 
-void AFlickSpellManager::UpdateTarget(const int Index)
+void AFlickSpellManager::CastSpellLoop()
 {
-	if (!Caster) return;
-	if (!Caster->GetClass()->ImplementsInterface(UCombatInterface::StaticClass())) return;
-	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
-	if (!TempInterface) return;
+	FSpellRuntimeInfo Info;
 
-	if (CurrentSpellInfo.TargetMode == TargetMode::CLOSEST)
+	if (SpellModifiers.Contains(SpellModifier::SPLIT))
 	{
+		if (Caster)
+		{
+			TArray<AActor*> Targets = GetAppropriateTargets(5);
 
-		SpellInstances[Index].Target = TempInterface->GetClosestEnemy();
+			for (int i = 0; i <= 4; i++)
+			{
+				AActor* Target = nullptr;
+				
+				if(Targets.Num() > 0)
+				{
+					if (Targets.Num() > i)
+					{
+						Target = Targets[i];
+					}
+					else
+					{
+						Target = Targets.Last();
+					}
+
+				}
+				Target = Targets.Last();
+				
+				Info.OrderIndex = i;
+				if(Target) Info.Target = Target;
+				CastSpell(Info);
+			}
+			return;
+		}
 	}
-	/*
-	UWorld* World = GetWorld();
-	if (!World) return;
-
-	//World->GetTimerManager().SetTimer(UpdateDirectionTimerHandle, this, &ABaseSpell::UpdateMoveDirection, 0.05f, true);
-	World->GetTimerManager().SetTimer(CheckTargetTimerHandle, this, &AFlickSpellManager::CheckTarget, 0.25f, true);
-	CheckTarget();*/
+	else
+	{
+		Info.Target = GetAppropriateTarget(-1, 0);
+	}
+	
+	
+	CastSpell(Info);
 }
-
 /*
 void AFlickSpellManager::CheckTarget()
 {

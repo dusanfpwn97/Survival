@@ -3,7 +3,8 @@
 
 #include "HelperFunctions.h"
 #include "CombatInterface.h"
-
+#include "GenericPlatform/GenericPlatformMath.h"
+#include "Kismet/KismetMathLibrary.h"
 
 
 FVector UHelperFunctions::GetRandomPointInCircle(FVector Center, float Radius)
@@ -36,6 +37,38 @@ AActor* UHelperFunctions::GetClosestActor(TArray<AActor*> Actors, FVector Refere
 	}
 	
 	return Actors[ClosestActorIndex];
+}
+
+TArray<AActor*> UHelperFunctions::GetClosestActors(TArray<AActor*> Actors, FVector ReferenceLocation, int32 NumOfActors)
+{
+	if (Actors.Num() == 0) return TArray<AActor*>();
+	if (Actors.Num() <= NumOfActors) return Actors;
+
+	TArray<float> Distances;
+	for (int i = 0; i < Actors.Num(); i++)
+	{
+		Distances.Add(FVector::Distance(Actors[i]->GetActorLocation(), ReferenceLocation));
+	}
+
+	TArray<AActor*> ClosestActors;
+
+	for (int i = 0; i < Actors.Num(); i++)
+	{
+		int32 MinIndex;
+		float MinValue;
+
+		UKismetMathLibrary::MinOfFloatArray(Distances, MinIndex, MinValue);
+		Distances.RemoveAt(MinIndex);
+		ClosestActors.Add(Actors[MinIndex]);
+
+			
+		if (ClosestActors.Num() == NumOfActors)
+		{
+			return ClosestActors;
+		}
+	}
+
+	return TArray<AActor*>();
 }
 
 
