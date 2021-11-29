@@ -129,8 +129,7 @@ void AFlickSpellManager::CastSpellLoop()
 					}
 
 				}
-				Target = Targets.Last();
-				
+
 				Info.OrderIndex = i;
 				if(Target) Info.Target = Target;
 				CastSpell(Info);

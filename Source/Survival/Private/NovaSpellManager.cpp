@@ -41,7 +41,14 @@ void ANovaSpellManager::CheckForCollisions()
 
 				if (Dist < SpellInstances[j].CurrentRadius)
 				{
-					CollideInstance(j, TempActor);
+					ICombatInterface* Temp = Cast<ICombatInterface>(TempActor);
+					if (Temp)
+					{
+						if (Temp->GetIsAlive())
+						{
+							CollideInstance(j, TempActor);
+						}
+					}
 				}
 			}
 		}

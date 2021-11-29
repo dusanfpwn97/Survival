@@ -223,12 +223,19 @@ void ABaseSpellManager::CheckForCollisions()
 				{
 					float Dist = FVector::Dist(SpellLoc, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-					if (Dist < CurrentSpellInfo.Radius)
+					if (Dist < CurrentSpellInfo.Radius && TempActor)
 					{
+						ICombatInterface* Temp = Cast<ICombatInterface>(TempActor);
+						if (Temp)
+						{
+							if (Temp->GetIsAlive())
+							{
+								CollideInstance(j, TempActor);
+								OnSpellFinished(j);
+								goto EndCurrentLoop;
+							}
+						}
 
-						CollideInstance(j, TempActor);
-						OnSpellFinished(j);
-						goto EndCurrentLoop;
 					}
 				}
 			}
