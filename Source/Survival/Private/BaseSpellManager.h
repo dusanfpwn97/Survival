@@ -115,5 +115,7 @@ protected:
 
 	void SpellLifetimeCheck();
 
+	void CreateExplosion(FVector Location, float Radius);
+
 	float SpellLifetime = 10.f;
 };

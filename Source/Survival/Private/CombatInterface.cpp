@@ -7,7 +7,7 @@
 
 // Add default functionality here for any ICombatInterface functions that are not pure virtual.
 
-void ICombatInterface::OnCollidedWithSpell(ABaseSpellManager* Spell)
+void ICombatInterface::OnCollidedWithSpell(ABaseSpellManager* Spell, SpellModifier SpellModifierThatDamaged)
 {
 
 }

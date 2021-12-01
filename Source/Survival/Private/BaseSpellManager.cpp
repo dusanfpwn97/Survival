@@ -150,12 +150,17 @@ void ABaseSpellManager::CollideInstance(int Index, AActor* Actor)
 			if (Actor->Implements<UCombatInterface>())
 			{
 				ICombatInterface* TempInterface = Cast<ICombatInterface>(Actor);
-				TempInterface->OnCollidedWithSpell(this);
+				TempInterface->OnCollidedWithSpell(this, SpellModifier::NO_MODIFIER);
 
 				SpellInstances[Index].CollidedActors.Add(Actor);
 
 			}
 		}
+	}
+
+	if (SpellModifiers.Contains(SpellModifier::EXPLODE_ON_IMPACT))
+	{
+		CreateExplosion(SpellInstances[Index].Transform.GetLocation(), 200.f);
 	}
 	
 	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
@@ -169,6 +174,7 @@ void ABaseSpellManager::CollideInstance(int Index, AActor* Actor)
 
 void ABaseSpellManager::ResetInstance(const int Index)
 {
+
 	SpellInstances[Index].Reset();
 	ISMComp->UpdateInstanceTransform(Index, SpellInstances[Index].Transform, true, true, true);
 }
@@ -301,7 +307,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::SpellLifetimeCheck, TempWatchdogUpdateTime, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
-	AddSpellModifier(SpellModifier::SPLIT);
+	AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
 	UStaticMesh* Mesh = nullptr;
 	UMaterialInterface* Mat = nullptr;
 	GetVFXDataFromDT(Mesh, Mat);
@@ -546,6 +552,40 @@ void ABaseSpellManager::SpellLifetimeCheck()
 				else
 				{
 					ResetInstance(i);
+				}
+			}
+		}
+	}
+}
+
+void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
+{
+	if (!Caster) return;
+
+	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+
+	// Damage
+	for (int i = 0; i < ActorsToCheck.Num(); i++)
+	{
+		AActor* TempActor = ActorsToCheck[i];
+		if (TempActor != this && TempActor != Caster && TempActor)
+		{
+			float Dist = FVector::Dist(Location, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
+
+			if (Dist < 200.f)
+			{
+				if (TempActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
+				{
+					ICombatInterface* Temp = Cast<ICombatInterface>(TempActor);
+					if (Temp)
+					{
+						if (Temp->GetIsAlive())
+						{
+							TempInterface->OnCollidedWithSpell(this, SpellModifier::EXPLODE_ON_IMPACT);
+
+						}
+					}
 				}
 			}
 		}

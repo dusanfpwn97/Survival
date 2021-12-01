@@ -53,17 +53,26 @@ enum class SpellFXType : uint8
 {
 	MAIN,
 	ON_HIT,
-	ON_SPAWN
+	ON_SPAWN,
+	EXPLOSION
 };
 
 UENUM(BlueprintType)
 enum class TargetMode : uint8
 {
+	NONE,
 	CLOSEST,
 	MIN_HEALTH,
 	MAX_HEALTH,
 	FARTHEST,
-	NONE
+	BOSS
+};
+
+UENUM(BlueprintType)
+enum class DamageType : uint8
+{
+	SPELL,
+	EXPLOSION
 };
 
 USTRUCT(BlueprintType)

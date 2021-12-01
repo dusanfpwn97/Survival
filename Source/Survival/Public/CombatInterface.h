@@ -4,7 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "UObject/Interface.h"
-
+#include "SpellDatatypes.h"
 #include "CombatInterface.generated.h"
 
 class ABaseSpellManager;
@@ -27,7 +27,7 @@ class SURVIVAL_API ICombatInterface
 	// Add interface functions to this class. This is the class that will be inherited to implement this interface.
 public:
 
-	virtual void OnCollidedWithSpell(ABaseSpellManager* Spell);
+	virtual void OnCollidedWithSpell(ABaseSpellManager* Spell, SpellModifier SpellModifierThatDamaged);
 
 	virtual void SetTarget(AActor* TargetActor);
 

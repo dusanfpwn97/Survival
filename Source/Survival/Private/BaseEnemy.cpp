@@ -13,6 +13,7 @@
 #include "Components/SkinnedMeshComponent.h"
 #include "Engine/DataTable.h"
 #include "PoolManager.h"
+#include "SpellDatatypes.h"
 
 
 
@@ -77,14 +78,14 @@ void ABaseEnemy::ReceiveDamage(ABaseSpellManager* SpellManager)
 	}
 }
 
-void ABaseEnemy::OnCollidedWithSpell(ABaseSpellManager* Spell)
+void ABaseEnemy::OnCollidedWithSpell(ABaseSpellManager* Spell, SpellModifier SpellModifier)
 {
 	if (!Spell)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Spell not valid! Should not happen. BaseEnemy.cpp -> OnCollidedWithSpell_Implementation"));
 		return;
 	}
-
+	
 	ReceiveDamage(Spell);
 }
 /*
