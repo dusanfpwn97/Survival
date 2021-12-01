@@ -161,14 +161,16 @@ void ABaseSpellManager::CollideInstance(int Index, AActor* Actor)
 	{
 		CreateExplosion(SpellInstances[Index].Transform.GetLocation(), 200.f);
 	}
-	
+
 	VFXComponent->SpawnHitVFX(SpellInstances[Index].Transform.GetLocation());
 
+
+
+	// This must be last!!!
 	if (CurrentSpellInfo.CastType != CastType::NOVA)
 	{
 		ResetInstance(Index);
 	}
-
 }
 
 void ABaseSpellManager::ResetInstance(const int Index)
@@ -294,6 +296,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
+	AddSpellModifier(SpellModifier::SPLIT);
 	UStaticMesh* Mesh = nullptr;
 	UMaterialInterface* Mat = nullptr;
 
@@ -505,7 +508,7 @@ void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
 		{
 			float Dist = FVector::Dist(Location, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-			if (Dist < 230.f)
+			if (Dist < 200.f)
 			{
 				if (TempActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 				{
@@ -515,7 +518,7 @@ void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
 						if (Temp->GetIsAlive())
 						{
 							Temp->OnCollidedWithSpell(this, SpellModifier::EXPLODE_ON_IMPACT);
-
+							VFXComponent->SpawnExplosionVFX(Location);
 						}
 					}
 				}

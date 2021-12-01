@@ -46,7 +46,7 @@ void USpellComponent::AddNewSpell(FSpellInfo SpellInfo)
 	TempTransform.SetScale3D(FVector(1, 1, 1));
 	TempTransform.SetRotation(FRotator(0, 0, 0).Quaternion());
 	FActorSpawnParameters Params;
-	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AlwaysSpawn;
+	Params.SpawnCollisionHandlingOverride = ESpawnActorCollisionHandlingMethod::AdjustIfPossibleButAlwaysSpawn;
 	UClass* ClassToSpawn = GetSpellClassForSpawning(SpellInfo.CastType);
 	ABaseSpellManager* NewSpell = World->SpawnActor<ABaseSpellManager>(ClassToSpawn, TempTransform, Params);
 

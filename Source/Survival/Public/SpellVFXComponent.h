@@ -26,6 +26,8 @@ public:
 	UPROPERTY()
 		UNiagaraSystem* HitVFX;
 	UPROPERTY()
+		UNiagaraSystem* ExplosionVFX;
+	UPROPERTY()
 		ABaseSpellManager* SpellManagerOwner;
 
 protected:
@@ -57,4 +59,5 @@ public:
 
 	void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
 	
+	void SpawnExplosionVFX(FVector Location);
 };

@@ -19,8 +19,8 @@ USpellVFXComponent::USpellVFXComponent()
 	PrimaryComponentTick.bCanEverTick = true;
 	PrimaryComponentTick.bStartWithTickEnabled = false;
 
-	MainVFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("MainVFX")));
-	MainVFX->SetCanEverAffectNavigation(false);
+	//MainVFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("MainVFX")));
+	//MainVFX->SetCanEverAffectNavigation(false);
 	//MainVFX->Owner
 	//MainNiagaraFX->SetupAttachment(RootComponent);
 
@@ -65,16 +65,15 @@ void USpellVFXComponent::StopMainVFX()
 
 void USpellVFXComponent::SpawnHitVFX(FVector Location)
 {
-	if (SpellManagerOwner == nullptr)
+	UWorld* World = GetWorld();
+
+	if (!SpellManagerOwner || !World)
 	{
-		//GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("SpellManagerOwner or SpellOwner is nullptr spellvfx component!!!")));
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("SpellManagerOwner or world is nullptr spellvfx component!!!")));
 		return;
 	}
 
 	if (!HitVFX) HitVFX = GetNiagaraSystem(SpellFXType::ON_HIT);
-
-	UWorld* World = GetWorld();
-	if (!World) return;
 
 	//TODO manual pool and measure perf
 	if (HitVFX)
@@ -92,6 +91,37 @@ void USpellVFXComponent::SpawnHitVFX(FVector Location)
 
 		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn Niagara System %s"), *ss));
 		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn Niagara System %s"), *ss);
+	}
+
+}
+
+
+void USpellVFXComponent::SpawnExplosionVFX(FVector Location)
+{
+	UWorld* World = GetWorld();
+
+	if (!SpellManagerOwner || !World)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("SpellManagerOwner or world is nullptr spellvfx component!!!")));
+		return;
+	}
+
+	if (!ExplosionVFX) ExplosionVFX = GetNiagaraSystem(SpellFXType::EXPLOSION);
+
+	if (ExplosionVFX)
+	{
+		//TODO manual pool and measure perf
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, ExplosionVFX, Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
+	}
+	else
+	{
+		FString ss = "";
+		ss += USpellFunctionLibrary::GetElementName(SpellManagerOwner->CurrentSpellInfo.Element);
+		ss += USpellFunctionLibrary::GetCastTypeName(SpellManagerOwner->CurrentSpellInfo.CastType);
+		ss += USpellFunctionLibrary::GetSpellFXTypeName(SpellFXType::EXPLOSION);
+
+		GEngine->AddOnScreenDebugMessage(-1, 30.0f, FColor::Red, FString::Printf(TEXT("Failed to spawn EXPLOSION Niagara System %s"), *ss));
+		UE_LOG(LogTemp, Warning, TEXT("Failed to spawn EXPLOSION Niagara System %s"), *ss);
 	}
 
 }
@@ -157,7 +187,7 @@ UNiagaraSystem* USpellVFXComponent::GetNiagaraSystem(SpellFXType SpellFXType)
 					NS = SpellVFXInfo->HitFX.LoadSynchronous();
 					return NS;
 				}
-				else if (SpellFXType == SpellFXType::ON_HIT)
+				else if (SpellFXType == SpellFXType::EXPLOSION)
 				{
 					NS = SpellVFXInfo->ExplodeFX.LoadSynchronous();
 					return NS;
