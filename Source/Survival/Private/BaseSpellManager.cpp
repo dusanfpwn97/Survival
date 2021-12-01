@@ -24,7 +24,7 @@ ABaseSpellManager::ABaseSpellManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	//VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
+	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(TEXT("ISMComp")));
 	RootComponent = ISMComp;
 	ISMComp->SetGenerateOverlapEvents(false);
@@ -36,7 +36,6 @@ ABaseSpellManager::ABaseSpellManager()
 	//SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 
 	//MultithreadCalculatorComponent = CreateDefaultSubobject<UMultithreadCalculator>(FName(TEXT("MultithreadCalculatorComponent")));
-	SetVFXDataTable();
 
 }
 
@@ -163,8 +162,8 @@ void ABaseSpellManager::CollideInstance(int Index, AActor* Actor)
 		CreateExplosion(SpellInstances[Index].Transform.GetLocation(), 200.f);
 	}
 	
-	UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitNS, SpellInstances[Index].Transform.GetLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
-	
+	VFXComponent->SpawnHitVFX(SpellInstances[Index].Transform.GetLocation());
+
 	if (CurrentSpellInfo.CastType != CastType::NOVA)
 	{
 		ResetInstance(Index);
@@ -183,8 +182,8 @@ void ABaseSpellManager::CheckForCollisions()
 {
 	// TODO check how much time this takes
 	if (!Caster) return;
-	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
-	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+	ICombatInterface* CasterInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = CasterInterface->GetAliveEnemies();
 
 	/*
 	if (MultithreadCalculatorComponent && ActorsToCheck.Num() > 0 && SpellInstances.Num() > 0)
@@ -278,39 +277,29 @@ int ABaseSpellManager::GetAvailableSpellInstanceIndex()
 	return SpellInstances.Last().ISMIndex;
 }
 
-void ABaseSpellManager::SetVFXDataTable()
-{
-	ConstructorHelpers::FObjectFinder<UDataTable>DataTableAsset(TEXT("DataTable'/Game/GameSettings/DT_SpellVFX.DT_SpellVFX'"));
-	UDataTable* DT = DataTableAsset.Object;
-	if (DT)
-	{
-		VFX_DataTable = DT;
-	}
-	else
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("No VFX DataTable found!"));
-	}
-}
-
 void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 {
 	MarkAllSpellsForDestruction();
 	CurrentSpellInfo = NewSpellInfo;
+
 	UWorld* World = GetWorld();
 	if (!World) return;
+
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
-
 	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.03f, true);
-
 	// Set random watchdog update time to offset potential syncing of a lot of spells (performance improvement because lot of for loops).
 	float TempWatchdogUpdateTime = FMath::FRandRange(0.2f, 0.3f); // TODO low priority: find optimal time for a lot of spells
-	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::SpellLifetimeCheck, TempWatchdogUpdateTime, true);
+	
+	World->GetTimerManager().SetTimer(WatchdogTimer, this, &ABaseSpellManager::SpellLifetimeCheck, TempWatchdogUpdateTime, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
 	UStaticMesh* Mesh = nullptr;
 	UMaterialInterface* Mat = nullptr;
-	GetVFXDataFromDT(Mesh, Mat);
+
+	VFXComponent->SetupVFX(this);
+	VFXComponent->GetVFXDataFromDT(Mesh, Mat);
+
 
 	ISMComp->SetStaticMesh(Mesh);
 	ISMComp->SetMaterial(0, Mat);
@@ -435,63 +424,6 @@ void ABaseSpellManager::UpdateCastType(CastType NewCastType)
 	CurrentSpellInfo.CastType = NewCastType;
 }
 
-void ABaseSpellManager::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat)
-{
-	if (!VFX_DataTable)
-	{
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
-		return;
-	}
-
-	for (auto it : VFX_DataTable->GetRowMap())
-	{
-		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
-		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
-		if (SpellVFXInfo)
-		{
-			if (SpellVFXInfo->Binding.Element == CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == CurrentSpellInfo.CastType)
-			{
-				Mesh = SpellVFXInfo->MainMesh.LoadSynchronous();
-				Mat = SpellVFXInfo->MainMaterial.LoadSynchronous();
-				HitNS = SpellVFXInfo->HitFX.LoadSynchronous();
-
-				return;
-			}
-		}
-	}
-	return;
-	/*
-	UNiagaraSystem* NS = nullptr;
-
-	for (auto it : VFX_DataTable->GetRowMap())
-	{
-
-		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
-		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
-		if (SpellVFXInfo)
-		{
-			if (SpellVFXInfo->Binding.Element == SpellManagerOwner->CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == SpellManagerOwner->CurrentSpellInfo.CastType)
-			{
-				if (SpellFXType == SpellFXType::ON_SPAWN)
-				{
-					NS = SpellVFXInfo->SpawnFX.LoadSynchronous();
-					return NS;
-				}
-				else if (SpellFXType == SpellFXType::MAIN)
-				{
-					NS = SpellVFXInfo->MainFX.LoadSynchronous();
-					return NS;
-				}
-				else if (SpellFXType == SpellFXType::ON_HIT)
-				{
-					NS = SpellVFXInfo->HitFX.LoadSynchronous();
-					return NS;
-				}
-			}
-		}
-	}*/
-}
-
 AActor* ABaseSpellManager::GetAppropriateTarget(const int32 Index, const int32 OrderIndex)
 {
 	if (!Caster) return nullptr;
@@ -562,8 +494,8 @@ void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
 {
 	if (!Caster) return;
 
-	ICombatInterface* TempInterface = Cast<ICombatInterface>(Caster);
-	TArray<AActor*> ActorsToCheck = TempInterface->GetAliveEnemies();
+	ICombatInterface* CasterInterface = Cast<ICombatInterface>(Caster);
+	TArray<AActor*> ActorsToCheck = CasterInterface->GetAliveEnemies();
 
 	// Damage
 	for (int i = 0; i < ActorsToCheck.Num(); i++)
@@ -573,7 +505,7 @@ void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
 		{
 			float Dist = FVector::Dist(Location, TempActor->GetActorLocation() + FVector(0.f, 0.f, 100.f));
 
-			if (Dist < 200.f)
+			if (Dist < 230.f)
 			{
 				if (TempActor->GetClass()->ImplementsInterface(UCombatInterface::StaticClass()))
 				{
@@ -582,7 +514,7 @@ void ABaseSpellManager::CreateExplosion(FVector Location, float Radius)
 					{
 						if (Temp->GetIsAlive())
 						{
-							TempInterface->OnCollidedWithSpell(this, SpellModifier::EXPLODE_ON_IMPACT);
+							Temp->OnCollidedWithSpell(this, SpellModifier::EXPLODE_ON_IMPACT);
 
 						}
 					}

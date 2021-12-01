@@ -68,12 +68,6 @@ enum class TargetMode : uint8
 	BOSS
 };
 
-UENUM(BlueprintType)
-enum class DamageType : uint8
-{
-	SPELL,
-	EXPLOSION
-};
 
 USTRUCT(BlueprintType)
 struct FSpellInfo : public FTableRowBase
@@ -120,31 +114,22 @@ struct FCastTypes : public FTableRowBase
 };
 
 USTRUCT(BlueprintType)
-struct FCastTypeAndElement : public FTableRowBase
-{
-	GENERATED_BODY()
-
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		Element Element;
-	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		CastType CastType;
-
-
-};
-
-USTRUCT(BlueprintType)
 struct FSpellVFXInfo : public FTableRowBase
 {
 	GENERATED_BODY()
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
-		FCastTypeAndElement Binding;
+	CastType _CastType;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+	Element  _Element;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSoftObjectPtr<UNiagaraSystem> MainFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSoftObjectPtr<UNiagaraSystem> SpawnFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSoftObjectPtr<UNiagaraSystem> HitFX;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		TSoftObjectPtr<UNiagaraSystem> ExplodeFX;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		TSoftObjectPtr<UStaticMesh> MainMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)

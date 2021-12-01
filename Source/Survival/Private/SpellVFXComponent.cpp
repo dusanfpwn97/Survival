@@ -17,7 +17,7 @@ USpellVFXComponent::USpellVFXComponent()
 	// Set this component to be initialized when the game starts, and to be ticked every frame.  You can turn these features
 	// off to improve performance if you don't need them.
 	PrimaryComponentTick.bCanEverTick = true;
-	PrimaryComponentTick.bStartWithTickEnabled = true;
+	PrimaryComponentTick.bStartWithTickEnabled = false;
 
 	MainVFX = CreateDefaultSubobject<UNiagaraComponent>(FName(TEXT("MainVFX")));
 	MainVFX->SetCanEverAffectNavigation(false);
@@ -37,16 +37,12 @@ void USpellVFXComponent::BeginPlay()
 
 }
 
-
-
-// Called every frame
 void USpellVFXComponent::TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction)
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
 
 	//MainVFX->SetWorldRotation(UKismetMathLibrary::MakeRotFromX(SpellOwner->CurrentDirection), false);
-
 }
 
 void USpellVFXComponent::StartMainVFX()
@@ -67,7 +63,7 @@ void USpellVFXComponent::StopMainVFX()
 	}
 }
 
-void USpellVFXComponent::StartHitVFX()
+void USpellVFXComponent::SpawnHitVFX(FVector Location)
 {
 	if (SpellManagerOwner == nullptr)
 	{
@@ -80,9 +76,10 @@ void USpellVFXComponent::StartHitVFX()
 	UWorld* World = GetWorld();
 	if (!World) return;
 
+	//TODO manual pool and measure perf
 	if (HitVFX)
 	{
-		//UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitVFX, SpellOwner->GetActorLocation(), FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
+		UNiagaraFunctionLibrary::SpawnSystemAtLocation(World, HitVFX, Location, FRotator::ZeroRotator, FVector(1.f, 1.f, 1.f), true, true, ENCPoolMethod::AutoRelease, true);
 	}
 
 	// Print helper error message
@@ -101,18 +98,7 @@ void USpellVFXComponent::StartHitVFX()
 
 void USpellVFXComponent::SetupVFX(ABaseSpellManager* NewSpellManager)
 {
-	
 	SpellManagerOwner = NewSpellManager;
-
-	if (MainVFX != nullptr)
-	{
-		FAttachmentTransformRules Rules = FAttachmentTransformRules::SnapToTargetIncludingScale;
-		EAttachmentRule ARule = EAttachmentRule::SnapToTarget;
-		Rules.RotationRule = ARule;
-		//MainVFX->AttachToComponent(NewSpellOwner->GetRootComponent(), Rules);
-
-		MainVFX->SetAsset(GetNiagaraSystem(SpellFXType::MAIN));
-	}
 }
 
 void USpellVFXComponent::Hibernate()
@@ -137,6 +123,8 @@ UNiagaraSystem* USpellVFXComponent::GetNiagaraSystem(SpellFXType SpellFXType)
 {
 	if (!SpellManagerOwner) return nullptr;
 
+	
+
 	if (!VFX_DataTable)
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
@@ -152,7 +140,7 @@ UNiagaraSystem* USpellVFXComponent::GetNiagaraSystem(SpellFXType SpellFXType)
 		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
 		if (SpellVFXInfo)
 		{
-			if (SpellVFXInfo->Binding.Element == SpellManagerOwner->CurrentSpellInfo.Element && SpellVFXInfo->Binding.CastType == SpellManagerOwner->CurrentSpellInfo.CastType)
+			if (SpellVFXInfo->_Element == SpellManagerOwner->CurrentSpellInfo.Element && SpellVFXInfo->_CastType == SpellManagerOwner->CurrentSpellInfo.CastType)
 			{
 				if (SpellFXType == SpellFXType::ON_SPAWN)
 				{
@@ -167,6 +155,11 @@ UNiagaraSystem* USpellVFXComponent::GetNiagaraSystem(SpellFXType SpellFXType)
 				else if (SpellFXType == SpellFXType::ON_HIT)
 				{
 					NS = SpellVFXInfo->HitFX.LoadSynchronous();
+					return NS;
+				}
+				else if (SpellFXType == SpellFXType::ON_HIT)
+				{
+					NS = SpellVFXInfo->ExplodeFX.LoadSynchronous();
 					return NS;
 				}
 			}
@@ -201,4 +194,31 @@ void USpellVFXComponent::SetVFXDataTable()
 	{
 		GEngine->AddOnScreenDebugMessage(-1, 0.25f, FColor::Yellow, TEXT("No VFX DataTable found!"));
 	}
+}
+
+void USpellVFXComponent::GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat)
+{
+	if (!VFX_DataTable || !SpellManagerOwner)
+	{
+		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable for Spell VFX")));
+		return;
+	}
+
+	for (auto it : VFX_DataTable->GetRowMap())
+	{
+		FSpellVFXInfo* SpellVFXInfo = (FSpellVFXInfo*)(it.Value);
+		//FSpellVFXInfo* SpellVFXInfo = Cast<FSpellVFXInfo>(it.Value);
+		if (SpellVFXInfo)
+		{
+			if (SpellVFXInfo->_Element == SpellManagerOwner->CurrentSpellInfo.Element && SpellVFXInfo->_CastType == SpellManagerOwner->CurrentSpellInfo.CastType)
+			{
+				Mesh = SpellVFXInfo->MainMesh.LoadSynchronous();
+				Mat = SpellVFXInfo->MainMaterial.LoadSynchronous();
+
+				return;
+			}
+		}
+	}
+	return;
+
 }

@@ -28,7 +28,7 @@ public:
 
 	UPROPERTY()
 		USpellVFXComponent* VFXComponent;
-	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
+	UPROPERTY()
 		FSpellInfo CurrentSpellInfo;
 	UPROPERTY()
 		UInstancedStaticMeshComponent* ISMComp;
@@ -42,10 +42,6 @@ public:
 		AActor* Caster;
 	UPROPERTY()
 		TArray<FSpellRuntimeInfo> SpellInstances;
-	UPROPERTY()
-		UNiagaraSystem* HitNS;
-	UPROPERTY()
-		UDataTable* VFX_DataTable;
 
 	UFUNCTION()
 		void ResetInstance(const int Index);
@@ -100,12 +96,6 @@ protected:
 	virtual void MoveSpells();
 
 	virtual void UpdateInstanceTransforms();
-
-	void SetVFXDataTable();
-
-	UFUNCTION()
-	void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
-	//
 
 	void CastSpell(FSpellRuntimeInfo AdditonalInfo);
 

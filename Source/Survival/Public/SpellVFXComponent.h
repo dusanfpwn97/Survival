@@ -12,7 +12,7 @@ class UNiagaraSystem;
 class UNiagaraComponent;
 class ABaseSpellManager;
  
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
+UCLASS()
 class SURVIVAL_API USpellVFXComponent : public UActorComponent
 {
 	GENERATED_BODY()
@@ -35,7 +35,6 @@ protected:
 
 	UFUNCTION()
 		UNiagaraSystem* GetNiagaraSystem(SpellFXType SpellFXType);
-
 	UPROPERTY()
 		UDataTable* VFX_DataTable;
 
@@ -45,15 +44,17 @@ public:
 	// Called every frame
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
-	UFUNCTION()
+
 	void StartMainVFX();
-	UFUNCTION()
+
 	void StopMainVFX();
-	UFUNCTION()
-	void StartHitVFX();
-	UFUNCTION()
+
+	void SpawnHitVFX(FVector Location);
+
 	void SetupVFX(ABaseSpellManager* NewSpellManager);
-	UFUNCTION()
+
 	void Hibernate();
+
+	void GetVFXDataFromDT(UStaticMesh*& Mesh, UMaterialInterface*& Mat);
 	
 };
