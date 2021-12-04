@@ -10,6 +10,7 @@
 #include "HelperFunctions.h"
 #include "FakeShadowDistributer.h"
 #include "Components/SkeletalMeshComponent.h"
+#include "BasePlayerPawn.h"
 
 // Sets default values for this component's properties
 UEnemySpawner::UEnemySpawner()
@@ -30,7 +31,7 @@ void UEnemySpawner::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.1f, true);
+		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.53f, true);
 		World->GetTimerManager().SetTimer(DebugTimerHandle, this, &UEnemySpawner::DebugValues, 0.5f, true);
 	}
 	
@@ -58,11 +59,31 @@ void UEnemySpawner::TickComponent(float DeltaTime, ELevelTick TickType, FActorCo
 {
 	Super::TickComponent(DeltaTime, TickType, ThisTickFunction);
 
+	CachedAliveSpawns = GetAliveSpawns();
 }
 
 TArray<AActor*> UEnemySpawner::GetAllSpawns()
 {
 	return EnemySpawnPoolManager->AllSpawnedActors;
+}
+
+TArray<AActor*> UEnemySpawner::GetAliveSpawns()
+{
+	TArray<AActor*> AliveSpawns;
+	TArray<AActor*> AllSpawns = EnemySpawnPoolManager->AllSpawnedActors;
+
+	for (AActor* Actor : AllSpawns)
+	{
+		ICombatInterface* TempInterface = Cast<ICombatInterface>(Actor);
+		if (TempInterface)
+		{
+			if (TempInterface->GetIsAlive())
+			{
+				AliveSpawns.Push(Actor);
+			}
+		}
+	}
+	return AliveSpawns;
 }
 
 void UEnemySpawner::SpawnEnemy()
@@ -119,7 +140,7 @@ void UEnemySpawner::UpdatePlayerPawn()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		PlayerPawn = UGameplayStatics::GetPlayerPawn(World, 0);
+		PlayerPawn = Cast<ABasePlayerPawn>(UGameplayStatics::GetPlayerPawn(World, 0));
 		if (!PlayerPawn) { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("Cannot find player pawn! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }
 	}
 	else { if (GEngine) { GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, TEXT("World is null! Called from EnemySpawner.cpp -> UpdatePlayerPawn()")); } }

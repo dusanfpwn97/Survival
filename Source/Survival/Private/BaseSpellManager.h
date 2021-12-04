@@ -14,8 +14,10 @@ class UDataTable;
 class USpellVFXComponent;
 class UInstancedStaticMeshComponent;
 class UMultithreadCalculator;
+class ASurvivalGM;
+class ASurvivalGS;
 
-UCLASS()
+UCLASS(Abstract)
 class ABaseSpellManager : public AActor
 {
 	GENERATED_BODY()
@@ -75,6 +77,10 @@ public:
 
 	void CollideInstance(int Index, AActor* Actor);
 
+	UPROPERTY()
+		ASurvivalGM* CurrentGameMode;
+	UPROPERTY()
+		ASurvivalGS* CurrentGameState;
 
 protected:
 	virtual void BeginPlay() override;

@@ -8,10 +8,10 @@
 
 class UPoolManager;
 class ABaseEnemy;
-class APawn;
+class ABasePlayerPawn;
 class AFakeShadowDistributer;
 
-UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), Blueprintable )
+UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), BlueprintType )
 class UEnemySpawner : public UActorComponent
 {
 	GENERATED_BODY()
@@ -24,17 +24,18 @@ public:
 	TSoftClassPtr<ABaseEnemy> SoftLevel1EnemyClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
-		APawn* PlayerPawn;
+		ABasePlayerPawn* PlayerPawn;
 	UPROPERTY()
 		UPoolManager* EnemySpawnPoolManager;
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		bool IsSpawnEnabled = true;
 
-	UFUNCTION()
 		void SpawnEnemy();
 
 		void DebugValues();
 		FTimerHandle DebugTimerHandle;
+
+	TArray<AActor*> CachedAliveSpawns;
 
 protected:
 	// Called when the game starts
@@ -47,6 +48,8 @@ protected:
 		FTimerHandle CommonEnemySpawnTimer;
 	UPROPERTY()
 		AFakeShadowDistributer* FakeShadowDistributer;
+
+
 	uint32 spawnnum = 0;
 	//UPROPERTY()
 		//TMap<TSubclassOf<ABaseEnemy>, TArray<ABaseEnemy*>> Map; // Future use
@@ -55,8 +58,9 @@ public:
 	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
-	UFUNCTION()
-		TArray<AActor*> GetAllSpawns();
+	TArray<AActor*> GetAllSpawns();
+
+	TArray<AActor*> GetAliveSpawns();
 	//UFUNCTION()
 		//void ReleaseToPool_Implementation(AActor* Actor) override;
 	//UFUNCTION()

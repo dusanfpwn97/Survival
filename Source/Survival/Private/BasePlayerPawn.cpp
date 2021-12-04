@@ -11,7 +11,8 @@
 #include "HelperFunctions.h"
 #include "BaseGameMode.h"
 #include "Kismet/GameplayStatics.h"
-#include "BaseGameMode.h"
+#include "SurvivalGM.h"
+#include "SurvivalGS.h"
 #include "EnemySpawner.h"
 #include "SpellComponent.h"
 
@@ -32,27 +33,29 @@ void ABasePlayerPawn::BeginPlay()
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		CurrentGameMode = Cast<ABaseGameMode>(UGameplayStatics::GetGameMode(World));
-		if (!CurrentGameMode) GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("Game mode not valid! CombatComponent.cpp -> BeginPlay"));
+		CurrentGameMode = Cast<ASurvivalGM>(UGameplayStatics::GetGameMode(World));
+		if (!CurrentGameMode) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game mode not valid! baseplayerpawn -> BeginPlay"));
+		CurrentGameState = Cast<ASurvivalGS>(UGameplayStatics::GetGameState(World));
+		if (!CurrentGameState) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game state not valid! baseplayerpawn -> BeginPlay"));
 	}
-	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! CombatComponent.cpp -> BeginPlay"));
+	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! baseplayerpawn.cpp -> BeginPlay"));
 
 	FSpellInfo Info;
 	Info.Element = Element::WATER;
 	Info.CastType = CastType::FLICK;
-	Info.Cooldown = 0.65f;
+	Info.Cooldown = 1.1f;
 	Info.Speed = 1000.f;
 	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	//SpellComponent->AddNewSpell(Info);
+	SpellComponent->AddNewSpell(Info);
 
-	Info.Element = Element::ELECTRICITY;
+	Info.Element = Element::FIRE;
 	Info.CastType = CastType::PROJECTILE;
-	Info.Cooldown = 0.46f;
+	Info.Cooldown = 2.f;
 	Info.Speed = 990.f;
 	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	SpellComponent->AddNewSpell(Info);
+	//SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::STORM;
@@ -148,9 +151,10 @@ FVector ABasePlayerPawn::GetSpellCastLocation()
 
 TArray<AActor*> ABasePlayerPawn::GetAliveEnemies()
 {
-	if (CurrentGameMode)
+	if (CurrentGameState)
 	{
-		return UHelperFunctions::GetAllAliveActors(CurrentGameMode->GetEnemySpawner()->GetAllSpawns());
+		//return CurrentGameState->EnemySpawnerComp->GetAliveSpawns();
+		return CurrentGameState->EnemySpawnerComp->CachedAliveSpawns;
 	}
 	else
 	{

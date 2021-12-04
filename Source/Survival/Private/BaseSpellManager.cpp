@@ -16,6 +16,8 @@
 #include "Components/InstancedStaticMeshComponent.h"
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
+#include "SurvivalGM.h"
+#include "SurvivalGS.h"
 //#include "MultithreadCalculator.h"
 
 // Sets default values for this component's properties
@@ -24,7 +26,6 @@ ABaseSpellManager::ABaseSpellManager()
 	PrimaryActorTick.bCanEverTick = true;
 	PrimaryActorTick.bStartWithTickEnabled = true;
 
-	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
 	ISMComp = CreateDefaultSubobject<UInstancedStaticMeshComponent>(FName(TEXT("ISMComp")));
 	RootComponent = ISMComp;
 	ISMComp->SetGenerateOverlapEvents(false);
@@ -32,6 +33,10 @@ ABaseSpellManager::ABaseSpellManager()
 	ISMComp->SetCollisionProfileName(FName(TEXT("NoCollision")));
 	ISMComp->SetCanEverAffectNavigation(false);
 	ISMComp->UpdateBounds();
+
+	VFXComponent = CreateDefaultSubobject<USpellVFXComponent>(FName(TEXT("VFXComponent")));
+	VFXComponent->SetCanEverAffectNavigation(false);
+
 
 	//SpellPoolManager = CreateDefaultSubobject<UPoolManager>(FName(TEXT("SpellPoolManager")));
 
@@ -287,6 +292,12 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	UWorld* World = GetWorld();
 	if (!World) return;
 
+	CurrentGameMode = Cast<ASurvivalGM>(UGameplayStatics::GetGameMode(World));
+	if (!CurrentGameMode) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game mode not valid! baseplayerpawn -> BeginPlay"));
+	CurrentGameState = Cast<ASurvivalGS>(UGameplayStatics::GetGameState(World));
+	if (!CurrentGameState) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game state not valid! baseplayerpawn -> BeginPlay"));
+	
+
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
 	World->GetTimerManager().SetTimer(DebugTimerHandle, this, &ABaseSpellManager::DebugValues, 0.03f, true);
 	// Set random watchdog update time to offset potential syncing of a lot of spells (performance improvement because lot of for loops).
@@ -296,7 +307,7 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
 	AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
-	AddSpellModifier(SpellModifier::SPLIT);
+	//AddSpellModifier(SpellModifier::SPLIT);
 	UStaticMesh* Mesh = nullptr;
 	UMaterialInterface* Mat = nullptr;
 

@@ -43,7 +43,7 @@ struct FEnemyStats : public FTableRowBase
 
 };
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, Abstract)
 class ABaseEnemy : public AActor, public ICombatInterface, public IPoolInterface
 {
 	GENERATED_BODY()

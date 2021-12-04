@@ -19,6 +19,7 @@ AFakeShadowDistributer::AFakeShadowDistributer()
 	ISM_Comp->SetGenerateOverlapEvents(false);
 	ISM_Comp->SetCollisionProfileName(FName("None"));
 	ISM_Comp->UpdateBounds();
+	ISM_Comp->SetCanEverAffectNavigation(false);
 }
 
 // Called when the game starts or when spawned

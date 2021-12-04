@@ -4,15 +4,17 @@
 
 #include "CoreMinimal.h"
 #include "GameFramework/GameModeBase.h"
-#include "BaseGameMode.generated.h"
+#include "SurvivalGM.generated.h"
 
-/**
- * 
- */
-UCLASS(Blueprintable)
-class ABaseGameMode : public AGameModeBase
+class ASurvivalGS;
+
+
+
+UCLASS()
+class ASurvivalGM : public AGameModeBase
 {
 	GENERATED_BODY()
 	
-
+public:
+	ASurvivalGM();
 };

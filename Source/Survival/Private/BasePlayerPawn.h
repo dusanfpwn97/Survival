@@ -15,9 +15,10 @@ class ABaseSpellManager;
 class UStaticMeshComponent;
 class USpellComponent;
 class USceneComponent;
-class ABaseGameMode;
+class ASurvivalGM;
+class ASurvivalGS;
 
-UCLASS(Blueprintable)
+UCLASS(Blueprintable, Abstract)
 class ABasePlayerPawn : public APawn, public ICombatInterface
 {
 	GENERATED_BODY()
@@ -50,8 +51,6 @@ public:
 		UCapsuleComponent* MainCollider;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USkeletalMeshComponent* SkeletalMesh;
-	UPROPERTY()
-		ABaseGameMode* CurrentGameMode;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		UStaticMeshComponent* StaffMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -60,6 +59,10 @@ public:
 		USceneComponent* SpellLocationTemp;
 
 
+	UPROPERTY()
+		ASurvivalGM* CurrentGameMode;
+	UPROPERTY()
+		ASurvivalGS* CurrentGameState;
 protected:
 
 	virtual void BeginPlay() override;
