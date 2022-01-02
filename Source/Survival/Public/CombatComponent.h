@@ -4,14 +4,13 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
-//#include "CombatInterface.h"
+#include "CombatInterface.h"
 
 #include "CombatComponent.generated.h"
 
-class ABaseGameMode;
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class SURVIVAL_API UCombatComponent : public UActorComponent
+class SURVIVAL_API UCombatComponent : public UActorComponent, public ICombatInterface
 {
 	GENERATED_BODY()
 
@@ -19,16 +18,19 @@ public:
 	// Sets default values for this component's properties
 	UCombatComponent();
 
+
+	float Health = 100.f;
+	bool IsAlive = true;
+
+	//virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	void Init(float NewHealth);
+	void TakeDamage(float Damage);
+
 protected:
 	// Called when the game starts
 	virtual void BeginPlay() override;
 
-	UPROPERTY()
-		AActor* Owner;
-
-public:	
-	// Called every frame
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
 
 
 };

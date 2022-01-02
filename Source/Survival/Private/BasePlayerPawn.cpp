@@ -7,9 +7,8 @@
 #include "Components/SkeletalMeshComponent.h"
 #include "Components/StaticMeshComponent.h"
 #include "BaseSpellManager.h"
-//#include "CombatComponent.h"
+#include "CombatComponent.h"
 #include "HelperFunctions.h"
-#include "BaseGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "SurvivalGM.h"
 #include "SurvivalGS.h"
@@ -40,6 +39,7 @@ void ABasePlayerPawn::BeginPlay()
 	}
 	else GEngine->AddOnScreenDebugMessage(-1, 1.0f, FColor::Yellow, TEXT("World not valid! baseplayerpawn.cpp -> BeginPlay"));
 
+	
 	FSpellInfo Info;
 	Info.Element = Element::WATER;
 	Info.CastType = CastType::FLICK;
@@ -47,7 +47,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.Speed = 1000.f;
 	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	SpellComponent->AddNewSpell(Info);
+	//SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::PROJECTILE;
@@ -114,7 +114,6 @@ void ABasePlayerPawn::OnOverlapEnd(UPrimitiveComponent* OverlappedComp, AActor* 
 
 void ABasePlayerPawn::SetupComponents()
 {
-
 	MainCollider = CreateDefaultSubobject<UCapsuleComponent>(FName(TEXT("MainCollider")));
 	RootComponent = MainCollider;
 	MainCollider->SetGenerateOverlapEvents(true);
@@ -139,8 +138,8 @@ void ABasePlayerPawn::SetupComponents()
 	StaffMesh->SetGenerateOverlapEvents(false);
 	StaffMesh->SetCollisionProfileName(FName(TEXT("NoCollision")));
 
-	SpellComponent = CreateDefaultSubobject<USpellComponent>(FName(TEXT("SpellComponent")));
-
+	SpellComponent  = CreateDefaultSubobject<USpellComponent>(FName(TEXT("SpellComponent")));
+	CombatComponent = CreateDefaultSubobject<UCombatComponent>(FName(TEXT("CombatComponent")));
 }
 
 FVector ABasePlayerPawn::GetSpellCastLocation()
@@ -148,13 +147,12 @@ FVector ABasePlayerPawn::GetSpellCastLocation()
 	return SpellLocationTemp->GetComponentLocation();
 }
 
-
 TArray<AActor*> ABasePlayerPawn::GetAliveEnemies()
 {
-	if (CurrentGameState)
+	if (CurrentGameMode)
 	{
 		//return CurrentGameState->EnemySpawnerComp->GetAliveSpawns();
-		return CurrentGameState->EnemySpawnerComp->CachedAliveSpawns;
+		return CurrentGameMode->EnemySpawnerComp->CachedAliveSpawns;
 	}
 	else
 	{
@@ -166,6 +164,17 @@ TArray<AActor*> ABasePlayerPawn::GetAliveEnemies()
 AActor* ABasePlayerPawn::GetClosestEnemy()
 {
 	return UHelperFunctions::GetClosestActor(GetAliveEnemies(), GetActorLocation());
+}
+
+void ABasePlayerPawn::OnHit(float Damage)
+{
+	CombatComponent->TakeDamage(Damage);
+}
+
+void ABasePlayerPawn::OnDeath()
+{
+	GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Orange, FString::Printf(TEXT("Player Died!")));
+
 }
 
 TArray<AActor*> ABasePlayerPawn::GetClosestEnemies(int32 NumOfEnemies)

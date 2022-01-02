@@ -17,6 +17,7 @@ class USpellComponent;
 class USceneComponent;
 class ASurvivalGM;
 class ASurvivalGS;
+class UCombatComponent;
 
 UCLASS(Blueprintable, Abstract)
 class ABasePlayerPawn : public APawn, public ICombatInterface
@@ -40,11 +41,10 @@ public:
 
 	UFUNCTION()
 		virtual FVector GetSpellCastLocation() override;
-	//UFUNCTION()
 		virtual TArray<AActor*> GetAliveEnemies() override;
-	//UFUNCTION()
 		virtual AActor* GetClosestEnemy() override;
-
+		virtual void OnHit(float Damage) override;
+		virtual void OnDeath() override;
 		virtual TArray<AActor*> GetClosestEnemies(int32 NumOfEnemies) override;
 
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
@@ -55,6 +55,8 @@ public:
 		UStaticMeshComponent* StaffMesh;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USpellComponent* SpellComponent;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		UCombatComponent* CombatComponent;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		USceneComponent* SpellLocationTemp;
 

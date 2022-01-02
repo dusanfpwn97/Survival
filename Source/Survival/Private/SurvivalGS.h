@@ -6,8 +6,6 @@
 #include "GameFramework/GameStateBase.h"
 #include "SurvivalGS.generated.h"
 
-class UEnemySpawner;
-
 
 
 UCLASS()
@@ -18,7 +16,5 @@ class ASurvivalGS : public AGameStateBase
 public:
 	ASurvivalGS();
 
-	UPROPERTY(EditAnywhere, BlueprintReadOnly)
-	UEnemySpawner* EnemySpawnerComp;
 
 };

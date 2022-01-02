@@ -6,7 +6,8 @@
 #include "GameFramework/GameModeBase.h"
 #include "SurvivalGM.generated.h"
 
-class ASurvivalGS;
+class UEnemySpawner;
+class UPickupSpawner;
 
 
 
@@ -17,4 +18,11 @@ class ASurvivalGM : public AGameModeBase
 	
 public:
 	ASurvivalGM();
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		UEnemySpawner* EnemySpawnerComp;
+
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+		UPickupSpawner* PickupSpawnerComp;
+
 };

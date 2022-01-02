@@ -119,7 +119,6 @@ protected:
 	UPROPERTY()
 		bool CanMove = false;
 
-	float LastAttackCheckTime = 0.f;
 	bool IsAttacking = false;
 
 	void ClearAllTimers();

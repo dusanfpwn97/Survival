@@ -126,6 +126,7 @@ void UEnemySpawner::SpawnEnemy()
 		if (EnemyActor)
 		{
 			FakeShadowDistributer->AssignNewShadow(Enemy, FVector(0, 0, 0), EnemyActor->GetSkeletalMesh(), FName("ShadowSocket"));
+			EnemyActor->Spawner = this;
 		}
 	}
 }

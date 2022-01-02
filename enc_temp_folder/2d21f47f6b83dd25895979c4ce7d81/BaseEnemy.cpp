@@ -173,7 +173,7 @@ void ABaseEnemy::StartAttacking()
 	GetWorld()->GetTimerManager().SetTimer(AttackDamageTimerHandle, this, &ABaseEnemy::DoDamageFromAttack, AttackAnimTime * 0.4f, false);
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Orange, FString::Printf(TEXT("%s"), *FString::SanitizeFloat(AttackAnimTime)));
 
-	World->GetTimerManager().SetTimer(StopAttackTimerHandle, this, &ABaseEnemy::StopAttacking, AttackAnimTime-0.3f, false);
+	World->GetTimerManager().SetTimer(StopAttackTimerHandle, this, &ABaseEnemy::StopAttacking, AttackAnimTime, false);
 
 	PlayNewAnim(AttackAnimation, false);
 	IsAttacking = true;

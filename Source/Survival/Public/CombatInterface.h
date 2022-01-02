@@ -41,6 +41,9 @@ public:
 
 	virtual TArray<AActor*> GetClosestEnemies(int32 NumOfEnemies);
 
+	virtual void OnHit(float Damage);
+	virtual void OnDeath();
+
 
 
 	/*

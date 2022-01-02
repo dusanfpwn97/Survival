@@ -17,7 +17,7 @@
 #include "Engine/StaticMesh.h"
 #include "Materials/MaterialInterface.h"
 #include "SurvivalGM.h"
-#include "SurvivalGS.h"
+
 //#include "MultithreadCalculator.h"
 
 // Sets default values for this component's properties
@@ -294,8 +294,8 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 
 	CurrentGameMode = Cast<ASurvivalGM>(UGameplayStatics::GetGameMode(World));
 	if (!CurrentGameMode) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game mode not valid! baseplayerpawn -> BeginPlay"));
-	CurrentGameState = Cast<ASurvivalGS>(UGameplayStatics::GetGameState(World));
-	if (!CurrentGameState) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game state not valid! baseplayerpawn -> BeginPlay"));
+	//CurrentGameState = Cast<ASurvivalGS>(UGameplayStatics::GetGameState(World));
+	//if (!CurrentGameState) GEngine->AddOnScreenDebugMessage(-1, 10.0f, FColor::Red, TEXT("Game state not valid! baseplayerpawn -> BeginPlay"));
 	
 
 	World->GetTimerManager().ClearTimer(MainSpellCastTimerHandle);
@@ -306,8 +306,12 @@ void ABaseSpellManager::InitSpellManager(FSpellInfo NewSpellInfo)
 	World->GetTimerManager().SetTimer(WatchdogTimer, this, &ABaseSpellManager::SpellLifetimeCheck, TempWatchdogUpdateTime, true);
 	
 	StartCastSpellTimer(!IsSingleCastSpell());
-	AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
+	//AddSpellModifier(SpellModifier::EXPLODE_ON_IMPACT);
+
+
 	//AddSpellModifier(SpellModifier::SPLIT);
+
+
 	UStaticMesh* Mesh = nullptr;
 	UMaterialInterface* Mat = nullptr;
 

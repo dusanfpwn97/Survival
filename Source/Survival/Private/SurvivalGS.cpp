@@ -2,11 +2,10 @@
 
 
 #include "SurvivalGS.h"
-#include "EnemySpawner.h"
+
 
 
 ASurvivalGS::ASurvivalGS()
 {
-	EnemySpawnerComp = CreateDefaultSubobject<UEnemySpawner>(FName(TEXT("EnemySpawnerComp")));
-	this->AddOwnedComponent(EnemySpawnerComp);
+
 }

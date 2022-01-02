@@ -97,6 +97,7 @@ void UPoolManager::ReleaseToPool_Implementation(AActor* Actor)
 	if (Actor)
 	{
 		FPooledActors PooledActorsTemp = PooledActorsMap.FindRef(Actor->GetClass());
+		//GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("ddddd")));
 
 		PooledActorsTemp.Actors.Push(Actor);
 

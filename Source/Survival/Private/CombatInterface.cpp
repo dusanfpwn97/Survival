@@ -41,3 +41,13 @@ TArray<AActor*> ICombatInterface::GetClosestEnemies(int32 NumOfEnemies)
 {
 	return TArray<AActor*>();
 }
+
+void ICombatInterface::OnHit(float Damage)
+{
+
+}
+
+void ICombatInterface::OnDeath()
+{
+
+}

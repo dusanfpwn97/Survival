@@ -11,6 +11,7 @@ class ABaseEnemy;
 class ABasePlayerPawn;
 class AFakeShadowDistributer;
 
+
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent), BlueprintType )
 class UEnemySpawner : public UActorComponent
 {
