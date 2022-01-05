@@ -41,6 +41,10 @@ struct FEnemyStats : public FTableRowBase
 		float ExpReward;
 	UPROPERTY(EditAnywhere, BlueprintReadWrite)
 		float AttackInterval;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float Size = 115.f;
+	UPROPERTY(EditAnywhere, BlueprintReadWrite)
+		float AttackRange = 150.f;
 
 };
 

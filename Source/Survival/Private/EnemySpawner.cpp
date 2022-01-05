@@ -28,10 +28,11 @@ void UEnemySpawner::BeginPlay()
 	SpawnFakeShadowDistributer();
 	UpdatePlayerPawn();
 	SoftLevel1EnemyClass.LoadSynchronous();
+	SoftLevel2EnemyClass.LoadSynchronous();
 	UWorld* World = GetWorld();
 	if (World)
 	{
-		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::SpawnEnemy, 0.53f, true);
+		World->GetTimerManager().SetTimer(CommonEnemySpawnTimer, this, &UEnemySpawner::HandleSpawning, 0.53f, true);
 		World->GetTimerManager().SetTimer(DebugTimerHandle, this, &UEnemySpawner::DebugValues, 0.5f, true);
 	}
 	
@@ -86,10 +87,10 @@ TArray<AActor*> UEnemySpawner::GetAliveSpawns()
 	return AliveSpawns;
 }
 
-void UEnemySpawner::SpawnEnemy()
+void UEnemySpawner::SpawnEnemy(TSoftClassPtr<ABaseEnemy> EnemyClassToSpawn)
 {
 	//return;
-	UClass* EnemyClass = SoftLevel1EnemyClass.Get();
+	UClass* EnemyClass = EnemyClassToSpawn.Get();
 	//if (spawnnum > 50) return;
 	if (!IsSpawnEnabled) return;
 
@@ -128,6 +129,20 @@ void UEnemySpawner::SpawnEnemy()
 			FakeShadowDistributer->AssignNewShadow(Enemy, FVector(0, 0, 0), EnemyActor->GetSkeletalMesh(), FName("ShadowSocket"));
 			EnemyActor->Spawner = this;
 		}
+	}
+}
+
+void UEnemySpawner::HandleSpawning()
+{
+	float Rand = FMath::FRand();
+
+	if (Rand > 0.5)
+	{
+		//SpawnEnemy(SoftLevel1EnemyClass);
+	}
+	else
+	{
+		SpawnEnemy(SoftLevel2EnemyClass);
 	}
 }
 

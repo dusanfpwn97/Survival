@@ -144,7 +144,7 @@ bool ABaseEnemy::IsTargetInRangeForAttack()
 {
 	if (Target)
 	{
-		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) < 150.f)
+		if (FVector::Dist(Target->GetActorLocation(), GetActorLocation()) < InitialStats.AttackRange)
 		{
 			return true;
 		}
@@ -170,7 +170,7 @@ void ABaseEnemy::StartAttacking()
 
 	float AttackAnimTime = (AttackAnimation->SequenceLength / HitAnimation->RateScale);
 
-	GetWorld()->GetTimerManager().SetTimer(AttackDamageTimerHandle, this, &ABaseEnemy::DoDamageFromAttack, AttackAnimTime * 0.4f, false);
+	World->GetTimerManager().SetTimer(AttackDamageTimerHandle, this, &ABaseEnemy::DoDamageFromAttack, AttackAnimTime * 0.4f, false);
 	//GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Orange, FString::Printf(TEXT("%s"), *FString::SanitizeFloat(AttackAnimTime)));
 
 	World->GetTimerManager().SetTimer(StopAttackTimerHandle, this, &ABaseEnemy::StopAttacking, AttackAnimTime-0.3f, false);
@@ -204,10 +204,7 @@ void ABaseEnemy::DoDamageFromAttack()
 			ICombatInterface* TempInterface = Cast<ICombatInterface>(Target);
 			if (!TempInterface) return;
 			TempInterface->OnHit(InitialStats.Damage);
-			GEngine->AddOnScreenDebugMessage(-1, 1.f, FColor::Orange, FString::Printf(TEXT("ss")));
-
 		}
-		
 	}
 }
 
@@ -269,6 +266,8 @@ void ABaseEnemy::Reset()
 	UWorld* World = GetWorld();
 	{
 		World->GetTimerManager().ClearTimer(DestroyTimerHandle);
+		World->GetTimerManager().ClearTimer(AttackDamageTimerHandle);
+		World->GetTimerManager().ClearTimer(StopAttackTimerHandle);
 	}
 	if (CurrentPoolManager)
 	{
@@ -342,7 +341,7 @@ void ABaseEnemy::MoveTowardsTarget()
 	{
 		float TempDist = FVector::Dist(TempAliveEnemies[i]->GetActorLocation(), GetActorLocation());
 
-		if (TempDist < 115) // 115 is the proximity to check
+		if (TempDist < InitialStats.Size)
 		{
 			if (TempAliveEnemies[i] != this)
 			{
@@ -410,8 +409,9 @@ void ABaseEnemy::UpdateStats()
 				return;
 			}
 		}
-		GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable Row for Enemy Stats")));
 	}
+
+	GEngine->AddOnScreenDebugMessage(-1, 5.0f, FColor::Red, FString::Printf(TEXT("Couldn't find Datatable Row for Enemy Stats")));
 }
 
 void ABaseEnemy::PlayNewAnim(UAnimSequence* AnimToPlay, bool ShouldLoop)

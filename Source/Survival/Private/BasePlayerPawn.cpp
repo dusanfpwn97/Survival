@@ -47,7 +47,7 @@ void ABasePlayerPawn::BeginPlay()
 	Info.Speed = 1000.f;
 	Info.Radius = 70.f;
 	Info.TargetMode = TargetMode::CLOSEST;
-	//SpellComponent->AddNewSpell(Info);
+	SpellComponent->AddNewSpell(Info);
 
 	Info.Element = Element::FIRE;
 	Info.CastType = CastType::PROJECTILE;

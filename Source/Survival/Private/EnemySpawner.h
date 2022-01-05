@@ -23,6 +23,8 @@ public:
 
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 	TSoftClassPtr<ABaseEnemy> SoftLevel1EnemyClass;
+	UPROPERTY(EditAnywhere, BlueprintReadOnly)
+	TSoftClassPtr<ABaseEnemy> SoftLevel2EnemyClass;
 
 	UPROPERTY(VisibleAnywhere, BlueprintReadOnly)
 		ABasePlayerPawn* PlayerPawn;
@@ -31,8 +33,8 @@ public:
 	UPROPERTY(EditAnywhere, BlueprintReadOnly)
 		bool IsSpawnEnabled = true;
 
-		void SpawnEnemy();
-
+		void SpawnEnemy(TSoftClassPtr<ABaseEnemy> EnemyClassToSpawn);
+		void HandleSpawning();
 		void DebugValues();
 		FTimerHandle DebugTimerHandle;
 
